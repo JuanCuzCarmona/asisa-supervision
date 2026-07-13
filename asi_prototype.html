@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASI · Argentina Seguridad Integral</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #060c18; font-family: 'Inter', sans-serif; }
+    #root { min-height: 100vh; }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+    @keyframes fadeIn      { from { opacity: 0; }                              to { opacity: 1; } }
+    @keyframes slideUp     { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideInBot  { from { transform: translateY(100%); }             to { transform: translateY(0); } }
+    @keyframes slideInTop  { from { opacity: 0; transform: translateY(-16px); }to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse       { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+    @keyframes popIn       { 0% { transform: scale(.7); opacity: 0; } 80% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes spin        { to { transform: rotate(360deg); } }
+    .anim-fade   { animation: fadeIn .3s ease both; }
+    .anim-up     { animation: slideUp .35s cubic-bezier(.22,1,.36,1) both; }
+    .anim-bottom { animation: slideInBot .4s cubic-bezier(.22,1,.36,1) both; }
+    .anim-top    { animation: slideInTop .35s cubic-bezier(.22,1,.36,1) both; }
+    .anim-pop    { animation: popIn .4s cubic-bezier(.22,1,.36,1) both; }
+    .pulse-dot   { animation: pulse 1.8s ease-in-out infinite; }
+    .spin        { animation: spin .9s linear infinite; }
+    .btn-tap:active { transform: scale(.95); }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; }
+    .sig-canvas { cursor: crosshair; display: block; touch-action: none; }
+    .text-glow  { text-shadow: 0 0 30px rgba(59,130,246,.6); }
+    .phone-scroll { height: 100%; overflow-y: auto; overflow-x: hidden; }
+    /* Toggle switch */
+    .tog { position:relative; display:inline-flex; width:40px; height:22px; flex-shrink:0; }
+    .tog input { opacity:0; width:0; height:0; }
+    .tog-slider { position:absolute; cursor:pointer; inset:0; background:#374151; border-radius:22px; transition:.25s; }
+    .tog-slider:before { position:absolute; content:""; height:16px; width:16px; left:3px; bottom:3px; background:white; border-radius:50%; transition:.25s; }
+    input:checked + .tog-slider { background:#ef4444; }
+    input:checked + .tog-slider:before { transform:translateX(18px); }
+    input:disabled + .tog-slider { opacity:.5; cursor:not-allowed; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useMemo, useContext, createContext } = React;
+
+/* ═══════════════════════════════════════════════════
+   CONSTANTES Y DATOS ESTÁTICOS
+═══════════════════════════════════════════════════ */
+const MOCK_GUARD = {
+  legajo:1024, nombre:"Carlos Alberto Rodríguez", initials:"CR", dni:"28.541.730",
+  puesto:"Vigilador Nocturno B",
+  credencial:{ numero:"CR-4521-B", vencimiento:"2026-08-15" },
+  caract:{ esChofer:true, licencia:"B2", vencLicencia:"2027-03-10", armado:false },
+  historial:[
+    { fecha:"12/05/2026", tipo:"Acta",    desc:"Demora de 22 min en inicio de turno" },
+    { fecha:"08/03/2026", tipo:"Sanción", desc:"Uniforme incompleto – sin chaleco reflectivo" },
+    { fecha:"20/11/2025", tipo:"Acta",    desc:"Ausencia sin aviso previo" },
+  ],
+};
+
+const CHECKLIST_ITEMS = [
+  { id:1, label:"Uniforme completo y en buen estado" },
+  { id:2, label:"Estado del móvil / vehículo asignado" },
+  { id:3, label:"Conocimiento del protocolo de guardia" },
+];
+
+const FALLAS = [
+  "Sin elementos de protección personal", "Cámara sin señal / inoperativa",
+  "Uniforme deteriorado o incompleto",    "Vehículo con desperfecto mecánico",
+  "Desconocimiento del protocolo",        "Puesto abandonado o descuidado",
+];
+
+const OBJETIVOS_LIST = [
+  { id:"bp1",  nombre:"Barrio Privado La Alameda",       tipo:"Barrios"    },
+  { id:"bp2",  nombre:"Barrio Privado Los Pinos",         tipo:"Barrios"    },
+  { id:"ind1", nombre:"Industria Metalúrgica Del Sur",    tipo:"Industrias" },
+  { id:"ind2", nombre:"Industria Agroexport SA",          tipo:"Industrias" },
+  { id:"loc1", nombre:"Local Comercial Av. Corrientes",   tipo:"Locales"    },
+  { id:"loc2", nombre:"Shopping Norte",                   tipo:"Locales"    },
+];
+
+/* ═══════════════════════════════════════════════════
+   DATOS SEMILLA (estado inicial de la "base de datos")
+═══════════════════════════════════════════════════ */
+const BASE_VISITAS = 140; // visitas previas al mes actual (seed)
+
+const SEED_RONDAS = [
+  { id:"ACTA-000001", supervisor:"J. Pérez",  objetivo:"Industria Metalúrgica Del Sur",  tipo:"presencial", gpsStatus:"inside",  fecha:new Date(Date.now()-7200000),  tickets:[] },
+  { id:"ACTA-000002", supervisor:"A. Suárez", objetivo:"Local Comercial Av. Corrientes", tipo:"remota",     gpsStatus:"outside", fecha:new Date(Date.now()-18000000), tickets:["INC-202607-0038"] },
+];
+
+const SEED_TICKETS = [
+  { id:"INC-202607-0041", obj:"Barrio Privado La Alameda",      sup:"María González", sev:"Malo",    area:"RRHH",         estado:"Activo",  desc:"Uniforme incompleto en turno nocturno",   fecha:"13/07 · 02:15", isNew:false },
+  { id:"INC-202607-0039", obj:"Industria Metalúrgica Del Sur",  sup:"Jorge Pérez",    sev:"Regular", area:"Mantenimiento", estado:"Activo",  desc:"Cámara sin señal en acceso norte",        fecha:"12/07 · 23:45", isNew:false },
+  { id:"INC-202607-0038", obj:"Local Comercial Av. Corrientes", sup:"Ana Suárez",     sev:"Regular", area:"Operaciones",   estado:"Activo",  desc:"Demora en protocolo de cierre",           fecha:"12/07 · 21:30", isNew:false },
+  { id:"INC-202607-0035", obj:"Barrio Privado Los Pinos",       sup:"Carlos Méndez",  sev:"Malo",    area:"Logística",    estado:"Activo",  desc:"Vehículo de ronda con falla mecánica",    fecha:"11/07 · 18:00", isNew:false },
+  { id:"INC-202607-0031", obj:"Industria Agroexport SA",        sup:"Roberto Silva",  sev:"Regular", area:"Operaciones",   estado:"Cerrado", desc:"Punto de control sin confirmar en ronda", fecha:"10/07 · 14:22", isNew:false },
+];
+
+const SEED_FEED = [
+  { hora:"17:42", sup:"M. González", obj:"B.P. La Alameda",  tipo:"Presencial", ok:true,  isNew:false },
+  { hora:"17:15", sup:"J. Pérez",    obj:"Ind. Metalúrgica", tipo:"Remota",     ok:false, isNew:false },
+  { hora:"16:58", sup:"A. Suárez",   obj:"Local Corrientes", tipo:"Presencial", ok:true,  isNew:false },
+  { hora:"16:30", sup:"C. Méndez",   obj:"B.P. Los Pinos",   tipo:"Presencial", ok:true,  isNew:false },
+  { hora:"15:55", sup:"R. Silva",    obj:"Agroexport SA",    tipo:"Remota",     ok:false, isNew:false },
+];
+
+/* ═══════════════════════════════════════════════════
+   CONTEXTO GLOBAL (AppContext — "base de datos viva")
+═══════════════════════════════════════════════════ */
+const AppContext = createContext();
+
+function getArea(fallas) {
+  if (fallas.some(f => f.includes("Uniforme") || f.includes("protección"))) return "RRHH";
+  if (fallas.some(f => f.includes("Vehículo") || f.includes("mecánico")))   return "Logística";
+  if (fallas.some(f => f.includes("Cámara")   || f.includes("inoperativa"))) return "Mantenimiento";
+  return "Operaciones";
+}
+
+function AppProvider({ children }) {
+  const [rondasGuardadas, setRondasGuardadas] = useState(SEED_RONDAS);
+  const [ticketsActivos,  setTicketsActivos]  = useState(SEED_TICKETS);
+  const [liveFeed,        setLiveFeed]        = useState(SEED_FEED);
+  const [offline,         setOfflineState]    = useState(false);
+  const [queue,           setQueue]           = useState([]);
+  const [syncing,         setSyncing]         = useState(false);
+  const [syncMsg,         setSyncMsg]         = useState(null);
+  const [ticketSeq,       setTicketSeq]       = useState(43);
+
+  // ref para evitar stale closure en el setTimeout de sincronización
+  const queueRef = useRef(queue);
+  useEffect(() => { queueRef.current = queue; }, [queue]);
+
+  /* ── KPIs calculados reactivamente ── */
+  const kpis = useMemo(() => {
+    const byTipo = {
+      Barrios:    { completadas: 58 + rondasGuardadas.filter(r => OBJETIVOS_LIST.find(o => o.nombre === r.objetivo)?.tipo === "Barrios").length,    total: 72 },
+      Industrias: { completadas: 41 + rondasGuardadas.filter(r => OBJETIVOS_LIST.find(o => o.nombre === r.objetivo)?.tipo === "Industrias").length,  total: 48 },
+      Locales:    { completadas: 43 + rondasGuardadas.filter(r => OBJETIVOS_LIST.find(o => o.nombre === r.objetivo)?.tipo === "Locales").length,     total: 60 },
+    };
+    return {
+      visitas:     BASE_VISITAS + rondasGuardadas.length,
+      metaVisitas: 180,
+      criticas:    ticketsActivos.filter(t => t.sev === "Malo"    && t.estado === "Activo").length,
+      activas:     ticketsActivos.filter(t => t.estado === "Activo").length,
+      cerradas:    ticketsActivos.filter(t => t.estado === "Cerrado").length,
+      byTipo,
+    };
+  }, [rondasGuardadas, ticketsActivos]);
+
+  /* ── Commit atómico al estado global ── */
+  const _commit = (rondas, tickets, feedEntries) => {
+    setRondasGuardadas(r => [...r, ...rondas]);
+    if (tickets.length > 0) setTicketsActivos(t => [...tickets, ...t]);
+    setLiveFeed(f => [...feedEntries, ...f].slice(0, 8));
+  };
+
+  /* ── Construir payload de una ronda terminada ── */
+  const _buildPayload = ({ roundData, checklistItems, supervisor, objetivo }) => {
+    const now = new Date();
+    const timeStr = now.toLocaleDateString("es-AR") + " · " + now.toLocaleTimeString("es-AR", { hour:"2-digit", minute:"2-digit" });
+
+    const newTickets = (checklistItems || [])
+      .filter(it => it.ticket)
+      .map(it => ({
+        id:     it.ticket,
+        obj:    objetivo || "Objetivo no especificado",
+        sup:    supervisor || "María González",
+        sev:    it.estado === "M" ? "Malo" : "Regular",
+        area:   getArea(it.fallas),
+        estado: "Activo",
+        desc:   it.fallas.length > 0 ? it.fallas[0] : (it.otra || it.label),
+        fecha:  timeStr,
+        label:  it.label,
+        isNew:  true,
+      }));
+
+    const seqId = String(Date.now()).slice(-6);
+    const newRonda = {
+      id:         `ACTA-${seqId}`,
+      supervisor: supervisor || "María González",
+      objetivo:   objetivo  || "Objetivo no especificado",
+      tipo:       roundData.tipo || "presencial",
+      gpsStatus:  roundData.gpsStatus,
+      fecha:      now,
+      tickets:    newTickets.map(t => t.id),
+    };
+
+    const parts   = (supervisor || "María González").split(" ");
+    const shortSup = parts[0][0] + ". " + parts[parts.length - 1];
+    const shortObj = (objetivo || "Objetivo").length > 22
+      ? (objetivo || "Objetivo").slice(0, 20) + "…"
+      : (objetivo || "Objetivo");
+
+    const feedEntry = {
+      hora:  now.toLocaleTimeString("es-AR", { hour:"2-digit", minute:"2-digit" }),
+      sup:   shortSup,
+      obj:   shortObj,
+      tipo:  roundData.tipo === "presencial" ? "Presencial" : "Remota",
+      ok:    newTickets.length === 0,
+      isNew: true,
+    };
+
+    return { newRonda, newTickets, feedEntry };
+  };
+
+  /* ── Guardar ronda (online: commit directo / offline: cola FIFO) ── */
+  const pushRonda = (params) => {
+    const payload = _buildPayload(params);
+    if (offline) {
+      setQueue(q => [...q, payload]);
+      return "queued";
+    } else {
+      _commit([payload.newRonda], payload.newTickets, [payload.feedEntry]);
+      return "saved";
+    }
+  };
+
+  /* ── Siguiente ID de ticket ── */
+  const nextTicketId = () => {
+    const id = `INC-202607-0${String(ticketSeq).padStart(2, "0")}`;
+    setTicketSeq(s => s + 1);
+    return id;
+  };
+
+  /* ── Toggle offline / recuperar conexión ── */
+  const toggleOffline = () => {
+    if (offline) {
+      // Vuelve a online: sincroniza cola FIFO con delay de 2s
+      setOfflineState(false);
+      const pending = queueRef.current;
+      if (pending.length > 0) {
+        setSyncing(true);
+        setSyncMsg(null);
+        setTimeout(() => {
+          const allRondas  = pending.map(p => p.newRonda);
+          const allTickets = pending.flatMap(p => p.newTickets);
+          const allFeeds   = pending.map(p => p.feedEntry);
+          _commit(allRondas, allTickets, allFeeds);
+          setQueue([]);
+          setSyncing(false);
+          const n = pending.length;
+          setSyncMsg({
+            type: "success",
+            text: `☁️ Conexión recuperada. Sincronizando ${n} acta${n > 1 ? "s" : ""} pendiente${n > 1 ? "s" : ""} con el servidor…`,
+          });
+          setTimeout(() => setSyncMsg(null), 5000);
+        }, 2000);
+      }
+    } else {
+      setOfflineState(true);
+      setSyncMsg(null);
+    }
+  };
+
+  /* ── Cerrar ticket (Admin → estado global) ── */
+  const closeTicket = (id, resolucion) => {
+    setTicketsActivos(t => t.map(tk =>
+      tk.id === id ? { ...tk, estado: "Cerrado", resolucion, isNew: false } : tk
+    ));
+  };
+
+  return (
+    <AppContext.Provider value={{
+      rondasGuardadas, ticketsActivos, liveFeed,
+      kpis, offline, queue, syncing, syncMsg,
+      pushRonda, toggleOffline, closeTicket, nextTicketId, ticketSeq,
+    }}>
+      {children}
+    </AppContext.Provider>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   COMPONENTES UI COMPARTIDOS
+═══════════════════════════════════════════════════ */
+function Badge({ color, children }) {
+  const C = {
+    red:    "bg-red-900/50 text-red-400 border border-red-800/80",
+    yellow: "bg-yellow-900/50 text-yellow-400 border border-yellow-800/80",
+    green:  "bg-green-900/50 text-green-400 border border-green-800/80",
+    blue:   "bg-blue-900/50 text-blue-400 border border-blue-800/80",
+    orange: "bg-orange-900/50 text-orange-400 border border-orange-800/80",
+    purple: "bg-purple-900/50 text-purple-400 border border-purple-800/80",
+    gray:   "bg-gray-800 text-gray-400 border border-gray-700",
+  };
+  return <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${C[color] || C.gray}`}>{children}</span>;
+}
+
+function StepDots({ current, total }) {
+  return (
+    <div className="flex items-center justify-center gap-1.5 py-2.5 flex-shrink-0">
+      {Array.from({ length: total }).map((_, i) => (
+        <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === current ? "w-8 bg-blue-500" : i < current ? "w-2 bg-blue-800" : "w-2 bg-gray-700"}`} />
+      ))}
+    </div>
+  );
+}
+
+function SH({ title, sub }) {
+  return (
+    <div className="mb-1">
+      <h2 className="text-xl font-black text-white tracking-tight">{title}</h2>
+      {sub && <p className="text-xs text-gray-500 mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+function Card({ children, className = "" }) {
+  return <div className={`bg-gray-900 rounded-2xl border border-gray-800 ${className}`}>{children}</div>;
+}
+
+function CircularProgress({ value, max, color = "#3b82f6", size = 110 }) {
+  const r = 42, cx = 55, cy = 55, circ = 2 * Math.PI * r;
+  const pct = Math.min(value / max, 1), dash = circ - pct * circ;
+  return (
+    <svg width={size} height={size} viewBox="0 0 110 110">
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="#1f2937" strokeWidth="9" />
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth="9" strokeLinecap="round"
+        strokeDasharray={circ} strokeDashoffset={dash} transform={`rotate(-90 ${cx} ${cy})`}
+        style={{ transition: "stroke-dashoffset 1.4s cubic-bezier(.22,1,.36,1)" }} />
+      <text x={cx} y={cy - 5}  textAnchor="middle" fill="white"   fontSize="18" fontWeight="900" fontFamily="Inter">{value}</text>
+      <text x={cx} y={cy + 10} textAnchor="middle" fill="#6b7280"  fontSize="9"  fontFamily="Inter">de {max}</text>
+      <text x={cx} y={cy + 22} textAnchor="middle" fill={color}    fontSize="11" fontWeight="700" fontFamily="Inter">{Math.round(pct * 100)}%</text>
+    </svg>
+  );
+}
+
+function PanelHeader({ icon, role, user, accent, onLogout }) {
+  const A = { blue:"bg-blue-600", purple:"bg-purple-600", amber:"bg-amber-600" };
+  return (
+    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800 bg-gray-900 flex-shrink-0">
+      <div className="flex items-center gap-2.5">
+        <div className={`w-8 h-8 ${A[accent] || "bg-blue-600"} rounded-xl flex items-center justify-center text-sm`}>{icon}</div>
+        <div>
+          <p className="text-xs font-black text-white tracking-wide">{role}</p>
+          <p className="text-xs text-gray-500">{user}</p>
+        </div>
+      </div>
+      <button onClick={onLogout} className="text-gray-500 text-xs border border-gray-700 rounded-lg px-3 py-1.5 hover:text-gray-300 transition-colors btn-tap">Salir</button>
+    </div>
+  );
+}
+
+/* ── Barra de estado Offline (visible en todos los paneles) ── */
+function OfflineBar() {
+  const { offline, toggleOffline, syncing, queue } = useContext(AppContext);
+  return (
+    <div className={`flex items-center justify-between px-4 py-2 flex-shrink-0 border-b transition-all duration-500 ${offline ? "bg-red-950/50 border-red-900/60" : "bg-gray-900/40 border-gray-800/40"}`}>
+      <div className="flex items-center gap-2">
+        {syncing
+          ? <span className="text-xs font-bold text-blue-400 flex items-center gap-1.5"><span className="spin inline-block">↻</span> Sincronizando…</span>
+          : offline
+            ? <span className="text-xs font-bold text-red-400">📵 Sin conexión · {queue.length} en cola FIFO</span>
+            : <span className="text-xs font-semibold text-green-500">🌐 Online · Sistema conectado</span>
+        }
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-gray-600">Corte de internet</span>
+        <label className="tog">
+          <input type="checkbox" checked={offline} onChange={toggleOffline} disabled={syncing} />
+          <span className="tog-slider" />
+        </label>
+      </div>
+    </div>
+  );
+}
+
+/* ── Toast de sincronización (aparece al recuperar conexión) ── */
+function SyncToast() {
+  const { syncMsg, syncing, offline, queue } = useContext(AppContext);
+
+  let msg = null, colorClass = "";
+
+  if (syncing) {
+    msg = `🔄 Procesando cola… sincronizando ${queueRef_fallback(queue)} con el servidor`;
+    colorClass = "bg-blue-950/90 border-blue-700 text-blue-300";
+  } else if (syncMsg) {
+    colorClass = syncMsg.type === "success"
+      ? "bg-green-950/90 border-green-700 text-green-300"
+      : "bg-red-950/90 border-red-700 text-red-300";
+    msg = syncMsg.text;
+  } else if (offline && queue.length > 0) {
+    msg = `📵 ${queue.length} acta${queue.length > 1 ? "s" : ""} guardada${queue.length > 1 ? "s" : ""} en cola FIFO local · Sin conexión`;
+    colorClass = "bg-yellow-950/90 border-yellow-700 text-yellow-300";
+  }
+
+  if (!msg) return null;
+  return (
+    <div className={`mx-3 my-1.5 rounded-xl border px-3 py-2 text-xs font-semibold anim-top flex-shrink-0 ${colorClass}`}>
+      {msg}
+    </div>
+  );
+}
+function queueRef_fallback(q) {
+  return `${q.length} acta${q.length !== 1 ? "s" : ""}`;
+}
+
+/* ═══════════════════════════════════════════════════
+   LOGIN
+═══════════════════════════════════════════════════ */
+function LoginScreen({ onLogin }) {
+  const [sel, setSel] = useState(null);
+  const roles = [
+    { id:"supervisor", icon:"👮", label:"Supervisor de Campo",  desc:"Gestión de rondas y actas digitales",   grad:"from-blue-600 to-blue-700",   bord:"border-blue-500",  bg:"bg-blue-500/10"  },
+    { id:"admin",      icon:"📋", label:"Administrativo",        desc:"Control de incidencias y resoluciones", grad:"from-purple-600 to-purple-700",bord:"border-purple-500",bg:"bg-purple-500/10"},
+    { id:"dueno",      icon:"📊", label:"Dueño de la Empresa",   desc:"Dashboard ejecutivo de KPIs en vivo",   grad:"from-amber-500 to-amber-600",  bord:"border-amber-500", bg:"bg-amber-500/10" },
+  ];
+  return (
+    <div className="flex flex-col min-h-full bg-gray-950 px-6 py-8 anim-fade phone-scroll">
+      <div className="flex flex-col items-center mb-8">
+        <div className="relative mb-4">
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-900/60">
+            <span className="text-4xl">🛡️</span>
+          </div>
+          <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-gray-950" />
+        </div>
+        <h1 className="text-2xl font-black text-white tracking-tight text-center">Argentina Seguridad</h1>
+        <p className="text-xs text-blue-400 font-bold tracking-widest uppercase mt-1">Integral · ASI</p>
+        <div className="w-12 h-0.5 bg-gradient-to-r from-blue-600 to-transparent rounded mt-3" />
+      </div>
+      <p className="text-xs text-gray-600 uppercase tracking-widest mb-4 font-semibold text-center">Seleccioná tu rol para ingresar</p>
+      <div className="flex flex-col gap-3 mb-6">
+        {roles.map((r, idx) => (
+          <button key={r.id} onClick={() => setSel(r.id)} style={{ animationDelay: `${idx * 80}ms` }}
+            className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all duration-200 text-left btn-tap anim-up ${sel === r.id ? `${r.bord} ${r.bg}` : "border-gray-800 bg-gray-900/60"}`}>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 bg-gradient-to-br transition-all duration-200 ${sel === r.id ? r.grad : "from-gray-800 to-gray-900"}`}>{r.icon}</div>
+            <div className="flex-1">
+              <p className="font-black text-white text-sm">{r.label}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{r.desc}</p>
+            </div>
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${sel === r.id ? `${r.bord} bg-gradient-to-br ${r.grad}` : "border-gray-700"}`}>
+              {sel === r.id && <span className="text-white text-xs font-black">✓</span>}
+            </div>
+          </button>
+        ))}
+      </div>
+      <button disabled={!sel} onClick={() => sel && onLogin(sel)}
+        className={`w-full py-5 rounded-2xl font-black text-lg tracking-wide transition-all duration-200 btn-tap ${sel ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-900/50" : "bg-gray-800 text-gray-600 cursor-not-allowed"}`}>
+        {sel ? "INGRESAR AL SISTEMA  →" : "Seleccioná un rol primero"}
+      </button>
+      <p className="text-center text-xs text-gray-700 mt-5">v2.5.0 · Sistema ASI · Estado global reactivo</p>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   SUPERVISOR — PASO 1: Geocerca + Objetivo
+═══════════════════════════════════════════════════ */
+function Step1({ onNext, setRD }) {
+  const [gps,  setGps]  = useState("searching");
+  const [just, setJust] = useState("");
+  const [obj,  setObj]  = useState(null);
+  const [tick, setTick] = useState(new Date());
+  useEffect(() => { const t = setInterval(() => setTick(new Date()), 1000); return () => clearInterval(t); }, []);
+
+  const GI = {
+    searching: { text:"Buscando señal GPS…",      tc:"text-yellow-400", dc:"bg-yellow-400" },
+    inside:    { text:"✅ Dentro del geocerco",    tc:"text-green-400",  dc:"bg-green-400" },
+    outside:   { text:"⛔ Fuera del geocerco",     tc:"text-red-400",    dc:"bg-red-400"   },
+  }[gps];
+
+  const sim = s => { setGps(s); setRD(p => ({ ...p, gpsStatus: s })); };
+  const selObj = o => { setObj(o); setRD(p => ({ ...p, objetivo: o.nombre })); };
+
+  const canPresencial = gps === "inside"   && obj;
+  const canRemota     = gps === "outside"  && obj && just.trim().length >= 10;
+
+  const tipoLabel = { Barrios:"Barrios Privados", Industrias:"Industrias", Locales:"Locales Comerciales" };
+  const tipoStyle = {
+    Barrios:    { sel:"bg-blue-900/60 border-blue-600 text-blue-300",   unsel:"bg-gray-900 border-gray-800 text-gray-400" },
+    Industrias: { sel:"bg-green-900/60 border-green-600 text-green-300", unsel:"bg-gray-900 border-gray-800 text-gray-400" },
+    Locales:    { sel:"bg-yellow-900/60 border-yellow-600 text-yellow-300", unsel:"bg-gray-900 border-gray-800 text-gray-400" },
+  };
+
+  return (
+    <div className="flex flex-col gap-3 px-4 py-4 anim-fade">
+      <SH title="Inicio de Ronda" sub="Seleccioná el objetivo y verificá la geocerca" />
+
+      {/* Selector de objetivo */}
+      <div>
+        <p className="text-xs text-gray-600 uppercase tracking-widest font-semibold mb-2">Objetivo de la ronda <span className="text-red-400">*</span></p>
+        {["Barrios", "Industrias", "Locales"].map(tipo => (
+          <div key={tipo} className="mb-2">
+            <p className="text-xs text-gray-600 font-bold mb-1">{tipoLabel[tipo]}</p>
+            <div className="flex flex-col gap-1">
+              {OBJETIVOS_LIST.filter(o => o.tipo === tipo).map(o => (
+                <button key={o.id} onClick={() => selObj(o)}
+                  className={`text-left px-3 py-2.5 rounded-xl text-sm font-semibold btn-tap transition-all border ${obj?.id === o.id ? tipoStyle[tipo].sel : tipoStyle[tipo].unsel}`}>
+                  {obj?.id === o.id ? "✓ " : ""}{o.nombre}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Reloj + estado GPS */}
+      <Card className="p-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Hora del Dispositivo</p>
+            <p className="text-3xl font-black text-white">{tick.toLocaleTimeString("es-AR")}</p>
+            <p className="text-xs text-gray-400 mt-0.5 capitalize">{tick.toLocaleDateString("es-AR", { weekday:"long", day:"numeric", month:"long" })}</p>
+          </div>
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${gps === "inside" ? "bg-green-900/60" : gps === "outside" ? "bg-red-900/60" : "bg-yellow-900/60"}`}>📍</div>
+        </div>
+        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-800">
+          <div className={`w-2 h-2 rounded-full flex-shrink-0 pulse-dot ${GI.dc}`} />
+          <span className={`text-xs font-semibold ${GI.tc}`}>{GI.text}</span>
+        </div>
+      </Card>
+
+      {/* Simulador GPS */}
+      <div>
+        <p className="text-xs text-gray-600 uppercase tracking-widest font-semibold mb-2">Simular estado GPS</p>
+        <div className="flex gap-2">
+          <button onClick={() => sim("inside")}  className={`flex-1 py-3.5 rounded-xl font-bold text-sm btn-tap transition-all ${gps === "inside"  ? "bg-green-600 text-white shadow-lg shadow-green-900/50" : "bg-gray-900 border border-gray-700 text-gray-400"}`}>📡 Simular DENTRO</button>
+          <button onClick={() => sim("outside")} className={`flex-1 py-3.5 rounded-xl font-bold text-sm btn-tap transition-all ${gps === "outside" ? "bg-red-700 text-white shadow-lg shadow-red-900/50"     : "bg-gray-900 border border-gray-700 text-gray-400"}`}>🚫 Simular FUERA</button>
+        </div>
+      </div>
+
+      {!obj && gps !== "searching" && (
+        <p className="text-xs text-yellow-500 font-semibold text-center anim-up">⚠️ Seleccioná un objetivo para continuar</p>
+      )}
+
+      {gps === "inside" && (
+        <button disabled={!canPresencial} onClick={() => { setRD(p => ({ ...p, tipo:"presencial" })); onNext(); }}
+          className={`w-full py-5 font-black text-lg rounded-2xl btn-tap transition-all ${canPresencial ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-xl shadow-green-900/40" : "bg-gray-800 text-gray-600 cursor-not-allowed"}`}>
+          ✅ Iniciar Checklist Presencial
+        </button>
+      )}
+
+      {gps === "outside" && (
+        <div className="flex flex-col gap-3 anim-up">
+          <div className="bg-red-950/50 border border-red-800 rounded-2xl p-4">
+            <p className="text-red-400 font-black text-sm">⚠️ Acceso presencial bloqueado</p>
+            <p className="text-red-300/70 text-xs mt-1 leading-relaxed">Modalidad Remota activada. Justificá por escrito.</p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-400 font-semibold mb-1.5">Justificación obligatoria <span className="text-red-400">*</span></p>
+            <textarea value={just} onChange={e => setJust(e.target.value)}
+              placeholder="Ej: Me encuentro en objetivo alternativo por solicitud del cliente…"
+              className="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white text-sm resize-none h-20 focus:outline-none focus:border-orange-500 transition-colors" />
+            <p className={`text-xs mt-1 ${just.length >= 10 ? "text-green-400" : "text-gray-600"}`}>
+              {just.length >= 10 ? `✓ ${just.length} caracteres` : `Faltan ${Math.max(0, 10 - just.length)} caracteres mínimos`}
+            </p>
+          </div>
+          <button disabled={!canRemota} onClick={() => { setRD(p => ({ ...p, tipo:"remota", justificacion:just })); onNext(); }}
+            className={`w-full py-5 font-black text-lg rounded-2xl btn-tap transition-all ${canRemota ? "bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-xl shadow-orange-900/40" : "bg-gray-800 text-gray-600 cursor-not-allowed"}`}>
+            📱 Iniciar Supervisión Remota
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   SUPERVISOR — PASO 2: Búsqueda de vigilador
+═══════════════════════════════════════════════════ */
+function Step2({ onNext, setRD }) {
+  const [legajo, setLegajo] = useState("");
+  const [guard,  setGuard]  = useState(null);
+  const [tab,    setTab]    = useState("datos");
+  const dL = useMemo(() => Math.ceil((new Date(MOCK_GUARD.credencial.vencimiento) - new Date()) / 86400000), []);
+
+  const buscar = () => {
+    if (legajo.trim() === "1024") { setGuard(MOCK_GUARD); setRD(p => ({ ...p, vigilador: MOCK_GUARD })); }
+    else setGuard("nf");
+  };
+
+  return (
+    <div className="flex flex-col gap-4 px-4 py-4 anim-fade">
+      <SH title="Datos del Vigilador" sub="Buscá por número de legajo" />
+      <div className="flex gap-2">
+        <input type="number" inputMode="numeric" value={legajo}
+          onChange={e => { setLegajo(e.target.value); setGuard(null); }}
+          onKeyDown={e => e.key === "Enter" && buscar()}
+          placeholder="Nº Legajo  (prueba: 1024)"
+          className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-4 text-white text-2xl font-black focus:outline-none focus:border-blue-500 transition-colors placeholder:text-gray-700" />
+        <button onClick={buscar} className="bg-blue-600 text-white w-14 rounded-xl font-black text-xl btn-tap shadow-lg shadow-blue-900/40">🔍</button>
+      </div>
+      {guard === "nf" && <div className="bg-red-950/50 border border-red-800 rounded-xl p-3 text-red-400 text-sm font-semibold anim-up">❌ No se encontró el legajo "{legajo}".</div>}
+      {guard && guard !== "nf" && (
+        <div className="flex flex-col gap-3 anim-up">
+          <Card className="p-4 flex items-center gap-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-700 rounded-xl flex items-center justify-center text-xl font-black text-white flex-shrink-0 shadow-lg">{guard.initials}</div>
+            <div>
+              <p className="font-black text-white text-base leading-tight">{guard.nombre}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{guard.puesto}</p>
+              <p className="text-xs text-gray-600">Legajo #{guard.legajo} · DNI {guard.dni}</p>
+            </div>
+          </Card>
+          <div className="flex gap-1 bg-gray-900/80 rounded-xl p-1 border border-gray-800">
+            {[["datos","Datos"],["caract","Características"],["hist","Historial"]].map(([k, v]) => (
+              <button key={k} onClick={() => setTab(k)} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${tab === k ? "bg-blue-600 text-white" : "text-gray-500"}`}>{v}</button>
+            ))}
+          </div>
+          <Card className="p-4 anim-fade">
+            {tab === "datos" && (
+              <div className="flex flex-col gap-3">
+                <div className="flex justify-between items-center">
+                  <div><p className="text-xs text-gray-500 uppercase tracking-wide">Nº Credencial</p><p className="text-base font-black text-white">{guard.credencial.numero}</p></div>
+                  <Badge color={dL <= 30 ? "red" : "green"}>{dL <= 30 ? "⚠ Crítico" : "✓ Vigente"}</Badge>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-gray-800">
+                  <p className="text-sm text-gray-400">Vencimiento</p>
+                  <p className="text-sm font-bold text-white">{new Date(guard.credencial.vencimiento).toLocaleDateString("es-AR")}</p>
+                </div>
+                {dL <= 60 && <div className="bg-red-950/60 border border-red-800 rounded-xl p-3 anim-up"><p className="text-red-400 text-xs font-bold">🚨 Credencial vence en {dL} días. Se notificará a RRHH automáticamente.</p></div>}
+              </div>
+            )}
+            {tab === "caract" && (
+              <div className="flex flex-col gap-0">
+                {[
+                  ["Habilitado como Chofer", guard.caract.esChofer ? "✓ Sí" : "✗ No", guard.caract.esChofer ? "green" : "gray"],
+                  ["Categoría Licencia",     guard.caract.licencia, "blue"],
+                  ["Venc. Licencia",         new Date(guard.caract.vencLicencia).toLocaleDateString("es-AR"), "gray"],
+                  ["Armado",                 guard.caract.armado ? "Sí" : "No", guard.caract.armado ? "orange" : "gray"],
+                ].map(([k, v, c], i, arr) => (
+                  <div key={k} className={`flex justify-between items-center py-3 ${i < arr.length - 1 ? "border-b border-gray-800" : ""}`}>
+                    <span className="text-sm text-gray-400">{k}</span><Badge color={c}>{v}</Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+            {tab === "hist" && (
+              <div className="flex flex-col gap-0">
+                {guard.historial.map((h, i) => (
+                  <div key={i} className={`flex gap-3 items-start py-3 ${i < guard.historial.length - 1 ? "border-b border-gray-800" : ""}`}>
+                    <Badge color={h.tipo === "Sanción" ? "red" : "yellow"}>{h.tipo}</Badge>
+                    <div><p className="text-xs text-gray-500">{h.fecha}</p><p className="text-sm text-gray-200 mt-0.5 leading-snug">{h.desc}</p></div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+          <button onClick={onNext} className="w-full py-5 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-black text-lg rounded-2xl btn-tap shadow-xl shadow-blue-900/40">Continuar al Checklist →</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   SUPERVISOR — PASO 3: Checklist B/R/M + tickets
+═══════════════════════════════════════════════════ */
+function Step3({ onNext, setRD }) {
+  const { ticketSeq } = useContext(AppContext);
+  const [items, setItems] = useState(CHECKLIST_ITEMS.map(i => ({ ...i, estado:null, fallas:[], otra:"", ticket:null })));
+  const [tc, setTc] = useState(ticketSeq);
+
+  const setE = (id, e) => setItems(p => p.map(it => {
+    if (it.id !== id) return it;
+    if (e === "B") return { ...it, estado:"B", fallas:[], otra:"", ticket:null };
+    const code = it.ticket || `INC-202607-0${String(tc).padStart(2, "0")}`;
+    if (!it.ticket) setTc(c => c + 1);
+    return { ...it, estado:e, ticket:code };
+  }));
+
+  const togF  = (id, f) => setItems(p => p.map(it => it.id !== id ? it : { ...it, fallas: it.fallas.includes(f) ? it.fallas.filter(x => x !== f) : [...it.fallas, f] }));
+  const setOtra = (id, v) => setItems(p => p.map(it => it.id === id ? { ...it, otra:v } : it));
+
+  const allOk   = items.every(i => i.estado !== null);
+  const tickets = items.filter(i => i.ticket);
+
+  return (
+    <div className="flex flex-col gap-4 px-4 py-4 anim-fade">
+      <SH title="Checklist de Ronda" sub="Evaluá cada ítem: Bueno / Regular / Malo" />
+
+      {tickets.length > 0 && (
+        <div className="bg-red-950/50 border border-red-800 rounded-2xl p-3 anim-up">
+          <p className="text-red-400 font-black text-xs mb-1">🎫 {tickets.length} ticket{tickets.length > 1 ? "s" : ""} generado{tickets.length > 1 ? "s" : ""} — impactarán los paneles Admin y Dueño:</p>
+          {tickets.map(t => <p key={t.ticket} className="text-red-300/80 text-xs font-mono">→ {t.ticket} · {t.label}</p>)}
+        </div>
+      )}
+
+      {items.map(item => (
+        <div key={item.id} className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+          <div className="p-4">
+            <p className="text-sm font-bold text-white mb-3">{item.label}</p>
+            <div className="flex gap-2">
+              {[
+                ["B", "Bueno",   "bg-green-600 text-white",  "bg-gray-900 text-green-500 border border-green-900"],
+                ["R", "Regular", "bg-yellow-600 text-white", "bg-gray-900 text-yellow-500 border border-yellow-900"],
+                ["M", "Malo",    "bg-red-700 text-white",    "bg-gray-900 text-red-500 border border-red-900"],
+              ].map(([key, lbl, ac, ic]) => (
+                <button key={key} onClick={() => setE(item.id, key)}
+                  className={`flex-1 py-3.5 rounded-xl font-black text-sm btn-tap transition-all shadow-lg ${item.estado === key ? ac : ic}`}>
+                  {key} · {lbl}
+                </button>
+              ))}
+            </div>
+          </div>
+          {(item.estado === "R" || item.estado === "M") && (
+            <div className="border-t border-gray-800 p-4 bg-gray-950/60 anim-up">
+              <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-2">Causas detectadas:</p>
+              <div className="flex flex-col gap-1.5">
+                {FALLAS.map(f => (
+                  <button key={f} onClick={() => togF(item.id, f)}
+                    className={`text-left py-2.5 px-3 rounded-xl text-xs font-medium btn-tap transition-all ${item.fallas.includes(f) ? "bg-red-900/60 text-red-300 border border-red-700" : "bg-gray-800 text-gray-400 border border-gray-700/50"}`}>
+                    {item.fallas.includes(f) ? "✓ " : ""}{f}
+                  </button>
+                ))}
+              </div>
+              <textarea value={item.otra} onChange={e => setOtra(item.id, e.target.value)}
+                placeholder="Otra observación libre…"
+                className="w-full mt-2.5 bg-gray-800 border border-gray-700 rounded-xl p-3 text-white text-xs resize-none h-16 focus:outline-none focus:border-yellow-500 transition-colors" />
+              {item.ticket && <p className="text-xs text-yellow-400 font-mono mt-2">🎫 {item.ticket}</p>}
+            </div>
+          )}
+        </div>
+      ))}
+
+      <button disabled={!allOk} onClick={() => { setRD(p => ({ ...p, checklistItems: items })); onNext(); }}
+        className={`w-full py-5 font-black text-lg rounded-2xl btn-tap transition-all ${allOk ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-xl shadow-blue-900/40" : "bg-gray-800 text-gray-600 cursor-not-allowed"}`}>
+        {allOk ? "Continuar a Firma  →" : `Faltan ${items.filter(i => !i.estado).length} ítem${items.filter(i => !i.estado).length > 1 ? "s" : ""} sin evaluar`}
+      </button>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   SUPERVISOR — PASO 4: Firma + GUARDAR (impacta estado global)
+═══════════════════════════════════════════════════ */
+function Step4({ onFinish, roundData }) {
+  const { pushRonda, offline } = useContext(AppContext);
+  const cvRef    = useRef(null);
+  const drawing  = useRef(false);
+  const last     = useRef(null);
+  const [hasSig,     setHasSig]     = useState(false);
+  const [neg,        setNeg]        = useState(false);
+  const [saveStatus, setSaveStatus] = useState(null); // null | 'saved' | 'queued'
+
+  const xy = (e, cv) => {
+    const r = cv.getBoundingClientRect(), sx = cv.width / r.width, sy = cv.height / r.height;
+    if (e.touches) return { x: (e.touches[0].clientX - r.left) * sx, y: (e.touches[0].clientY - r.top) * sy };
+    return { x: (e.clientX - r.left) * sx, y: (e.clientY - r.top) * sy };
+  };
+  const start = e => { if (neg) return; drawing.current = true; last.current = xy(e, cvRef.current); };
+  const draw  = e => {
+    if (!drawing.current || neg) return; e.preventDefault();
+    const cv = cvRef.current, ctx = cv.getContext("2d"), pos = xy(e, cv);
+    ctx.beginPath(); ctx.strokeStyle = "#60a5fa"; ctx.lineWidth = 2.5; ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.moveTo(last.current.x, last.current.y); ctx.lineTo(pos.x, pos.y); ctx.stroke();
+    last.current = pos; setHasSig(true);
+  };
+  const stop  = () => { drawing.current = false; };
+  const clear = () => { cvRef.current.getContext("2d").clearRect(0, 0, cvRef.current.width, cvRef.current.height); setHasSig(false); };
+
+  const save = () => {
+    const status = pushRonda({
+      roundData,
+      checklistItems: roundData.checklistItems || [],
+      supervisor:     "María González",
+      objetivo:       roundData.objetivo,
+    });
+    setSaveStatus(status);
+  };
+
+  const canSave    = hasSig || neg;
+  const newTickets = (roundData.checklistItems || []).filter(i => i.ticket);
+
+  /* ── Pantalla de confirmación post-guardado ── */
+  if (saveStatus) {
+    const isQueued = saveStatus === "queued";
+    return (
+      <div className="flex flex-col items-center justify-center gap-5 px-5 py-8 anim-fade">
+        <div className={`w-24 h-24 rounded-full flex items-center justify-center text-5xl shadow-xl anim-pop ${isQueued ? "bg-yellow-900/50 shadow-yellow-900/30" : "bg-green-900/50 shadow-green-900/30"}`}>
+          {isQueued ? "📵" : "✅"}
+        </div>
+        <div className="text-center">
+          <h2 className="text-2xl font-black text-white">Acta Registrada</h2>
+          {isQueued
+            ? <p className="text-sm text-yellow-400 mt-2 leading-relaxed">⚡ Sin conexión. Acta guardada localmente en cola FIFO.<br/>Activá el switch para sincronizar al recuperar red.</p>
+            : <p className="text-sm text-green-400 mt-2 leading-relaxed">☁️ Sincronizada con el servidor.<br/>Paneles Admin y Dueño actualizados al instante.</p>
+          }
+        </div>
+
+        {newTickets.length > 0 && (
+          <Card className="w-full p-4 anim-up">
+            <p className="text-red-400 font-black text-xs mb-2">
+              {isQueued ? "⏳ Tickets pendientes de sincronizar:" : "🎫 Tickets enviados a Administración:"}
+            </p>
+            {newTickets.map(t => (
+              <p key={t.ticket} className="text-red-300/80 text-xs font-mono">→ {t.ticket} · {t.label}</p>
+            ))}
+          </Card>
+        )}
+
+        {isQueued && (
+          <div className="bg-yellow-950/50 border border-yellow-800 rounded-xl p-3 w-full">
+            <p className="text-yellow-400 text-xs font-bold">💡 Desactivá el switch "Corte de internet" en la barra para disparar la sincronización.</p>
+          </div>
+        )}
+
+        <button onClick={onFinish} className="w-full py-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-lg rounded-2xl btn-tap shadow-xl shadow-blue-900/40">← Iniciar Nueva Ronda</button>
+      </div>
+    );
+  }
+
+  /* ── Formulario de firma ── */
+  return (
+    <div className="flex flex-col gap-4 px-4 py-4 anim-fade">
+      <SH title="Firma y Cierre" sub="Revisá el resumen y tomá la firma del vigilador" />
+
+      <Card className="p-4">
+        <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-3">Resumen del Acta Digital</p>
+        <div className="flex flex-col gap-2.5 text-sm">
+          {[
+            ["Supervisor",  "María González",                    null],
+            ["Objetivo",    roundData.objetivo || "—",           null],
+            ["Vigilador",   roundData.vigilador?.nombre || "—",  null],
+            ["Tipo",        roundData.tipo,                      roundData.tipo === "presencial" ? "green" : "orange"],
+            ["GPS",         roundData.gpsStatus === "inside" ? "Dentro del geocerco" : "Fuera del geocerco", roundData.gpsStatus === "inside" ? "green" : "red"],
+            ["Tickets",     `${newTickets.length} generados`,    newTickets.length > 0 ? "red" : "green"],
+          ].map(([k, v, bc]) => (
+            <div key={k} className="flex justify-between items-center">
+              {bc
+                ? <><span className="text-gray-400">{k}</span><Badge color={bc}>{v}</Badge></>
+                : <><span className="text-gray-400">{k}</span><span className="text-white font-semibold text-right max-w-[55%] truncate">{v}</span></>
+              }
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <div>
+        <p className="text-xs text-gray-400 font-semibold mb-1.5">Firma del Vigilador</p>
+        <div className={`rounded-2xl border-2 overflow-hidden transition-all ${neg ? "border-red-700 bg-red-950/30" : hasSig ? "border-blue-600 bg-gray-900" : "border-gray-700 bg-gray-900"}`}>
+          {neg
+            ? <div className="h-32 flex flex-col items-center justify-center gap-1"><span className="text-3xl">⛔</span><p className="text-red-400 font-bold text-sm">Negativa a firmar registrada</p></div>
+            : <canvas ref={cvRef} width={320} height={130} className="w-full sig-canvas"
+                onMouseDown={start} onMouseMove={draw} onMouseUp={stop} onMouseLeave={stop}
+                onTouchStart={start} onTouchMove={draw} onTouchEnd={stop} />
+          }
+        </div>
+        {!hasSig && !neg && <p className="text-xs text-gray-600 text-center mt-1.5">☝️ Dibujá la firma con el cursor o dedo</p>}
+      </div>
+
+      <div className="flex gap-2">
+        <button onClick={clear} disabled={neg}
+          className={`flex-1 py-3 rounded-xl font-bold text-sm btn-tap transition-all border ${neg ? "bg-gray-900 text-gray-700 border-gray-800 cursor-not-allowed" : "bg-gray-900 text-gray-300 border-gray-700"}`}>
+          🗑 Limpiar
+        </button>
+        <button onClick={() => { setNeg(n => !n); setHasSig(false); if (!neg) clear(); }}
+          className={`flex-1 py-3 rounded-xl font-bold text-xs btn-tap transition-all border ${neg ? "bg-red-700 text-white border-red-600" : "bg-gray-900 text-red-400 border-red-900"}`}>
+          {neg ? "↩ Deshacer negativa" : "✗ Registrar Negativa"}
+        </button>
+      </div>
+
+      {neg && <div className="bg-red-950/50 border border-red-800 rounded-xl p-3 anim-up"><p className="text-red-400 text-xs font-bold leading-relaxed">⚠️ Se generará notificación automática a RRHH informando la negativa a firmar.</p></div>}
+      {offline && <div className="bg-yellow-950/50 border border-yellow-800 rounded-xl p-3 anim-up"><p className="text-yellow-400 text-xs font-bold">📵 Modo Offline activo — el acta se guardará en cola FIFO local.</p></div>}
+
+      <button disabled={!canSave} onClick={save}
+        className={`w-full py-5 font-black text-xl rounded-2xl btn-tap transition-all ${canSave ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-xl shadow-green-900/50" : "bg-gray-800 text-gray-600 cursor-not-allowed"}`}>
+        {canSave
+          ? (offline ? "📵 GUARDAR EN COLA OFFLINE" : "💾 GUARDAR ACTA")
+          : "Se requiere firma o negativa"}
+      </button>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   PANEL SUPERVISOR
+═══════════════════════════════════════════════════ */
+function SupervisorPanel({ onLogout }) {
+  const [step, setStep] = useState(0);
+  const [rd,   setRD]   = useState({});
+  const next  = () => setStep(s => s + 1);
+  const reset = () => { setStep(0); setRD({}); };
+
+  const steps = [
+    <Step1 onNext={next} setRD={setRD} />,
+    <Step2 onNext={next} setRD={setRD} />,
+    <Step3 onNext={next} setRD={setRD} />,
+    <Step4 onFinish={reset} roundData={rd} />,
+  ];
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", height:"100%" }}>
+      <PanelHeader icon="👮" role="SUPERVISOR DE CAMPO" user="María González" accent="blue" onLogout={onLogout} />
+      <OfflineBar />
+      <SyncToast />
+      <StepDots current={step} total={4} />
+      <div className="phone-scroll flex-1">{steps[step]}</div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   PANEL ADMINISTRADOR — lee ticketsActivos del contexto global
+═══════════════════════════════════════════════════ */
+function AdminPanel({ onLogout }) {
+  const { ticketsActivos, closeTicket } = useContext(AppContext);
+  const [sel,    setSel]    = useState(null);
+  const [resol,  setResol]  = useState("");
+  const [filter, setFilter] = useState("all");
+
+  const stats = {
+    crit: ticketsActivos.filter(i => i.sev === "Malo"    && i.estado === "Activo").length,
+    act:  ticketsActivos.filter(i => i.estado === "Activo").length,
+    cer:  ticketsActivos.filter(i => i.estado === "Cerrado").length,
+  };
+
+  const filtered = ticketsActivos.filter(i =>
+    filter === "all" ? true : filter === "activo" ? i.estado === "Activo" : i.estado === "Cerrado"
+  );
+
+  const AC = { "RRHH":"blue", "Mantenimiento":"yellow", "Operaciones":"green", "Logística":"orange" };
+
+  const handleClose = () => {
+    closeTicket(sel.id, resol);
+    setSel(null);
+    setResol("");
+  };
+
+  // Re-derivar el ticket seleccionado desde el estado global (evita objeto stale)
+  const currentSel = sel ? ticketsActivos.find(t => t.id === sel.id) || sel : null;
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", height:"100%" }}>
+      <PanelHeader icon="📋" role="GESTIÓN DE INCIDENCIAS" user="Admin · Roberto Valente" accent="purple" onLogout={onLogout} />
+      <OfflineBar />
+      <SyncToast />
+
+      {/* Contadores dinámicos */}
+      <div className="flex gap-2 px-4 pt-3 pb-2 flex-shrink-0">
+        {[
+          ["Críticas", stats.crit, "red",    "bg-red-950/50 border-red-900"],
+          ["Activas",  stats.act,  "yellow",  "bg-yellow-950/50 border-yellow-900"],
+          ["Cerradas", stats.cer,  "green",   "bg-green-950/50 border-green-900"],
+        ].map(([lbl, val, c, cls]) => (
+          <div key={lbl} className={`flex-1 border rounded-2xl p-2.5 text-center transition-all duration-500 ${cls}`}>
+            <p className={`text-2xl font-black transition-all duration-500 ${c === "red" ? "text-red-400" : c === "yellow" ? "text-yellow-400" : "text-green-400"}`}>{val}</p>
+            <p className={`text-xs font-semibold ${c === "red" ? "text-red-500" : c === "yellow" ? "text-yellow-500" : "text-green-500"}`}>{lbl}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex gap-1 mx-4 mb-2 bg-gray-900 rounded-xl p-1 border border-gray-800 flex-shrink-0">
+        {[["all","Todas"],["activo","Activas"],["cerrado","Cerradas"]].map(([k, v]) => (
+          <button key={k} onClick={() => setFilter(k)} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${filter === k ? "bg-purple-600 text-white" : "text-gray-500"}`}>{v}</button>
+        ))}
+      </div>
+
+      <div className="phone-scroll flex-1 px-4 pb-4 flex flex-col gap-3">
+        {filtered.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-12 gap-2">
+            <span className="text-4xl">✅</span>
+            <p className="text-gray-500 text-sm font-semibold">Sin incidencias en esta categoría</p>
+          </div>
+        )}
+        {filtered.map((inc, idx) => (
+          <button key={inc.id} onClick={() => { setSel(inc); setResol(""); }} style={{ animationDelay:`${idx * 50}ms` }}
+            className="w-full text-left bg-gray-900 rounded-2xl p-4 border border-gray-800 btn-tap anim-up hover:border-gray-700 transition-colors">
+            <div className="flex justify-between items-center mb-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black text-gray-400 font-mono tracking-wide">{inc.id}</span>
+                {inc.isNew && <span className="text-xs font-black text-blue-400 bg-blue-950/60 border border-blue-800 rounded-full px-2 py-0.5">NUEVO</span>}
+              </div>
+              <Badge color={inc.estado === "Activo" ? (inc.sev === "Malo" ? "red" : "yellow") : "gray"}>{inc.estado === "Activo" ? "● " : "○ "}{inc.estado}</Badge>
+            </div>
+            <p className="text-sm font-black text-white">{inc.obj}</p>
+            <p className="text-xs text-gray-500 mt-0.5 leading-snug">{inc.desc}</p>
+            <div className="flex gap-1.5 mt-2.5 flex-wrap">
+              <Badge color={AC[inc.area] || "gray"}>{inc.area}</Badge>
+              <Badge color={inc.sev === "Malo" ? "red" : "yellow"}>{inc.sev}</Badge>
+            </div>
+            <p className="text-xs text-gray-600 mt-2">👤 {inc.sup} · 🕐 {inc.fecha}</p>
+          </button>
+        ))}
+      </div>
+
+      {/* Modal de resolución */}
+      {sel && currentSel && (
+        <div style={{ position:"fixed", inset:0, zIndex:100, background:"rgba(0,0,0,.85)", display:"flex", alignItems:"flex-end" }}
+          className="anim-fade" onClick={e => { if (e.target === e.currentTarget) setSel(null); }}>
+          <div className="w-full bg-gray-900 rounded-t-3xl p-6 border-t border-gray-700 anim-bottom" style={{ maxHeight:"80vh", overflowY:"auto" }}>
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <p className="text-xs text-gray-500 font-mono tracking-wide">{currentSel.id}</p>
+                <p className="text-base font-black text-white mt-0.5">{currentSel.obj}</p>
+                <div className="flex gap-1.5 mt-1.5">
+                  <Badge color={AC[currentSel.area] || "gray"}>{currentSel.area}</Badge>
+                  <Badge color={currentSel.sev === "Malo" ? "red" : "yellow"}>{currentSel.sev}</Badge>
+                </div>
+              </div>
+              <button onClick={() => setSel(null)} className="bg-gray-800 text-gray-400 rounded-full w-9 h-9 flex items-center justify-center text-sm btn-tap">✕</button>
+            </div>
+            <p className="text-sm text-gray-300 mb-1">Descripción:</p>
+            <p className="text-sm text-gray-400 leading-relaxed mb-4">{currentSel.desc}</p>
+            <p className="text-xs text-gray-600 mb-4">Supervisor: {currentSel.sup} · Fecha: {currentSel.fecha}</p>
+
+            {currentSel.estado === "Activo" ? (
+              <>
+                <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-2">Resolución técnica *</p>
+                <textarea value={resol} onChange={e => setResol(e.target.value)}
+                  placeholder="Describí la acción concreta tomada para resolver esta incidencia…"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-white text-sm resize-none h-28 mb-3 focus:outline-none focus:border-purple-500 transition-colors" />
+                <button disabled={resol.trim().length < 5} onClick={handleClose}
+                  className={`w-full py-4 font-black text-base rounded-xl btn-tap transition-all ${resol.trim().length >= 5 ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg" : "bg-gray-800 text-gray-600 cursor-not-allowed"}`}>
+                  ✅ Cerrar Incidencia — Actualizar KPIs del Dueño
+                </button>
+              </>
+            ) : (
+              <div className="bg-green-950/50 border border-green-800 rounded-xl p-4">
+                <p className="text-green-400 font-black text-sm">✅ Incidencia cerrada</p>
+                {currentSel.resolucion && <p className="text-green-300/70 text-xs mt-1 leading-relaxed">{currentSel.resolucion}</p>}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   PANEL DUEÑO — KPIs 100% reactivos al estado global
+═══════════════════════════════════════════════════ */
+function OwnerPanel({ onLogout }) {
+  const { kpis, liveFeed } = useContext(AppContext);
+
+  const objetivosKpi = [
+    { nombre:"Barrios Privados",    completadas: kpis.byTipo.Barrios.completadas,    total: kpis.byTipo.Barrios.total,    color:"#3b82f6" },
+    { nombre:"Industrias",          completadas: kpis.byTipo.Industrias.completadas,  total: kpis.byTipo.Industrias.total,  color:"#10b981" },
+    { nombre:"Locales Comerciales", completadas: kpis.byTipo.Locales.completadas,     total: kpis.byTipo.Locales.total,     color:"#f59e0b" },
+  ];
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", height:"100%" }}>
+      <PanelHeader icon="📊" role="DASHBOARD EJECUTIVO" user="Gerencia General · ASI" accent="amber" onLogout={onLogout} />
+      <OfflineBar />
+      <SyncToast />
+
+      <div className="phone-scroll flex-1 px-4 py-4 flex flex-col gap-4">
+        <div className="flex justify-between items-center">
+          <div><h2 className="text-xl font-black text-white">Julio 2026</h2><p className="text-xs text-gray-500">Resumen operativo mensual · Estado en vivo</p></div>
+          <div className="flex items-center gap-1.5 bg-red-950/50 border border-red-900 rounded-full px-3 py-1.5">
+            <span className="w-2 h-2 bg-red-500 rounded-full pulse-dot" /><span className="text-xs text-red-400 font-bold">En vivo</span>
+          </div>
+        </div>
+
+        {/* KPI 1 — Visitas (se incrementa con cada ronda guardada) */}
+        <div className="bg-gradient-to-br from-blue-950/80 to-indigo-950/80 border border-blue-800/60 rounded-2xl p-4 anim-up">
+          <p className="text-xs text-blue-400 uppercase tracking-widest font-bold mb-3">Cobertura de Visitas Mensuales</p>
+          <div className="flex items-center gap-4">
+            <CircularProgress value={kpis.visitas} max={kpis.metaVisitas} color="#3b82f6" size={110} />
+            <div className="flex-1">
+              <p className="text-5xl font-black text-white text-glow">
+                {(kpis.visitas / kpis.metaVisitas * 100).toFixed(1)}<span className="text-2xl text-blue-400">%</span>
+              </p>
+              <p className="text-sm text-gray-400 mt-1">{kpis.visitas} de {kpis.metaVisitas} visitas</p>
+              <p className="text-xs text-gray-600">completadas este mes</p>
+              <div className="mt-2.5 w-full bg-gray-800 rounded-full h-2">
+                <div className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-[1500ms] ease-out"
+                  style={{ width:`${kpis.visitas / kpis.metaVisitas * 100}%` }} />
+              </div>
+              <div className="flex justify-between text-xs text-gray-600 mt-0.5"><span>0</span><span>{kpis.metaVisitas}</span></div>
+            </div>
+          </div>
+        </div>
+
+        {/* KPI 2 — Críticas (sube al guardar 'Malo', baja al cerrar ticket) */}
+        <div className={`border rounded-2xl p-4 anim-up transition-all duration-700 ${kpis.criticas > 0 ? "bg-red-950/50 border-red-800" : "bg-green-950/50 border-green-800"}`}>
+          <p className={`text-xs uppercase tracking-widest font-bold mb-2 transition-colors duration-700 ${kpis.criticas > 0 ? "text-red-400" : "text-green-400"}`}>
+            Incidencias Críticas Activas
+          </p>
+          <div className="flex items-end gap-4">
+            <p className={`font-black leading-none transition-all duration-700 ${kpis.criticas > 0 ? "text-red-400" : "text-green-400"}`} style={{ fontSize:"72px" }}>
+              {kpis.criticas}
+            </p>
+            <div className="pb-2">
+              <p className={`text-sm font-bold transition-colors duration-700 ${kpis.criticas > 0 ? "text-red-300" : "text-green-300"}`}>
+                {kpis.criticas > 0 ? "requieren atención urgente" : "sin incidencias críticas"}
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">{kpis.activas} activas · {kpis.cerradas} cerradas</p>
+            </div>
+          </div>
+        </div>
+
+        {/* KPI 3 — Cumplimiento por tipo (refleja objetivo de cada ronda guardada) */}
+        <Card className="p-4 anim-up">
+          <p className="text-xs text-gray-400 uppercase tracking-widest font-bold mb-4">Cumplimiento por Tipo de Objetivo</p>
+          <div className="flex flex-col gap-4">
+            {objetivosKpi.map(obj => {
+              const pct = Math.round((obj.completadas / obj.total) * 100);
+              return (
+                <div key={obj.nombre}>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-sm text-gray-300 font-semibold">{obj.nombre}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500">{obj.completadas}/{obj.total}</span>
+                      <span className="text-sm font-black text-white">{pct}%</span>
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-800 rounded-full h-3 overflow-hidden">
+                    <div className="h-3 rounded-full transition-all duration-[1500ms] ease-out" style={{ width:`${pct}%`, backgroundColor:obj.color }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Live Feed — actualizado al instante cuando el supervisor guarda */}
+        <Card className="p-4 anim-up">
+          <div className="flex justify-between items-center mb-3">
+            <p className="text-xs text-gray-400 uppercase tracking-widest font-bold">Actividad en Tiempo Real</p>
+            <div className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-green-400 rounded-full pulse-dot" /><span className="text-xs text-green-400 font-semibold">Live</span></div>
+          </div>
+          <div className="flex flex-col gap-0">
+            {liveFeed.map((a, i) => (
+              <div key={i} className={`flex items-center gap-3 py-2.5 ${i < liveFeed.length - 1 ? "border-b border-gray-800" : ""} ${a.isNew ? "bg-blue-950/20 -mx-1 px-1 rounded-lg" : ""}`}>
+                <span className="text-xs text-gray-500 font-mono w-10 flex-shrink-0">{a.hora}</span>
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${a.tipo === "Presencial" ? "bg-green-500" : "bg-orange-500"}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-gray-200 truncate">
+                    {a.isNew && <span className="text-blue-400 font-black">● </span>}
+                    {a.sup} <span className="text-gray-500">→</span> {a.obj}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    {a.isNew ? "Hace unos segundos · " : ""}{a.tipo}{!a.ok ? " · ⚠ Con incidencia" : ""}
+                  </p>
+                </div>
+                <span className="text-base flex-shrink-0">{a.ok ? "✅" : "⚠️"}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <p className="text-center text-xs text-gray-700 pb-2">ASI · Sistema de Supervisión v2.5.0 · Estado global reactivo</p>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   PHONE FRAME — muestra estado de red en la barra
+═══════════════════════════════════════════════════ */
+function PhoneFrame({ children }) {
+  const { offline } = useContext(AppContext);
+  const [time, setTime] = useState(new Date());
+  useEffect(() => { const t = setInterval(() => setTime(new Date()), 30000); return () => clearInterval(t); }, []);
+
+  return (
+    <div style={{ minHeight:"100vh", background:"#060c18", display:"flex", alignItems:"center", justifyContent:"center", padding:"16px" }}>
+      <div style={{ width:"100%", maxWidth:"390px" }}>
+        <div style={{ background:"#111827", borderRadius:"40px", overflow:"hidden", border:"1px solid #374151", boxShadow:"0 30px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.03),inset 0 1px 0 rgba(255,255,255,.05)", height:"780px", display:"flex", flexDirection:"column", position:"relative" }}>
+          {/* Status bar del "teléfono" */}
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 24px 6px", background:"#111827", flexShrink:0 }}>
+            <span style={{ fontSize:"12px", fontWeight:"700", color:"#e5e7eb" }}>{time.toLocaleTimeString("es-AR", { hour:"2-digit", minute:"2-digit" })}</span>
+            <div style={{ display:"flex", gap:"6px", alignItems:"center", fontSize:"12px" }}>
+              <span style={{ color: offline ? "#ef4444" : "#9ca3af" }}>{offline ? "📵" : "▲▲▲"}</span>
+              <span style={{ color: offline ? "#ef4444" : "#9ca3af", fontWeight: offline ? "700" : "400" }}>{offline ? "SIN RED" : "WiFi"}</span>
+              <span style={{ color:"#9ca3af" }}>🔋</span>
+            </div>
+          </div>
+          <div style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>{children}</div>
+          <div style={{ display:"flex", justifyContent:"center", padding:"8px 0 12px", background:"#111827", flexShrink:0 }}>
+            <div style={{ width:"120px", height:"4px", background:"#374151", borderRadius:"2px" }} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   ROOT
+═══════════════════════════════════════════════════ */
+function AppInner() {
+  const [role, setRole] = useState(null);
+  return (
+    <PhoneFrame>
+      {!role                  && <LoginScreen    onLogin={r => setRole(r)} />}
+      {role === "supervisor"  && <SupervisorPanel onLogout={() => setRole(null)} />}
+      {role === "admin"       && <AdminPanel      onLogout={() => setRole(null)} />}
+      {role === "dueno"       && <OwnerPanel      onLogout={() => setRole(null)} />}
+    </PhoneFrame>
+  );
+}
+
+function App() {
+  return (
+    <AppProvider>
+      <AppInner />
+    </AppProvider>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
