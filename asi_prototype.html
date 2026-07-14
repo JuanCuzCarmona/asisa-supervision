@@ -134,6 +134,37 @@ function AppProvider({ children }) {
   const [syncMsg,         setSyncMsg]         = useState(null);
   const [ticketSeq,       setTicketSeq]       = useState(43);
 
+  /* ── API ── */
+  const [apiUrl,       setApiUrl]       = useState("");
+  const [apiStatus,    setApiStatus]    = useState("unconfigured"); // unconfigured|connecting|connected|error
+  const [currentUser,  setCurrentUser]  = useState(null);
+  const [apiObjetivos, setApiObjetivos] = useState([]);
+  const [apiVigiladores, setApiVigiladores] = useState([]);
+
+  const apiFetch = (path, opts = {}) => {
+    const base = apiUrl.replace(/\/$/, "");
+    return fetch(base + path, {
+      ...opts,
+      headers: { "Content-Type":"application/json", "bypass-tunnel-reminder":"true", ...(opts.headers||{}) },
+    });
+  };
+
+  const setAndTestApiUrl = async (url) => {
+    const trimmed = url.trim().replace(/\/$/, "");
+    setApiUrl(trimmed);
+    setApiStatus("connecting");
+    try {
+      const res  = await fetch(trimmed + "/", { headers: { "bypass-tunnel-reminder":"true" } });
+      const data = await res.json();
+      if (data.ok) {
+        setApiStatus("connected");
+        const ir = await fetch(trimmed + "/api/inicializar", { headers: { "bypass-tunnel-reminder":"true" } });
+        const id = await ir.json();
+        if (id.ok) { setApiObjetivos(id.objetivos); setApiVigiladores(id.vigiladores); }
+      } else { setApiStatus("error"); }
+    } catch { setApiStatus("error"); }
+  };
+
   // ref para evitar stale closure en el setTimeout de sincronización
   const queueRef = useRef(queue);
   useEffect(() => { queueRef.current = queue; }, [queue]);
@@ -272,6 +303,8 @@ function AppProvider({ children }) {
       rondasGuardadas, ticketsActivos, liveFeed,
       kpis, offline, queue, syncing, syncMsg,
       pushRonda, toggleOffline, closeTicket, nextTicketId, ticketSeq,
+      apiUrl, apiStatus, currentUser, setCurrentUser,
+      apiObjetivos, apiVigiladores, apiFetch, setAndTestApiUrl,
     }}>
       {children}
     </AppContext.Provider>
@@ -404,10 +437,72 @@ function queueRef_fallback(q) {
 }
 
 /* ═══════════════════════════════════════════════════
+   BARRA DE CONFIGURACIÓN DE API
+═══════════════════════════════════════════════════ */
+function ApiConfigBar() {
+  const { apiStatus, setAndTestApiUrl } = useContext(AppContext);
+  const [input, setInput] = useState("");
+
+  const S = {
+    unconfigured: { dot:"⚪", text:"Sin configurar — pegá la URL del túnel",   cls:"#64748b" },
+    connecting:   { dot:"🟡", text:"Conectando…",                               cls:"#eab308" },
+    connected:    { dot:"🟢", text:"Conectado al servidor real (PostgreSQL)",    cls:"#22c55e" },
+    error:        { dot:"🔴", text:"No se pudo conectar — verificá la URL",      cls:"#ef4444" },
+  }[apiStatus];
+
+  return (
+    <div style={{ background:"#0f172a", borderBottom:"1px solid #1e293b", padding:"10px 16px", width:"100%", maxWidth:"422px", margin:"0 auto" }}>
+      <p style={{ fontSize:"9px", color:"#475569", fontWeight:"700", textTransform:"uppercase", letterSpacing:".12em", marginBottom:"6px" }}>
+        Servidor ASI — URL del Túnel
+      </p>
+      <div style={{ display:"flex", gap:"8px" }}>
+        <input value={input} onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && setAndTestApiUrl(input)}
+          placeholder="https://quick-garlics-lose.loca.lt"
+          style={{ flex:1, background:"#1e293b", border:"1px solid #334155", borderRadius:"8px", padding:"7px 10px", color:"white", fontSize:"11px", outline:"none", fontFamily:"monospace" }} />
+        <button onClick={() => setAndTestApiUrl(input)}
+          disabled={apiStatus === "connecting"}
+          style={{ background:"#2563eb", color:"white", border:"none", borderRadius:"8px", padding:"7px 14px", fontWeight:"700", fontSize:"11px", cursor:"pointer", whiteSpace:"nowrap", opacity: apiStatus==="connecting" ? .6 : 1 }}>
+          {apiStatus === "connecting" ? "…" : "Conectar"}
+        </button>
+      </div>
+      <p style={{ fontSize:"10px", marginTop:"5px", color: S.cls, fontWeight:"600" }}>{S.dot} {S.text}</p>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
    LOGIN
 ═══════════════════════════════════════════════════ */
 function LoginScreen({ onLogin }) {
-  const [sel, setSel] = useState(null);
+  const [sel,     setSel]     = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error,   setError]   = useState(null);
+  const { apiStatus, apiFetch, setCurrentUser } = useContext(AppContext);
+
+  const CRED = {
+    supervisor: { username:"supervisor1", password:"123456" },
+    admin:      { username:"admin1",      password:"123456" },
+    dueno:      { username:"dueno1",      password:"123456" },
+  };
+
+  const handleLogin = async () => {
+    if (!sel) return;
+    setError(null);
+    if (apiStatus === "connected") {
+      setLoading(true);
+      try {
+        const res  = await apiFetch("/api/login", { method:"POST", body: JSON.stringify(CRED[sel]) });
+        const data = await res.json();
+        if (data.ok) { setCurrentUser(data.usuario); onLogin(sel); }
+        else         { setError(data.mensaje || "Credenciales incorrectas."); }
+      } catch { setError("Error de red. Verificá la URL del servidor."); }
+      finally  { setLoading(false); }
+    } else {
+      onLogin(sel);
+    }
+  };
+
   const roles = [
     { id:"supervisor", icon:"👮", label:"Supervisor de Campo",  desc:"Gestión de rondas y actas digitales",   grad:"from-blue-600 to-blue-700",   bord:"border-blue-500",  bg:"bg-blue-500/10"  },
     { id:"admin",      icon:"📋", label:"Administrativo",        desc:"Control de incidencias y resoluciones", grad:"from-purple-600 to-purple-700",bord:"border-purple-500",bg:"bg-purple-500/10"},
@@ -442,11 +537,12 @@ function LoginScreen({ onLogin }) {
           </button>
         ))}
       </div>
-      <button disabled={!sel} onClick={() => sel && onLogin(sel)}
-        className={`w-full py-5 rounded-2xl font-black text-lg tracking-wide transition-all duration-200 btn-tap ${sel ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-900/50" : "bg-gray-800 text-gray-600 cursor-not-allowed"}`}>
-        {sel ? "INGRESAR AL SISTEMA  →" : "Seleccioná un rol primero"}
+      {error && <div className="bg-red-950/60 border border-red-800 rounded-xl p-3 text-red-400 text-xs font-semibold anim-up">{error}</div>}
+      <button disabled={!sel || loading} onClick={handleLogin}
+        className={`w-full py-5 rounded-2xl font-black text-lg tracking-wide transition-all duration-200 btn-tap ${sel && !loading ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-900/50" : "bg-gray-800 text-gray-600 cursor-not-allowed"}`}>
+        {loading ? "Autenticando…" : sel ? "INGRESAR AL SISTEMA  →" : "Seleccioná un rol primero"}
       </button>
-      <p className="text-center text-xs text-gray-700 mt-5">v2.5.0 · Sistema ASI · Estado global reactivo</p>
+      <p className="text-center text-xs text-gray-700 mt-5">v3.0.0 · Sistema ASI · Conectado a PostgreSQL</p>
     </div>
   );
 }
@@ -570,9 +666,19 @@ function Step2({ onNext, setRD }) {
   const [legajo, setLegajo] = useState("");
   const [guard,  setGuard]  = useState(null);
   const [tab,    setTab]    = useState("datos");
+  const { apiStatus, apiVigiladores } = useContext(AppContext);
   const dL = useMemo(() => Math.ceil((new Date(MOCK_GUARD.credencial.vencimiento) - new Date()) / 86400000), []);
 
   const buscar = () => {
+    // Try API vigiladores first when connected
+    if (apiStatus === "connected" && apiVigiladores.length > 0) {
+      const found = apiVigiladores.find(v => String(v.legajo) === legajo.trim());
+      if (found) {
+        const g = { ...MOCK_GUARD, legajo: found.legajo, nombre: found.nombre, _dbId: found.id };
+        setGuard(g); setRD(p => ({ ...p, vigilador: g }));
+      } else { setGuard("nf"); }
+      return;
+    }
     if (legajo.trim() === "1024") { setGuard(MOCK_GUARD); setRD(p => ({ ...p, vigilador: MOCK_GUARD })); }
     else setGuard("nf");
   };
@@ -732,7 +838,7 @@ function Step3({ onNext, setRD }) {
    SUPERVISOR — PASO 4: Firma + GUARDAR (impacta estado global)
 ═══════════════════════════════════════════════════ */
 function Step4({ onFinish, roundData }) {
-  const { pushRonda, offline } = useContext(AppContext);
+  const { pushRonda, offline, apiStatus, apiFetch, currentUser, apiObjetivos, apiVigiladores } = useContext(AppContext);
   const cvRef    = useRef(null);
   const drawing  = useRef(false);
   const last     = useRef(null);
@@ -764,6 +870,36 @@ function Step4({ onFinish, roundData }) {
       objetivo:       roundData.objetivo,
     });
     setSaveStatus(status);
+
+    // Fire real API save in background when online+connected
+    if (apiStatus === "connected" && !offline && currentUser) {
+      const objDB  = apiObjetivos.find(o => o.nombre === roundData.objetivo) || apiObjetivos[0];
+      const vigDB  = apiVigiladores.find(v => v.legajo === roundData.vigilador?.legajo) || apiVigiladores[0];
+      if (objDB && vigDB) {
+        const items = roundData.checklistItems || [];
+        apiFetch("/api/rondas", {
+          method: "POST",
+          body: JSON.stringify({
+            supervisor_id:       currentUser.id,
+            objetivo_id:         objDB.id,
+            vigilador_id:        vigDB.id,
+            en_geocerca:         roundData.gpsStatus === "inside",
+            justificacion_fuera: roundData.justificacion || null,
+            firma_base64:        cvRef.current ? cvRef.current.toDataURL() : null,
+            sincronizado_offline: false,
+            checklist: items.map(i => ({
+              pregunta:   i.label,
+              categoria:  i.estado === "B" ? "Bueno" : i.estado === "R" ? "Regular" : "Malo",
+              observacion: i.otra || null,
+            })),
+            incidencias: items.filter(i => i.ticket).map(i => ({
+              categoria:   getArea(i.fallas),
+              descripcion: i.fallas[0] || i.otra || i.label,
+            })),
+          }),
+        }).catch(e => console.warn("API ronda error:", e));
+      }
+    }
   };
 
   const canSave    = hasSig || neg;
@@ -901,10 +1037,51 @@ function SupervisorPanel({ onLogout }) {
    PANEL ADMINISTRADOR — lee ticketsActivos del contexto global
 ═══════════════════════════════════════════════════ */
 function AdminPanel({ onLogout }) {
-  const { ticketsActivos, closeTicket } = useContext(AppContext);
+  const { ticketsActivos: ctxTickets, closeTicket: ctxClose, apiStatus, apiFetch } = useContext(AppContext);
+  const [apiTickets, setApiTickets] = useState(null);
   const [sel,    setSel]    = useState(null);
   const [resol,  setResol]  = useState("");
   const [filter, setFilter] = useState("all");
+  const [loadingTickets, setLoadingTickets] = useState(false);
+
+  const ticketsActivos = apiStatus === "connected" && apiTickets !== null ? apiTickets : ctxTickets;
+
+  useEffect(() => {
+    if (apiStatus !== "connected") return;
+    setLoadingTickets(true);
+    apiFetch("/api/tickets").then(r => r.json()).then(data => {
+      if (!data.ok) return;
+      const AC_MAP = { RRHH:"blue", Mantenimiento:"yellow", Operaciones:"green", Logística:"orange" };
+      setApiTickets(data.tickets.map(t => ({
+        id:         t.codigo_ticket,
+        _dbId:      t.id,
+        obj:        t.objetivo,
+        sup:        t.supervisor,
+        sev:        "Regular",
+        area:       t.categoria || "Operaciones",
+        estado:     t.estado === "ABIERTO" ? "Activo" : "Cerrado",
+        desc:       t.descripcion,
+        fecha:      new Date(t.fecha_creacion).toLocaleString("es-AR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" }),
+        isNew:      false,
+        resolucion: t.resolucion,
+      })));
+    }).catch(e => console.warn("tickets fetch:", e))
+      .finally(() => setLoadingTickets(false));
+  }, [apiStatus]);
+
+  const closeTicket = async (id, resolucion) => {
+    if (apiStatus === "connected") {
+      const tk = ticketsActivos.find(t => t.id === id);
+      if (tk?._dbId) {
+        try {
+          await apiFetch(`/api/tickets/${tk._dbId}/resolver`, { method:"PATCH", body: JSON.stringify({ resolucion }) });
+        } catch (e) { console.warn("close ticket error:", e); }
+      }
+      setApiTickets(ts => ts.map(t => t.id === id ? { ...t, estado:"Cerrado", resolucion, isNew:false } : t));
+    } else {
+      ctxClose(id, resolucion);
+    }
+  };
 
   const stats = {
     crit: ticketsActivos.filter(i => i.sev === "Malo"    && i.estado === "Activo").length,
@@ -1029,7 +1206,34 @@ function AdminPanel({ onLogout }) {
    PANEL DUEÑO — KPIs 100% reactivos al estado global
 ═══════════════════════════════════════════════════ */
 function OwnerPanel({ onLogout }) {
-  const { kpis, liveFeed } = useContext(AppContext);
+  const { kpis: ctxKpis, liveFeed, apiStatus, apiFetch } = useContext(AppContext);
+  const [apiKpis, setApiKpis] = useState(null);
+  const kpis = apiStatus === "connected" && apiKpis ? apiKpis : ctxKpis;
+
+  useEffect(() => {
+    if (apiStatus !== "connected") return;
+    apiFetch("/api/kpis").then(r => r.json()).then(data => {
+      if (!data.ok) return;
+      const k = data.kpis;
+      const byObj = k.cumplimiento_objetivos || [];
+      const barrios    = byObj.filter(o => /barrio|alameda|pinos|alerces/i.test(o.nombre));
+      const industrias = byObj.filter(o => /industria|metalurg|agroexport|pacheco/i.test(o.nombre));
+      const locales    = byObj.filter(o => /local|shopping|corrientes|deposito|logistic/i.test(o.nombre));
+      const sum = arr => arr.reduce((a, o) => a + parseInt(o.rondas_realizadas), 0);
+      setApiKpis({
+        visitas:     k.total_rondas_mes,
+        metaVisitas: 180,
+        criticas:    k.tickets_criticos,
+        activas:     k.tickets_criticos,
+        cerradas:    0,
+        byTipo: {
+          Barrios:    { completadas: sum(barrios)    || k.total_rondas_mes, total: 72 },
+          Industrias: { completadas: sum(industrias) || 0,                  total: 48 },
+          Locales:    { completadas: sum(locales)    || 0,                  total: 60 },
+        },
+      });
+    }).catch(e => console.warn("kpis fetch:", e));
+  }, [apiStatus]);
 
   const objetivosKpi = [
     { nombre:"Barrios Privados",    completadas: kpis.byTipo.Barrios.completadas,    total: kpis.byTipo.Barrios.total,    color:"#3b82f6" },
@@ -1154,8 +1358,9 @@ function PhoneFrame({ children }) {
   useEffect(() => { const t = setInterval(() => setTime(new Date()), 30000); return () => clearInterval(t); }, []);
 
   return (
-    <div style={{ minHeight:"100vh", background:"#060c18", display:"flex", alignItems:"center", justifyContent:"center", padding:"16px" }}>
-      <div style={{ width:"100%", maxWidth:"390px" }}>
+    <div style={{ minHeight:"100vh", background:"#060c18", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"16px", paddingTop:"8px" }}>
+      <ApiConfigBar />
+      <div style={{ width:"100%", maxWidth:"390px", marginTop:"12px" }}>
         <div style={{ background:"#111827", borderRadius:"40px", overflow:"hidden", border:"1px solid #374151", boxShadow:"0 30px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.03),inset 0 1px 0 rgba(255,255,255,.05)", height:"780px", display:"flex", flexDirection:"column", position:"relative" }}>
           {/* Status bar del "teléfono" */}
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 24px 6px", background:"#111827", flexShrink:0 }}>
