@@ -138,14 +138,16 @@ function AppProvider({ children }) {
   const [apiUrl,       setApiUrl]       = useState("");
   const [apiStatus,    setApiStatus]    = useState("unconfigured"); // unconfigured|connecting|connected|error
   const [currentUser,  setCurrentUser]  = useState(null);
+  const [apiToken,     setApiToken]     = useState(null);
   const [apiObjetivos, setApiObjetivos] = useState([]);
   const [apiVigiladores, setApiVigiladores] = useState([]);
 
   const apiFetch = (path, opts = {}) => {
     const base = apiUrl.replace(/\/$/, "");
+    const authHeader = apiToken ? { "Authorization": `Bearer ${apiToken}` } : {};
     return fetch(base + path, {
       ...opts,
-      headers: { "Content-Type":"application/json", "bypass-tunnel-reminder":"true", ...(opts.headers||{}) },
+      headers: { "Content-Type":"application/json", "bypass-tunnel-reminder":"true", ...authHeader, ...(opts.headers||{}) },
     });
   };
 
@@ -304,6 +306,7 @@ function AppProvider({ children }) {
       kpis, offline, queue, syncing, syncMsg,
       pushRonda, toggleOffline, closeTicket, nextTicketId, ticketSeq,
       apiUrl, apiStatus, currentUser, setCurrentUser,
+      apiToken, setApiToken,
       apiObjetivos, apiVigiladores, apiFetch, setAndTestApiUrl,
     }}>
       {children}
@@ -478,7 +481,7 @@ function LoginScreen({ onLogin }) {
   const [sel,     setSel]     = useState(null);
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState(null);
-  const { apiStatus, apiFetch, setCurrentUser } = useContext(AppContext);
+  const { apiStatus, apiFetch, setCurrentUser, setApiToken } = useContext(AppContext);
 
   const CRED = {
     supervisor: { username:"supervisor1", password:"123456" },
@@ -494,7 +497,7 @@ function LoginScreen({ onLogin }) {
       try {
         const res  = await apiFetch("/api/login", { method:"POST", body: JSON.stringify(CRED[sel]) });
         const data = await res.json();
-        if (data.ok) { setCurrentUser(data.usuario); onLogin(sel); }
+        if (data.ok) { setApiToken(data.token); setCurrentUser(data.usuario); onLogin(sel); }
         else         { setError(data.mensaje || "Credenciales incorrectas."); }
       } catch { setError("Error de red. Verificá la URL del servidor."); }
       finally  { setLoading(false); }
@@ -1386,12 +1389,14 @@ function PhoneFrame({ children }) {
 ═══════════════════════════════════════════════════ */
 function AppInner() {
   const [role, setRole] = useState(null);
+  const { setCurrentUser, setApiToken } = useContext(AppContext);
+  const handleLogout = () => { setRole(null); setCurrentUser(null); setApiToken(null); };
   return (
     <PhoneFrame>
       {!role                  && <LoginScreen    onLogin={r => setRole(r)} />}
-      {role === "supervisor"  && <SupervisorPanel onLogout={() => setRole(null)} />}
-      {role === "admin"       && <AdminPanel      onLogout={() => setRole(null)} />}
-      {role === "dueno"       && <OwnerPanel      onLogout={() => setRole(null)} />}
+      {role === "supervisor"  && <SupervisorPanel onLogout={handleLogout} />}
+      {role === "admin"       && <AdminPanel      onLogout={handleLogout} />}
+      {role === "dueno"       && <OwnerPanel      onLogout={handleLogout} />}
     </PhoneFrame>
   );
 }
