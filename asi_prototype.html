@@ -1439,7 +1439,7 @@ function Step1({ rd, setRD, onNext }) {
           <Icon name="search" size={16} className="text-ink-faint" />
           <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar objetivo o dirección…"
             className="flex-1 bg-transparent outline-none text-sm font-semibold text-ink placeholder:text-ink-faint placeholder:font-medium min-w-0" />
-          {busca && <button onClick={() => setBusca("")} className="text-ink-faint p-0.5" aria-label="Limpiar"><Icon name="x" size={15} /></button>}
+          {busca && <button onClick={() => setBusca("")} className="text-ink-faint p-1.5" aria-label="Limpiar"><Icon name="x" size={15} /></button>}
         </div>
 
         {lista.length === 0 && <Empty icon="search" title="Sin resultados" sub="Probá con otro nombre o dirección." />}
