@@ -1,0 +1,3139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASI · Argentina Seguridad Integral</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink:   { DEFAULT:"#0f172a", soft:"#334155", mute:"#5b6b82", faint:"#94a3b8" },
+            brand: { 50:"#eff6ff",100:"#dbeafe",200:"#bfdbfe",300:"#93c5fd",400:"#60a5fa",500:"#3b82f6",600:"#2563eb",700:"#1d4ed8",800:"#1e40af" },
+            aqua:  { 50:"#f0f9ff",100:"#e0f2fe",200:"#bae6fd",300:"#7dd3fc",400:"#38bdf8",500:"#0ea5e9" },
+            good:  { DEFAULT:"#10b981", soft:"#d1fae5", ink:"#065f46" },
+            warn:  { DEFAULT:"#f59e0b", soft:"#fef3c7", ink:"#92400e" },
+            bad:   { DEFAULT:"#f43f5e", soft:"#ffe4e6", ink:"#9f1239" },
+            plum:  { DEFAULT:"#8b5cf6", soft:"#ede9fe", ink:"#5b21b6" },
+            tang:  { DEFAULT:"#f97316", soft:"#ffedd5", ink:"#9a3412" },
+          },
+          fontFamily: { sans: ["Inter","system-ui","-apple-system","sans-serif"] },
+          borderRadius: { clay:"22px", clay2:"28px", clay3:"34px" },
+        }
+      }
+    }
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: "Inter", system-ui, sans-serif; background: #dbe9fa; color: #0f172a; -webkit-font-smoothing: antialiased; }
+    #root { min-height: 100vh; }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
+    input, textarea, select { font-family: inherit; }
+    .tnum { font-variant-numeric: tabular-nums; }
+
+    /* ── Scrollbar suave ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #bfd4ee; border-radius: 6px; }
+
+    /* ═══════ CLAYMORPHISM — superficies ═══════ */
+    .clay {
+      background: #ffffff;
+      border-radius: 22px;
+      box-shadow:
+        8px 8px 18px rgba(37,99,235,.10),
+        -6px -6px 14px rgba(255,255,255,.95),
+        inset -1px -1px 2px rgba(191,219,254,.30),
+        inset 1px 1px 2px rgba(255,255,255,.90);
+    }
+    .clay-sm {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 5px 5px 12px rgba(37,99,235,.09), -4px -4px 10px rgba(255,255,255,.92);
+    }
+    .clay-inset {
+      background: #eef5fd;
+      border-radius: 18px;
+      box-shadow:
+        inset 5px 5px 11px rgba(37,99,235,.11),
+        inset -5px -5px 11px rgba(255,255,255,.95);
+    }
+    .clay-tint {
+      border-radius: 22px;
+      box-shadow: 7px 7px 16px rgba(37,99,235,.10), -5px -5px 12px rgba(255,255,255,.85);
+    }
+
+    /* ═══════ CLAYMORPHISM — botones "apretables" ═══════ */
+    .clay-btn {
+      border-radius: 18px;
+      transition: transform .18s cubic-bezier(.34,1.4,.64,1), box-shadow .18s ease, background-color .18s ease, color .18s ease;
+      box-shadow: 6px 6px 14px rgba(37,99,235,.13), -4px -4px 11px rgba(255,255,255,.92);
+    }
+    .clay-btn:active:not(:disabled) {
+      transform: translateY(2px) scale(.982);
+      box-shadow: inset 4px 4px 10px rgba(15,23,42,.16), inset -3px -3px 8px rgba(255,255,255,.35);
+    }
+    .clay-btn:disabled { cursor: not-allowed; box-shadow: 3px 3px 8px rgba(37,99,235,.07), -2px -2px 6px rgba(255,255,255,.8); }
+    .clay-btn:focus-visible, .focus-ring:focus-visible {
+      outline: 3px solid #2563eb; outline-offset: 3px;
+    }
+    .clay-press { transition: transform .18s cubic-bezier(.34,1.4,.64,1), box-shadow .18s ease; }
+    .clay-press:active { transform: translateY(1px) scale(.985); }
+
+    /* ═══════ Animaciones ═══════ */
+    @keyframes fadeIn   { from { opacity:0 } to { opacity:1 } }
+    @keyframes slideUp  { from { opacity:0; transform: translateY(18px) } to { opacity:1; transform:none } }
+    @keyframes slideDn  { from { opacity:0; transform: translateY(-14px) } to { opacity:1; transform:none } }
+    @keyframes sheetUp  { from { transform: translateY(100%) } to { transform: translateY(0) } }
+    @keyframes popIn    { 0% { transform: scale(.7); opacity:0 } 70% { transform: scale(1.07) } 100% { transform: scale(1); opacity:1 } }
+    @keyframes spin     { to { transform: rotate(360deg) } }
+    @keyframes breathe  { 0%,100% { opacity:1 } 50% { opacity:.35 } }
+    @keyframes shimmer  { 0% { background-position: -420px 0 } 100% { background-position: 420px 0 } }
+    .a-fade  { animation: fadeIn .32s ease both }
+    .a-up    { animation: slideUp .42s cubic-bezier(.22,1,.36,1) both }
+    .a-dn    { animation: slideDn .34s cubic-bezier(.22,1,.36,1) both }
+    .a-sheet { animation: sheetUp .38s cubic-bezier(.22,1,.36,1) both }
+    .a-pop   { animation: popIn .46s cubic-bezier(.34,1.56,.64,1) both }
+    .a-spin  { animation: spin .9s linear infinite; display:inline-block }
+    .a-pulse { animation: breathe 1.9s ease-in-out infinite }
+    .skeleton {
+      background: linear-gradient(90deg, #e3edfa 25%, #f3f8ff 50%, #e3edfa 75%);
+      background-size: 840px 100%;
+      animation: shimmer 1.5s infinite linear;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+
+    /* ═══════ Utilidades ═══════ */
+    .scroll-y { height: 100%; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+    .sig-canvas { cursor: crosshair; display: block; touch-action: none; }
+    .no-select { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    .stripe-bg {
+      background-image: linear-gradient(135deg, rgba(37,99,235,.05) 25%, transparent 25%, transparent 50%, rgba(37,99,235,.05) 50%, rgba(37,99,235,.05) 75%, transparent 75%);
+      background-size: 14px 14px;
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useMemo, useCallback, useContext, createContext } = React;
+
+/* ═══════════════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════════════ */
+const cx = (...a) => a.filter(Boolean).join(" ");
+
+const fmtFecha = (d) => new Date(d).toLocaleDateString("es-AR", { day:"2-digit", month:"2-digit", year:"numeric" });
+const fmtHora  = (d) => new Date(d).toLocaleTimeString("es-AR", { hour:"2-digit", minute:"2-digit" });
+const fmtLargo = (d) => new Date(d).toLocaleDateString("es-AR", { weekday:"long", day:"numeric", month:"long", year:"numeric" });
+
+const diasHasta = (fecha) => fecha ? Math.ceil((new Date(fecha) - new Date()) / 86400000) : null;
+
+const iniciales = (nombre = "") => nombre.trim().split(/\s+/).slice(0, 2).map(w => w[0] || "").join("").toUpperCase();
+
+const cortar = (t = "", n = 24) => t.length > n ? t.slice(0, n - 1) + "…" : t;
+
+/* Distancia Haversine en metros — usada para validar el geocerco contra la posición real del dispositivo */
+function distanciaMetros(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const toRad = (d) => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/* Hook: posición real del dispositivo vía navigator.geolocation (PRD §2 — validación de geocerco) */
+function useDeviceGeolocation() {
+  const [coords, setCoords] = useState(null);
+  const [error, setError]   = useState(null);
+  const [seq, setSeq]       = useState(0); // fuerza reintento
+
+  useEffect(() => {
+    if (!navigator.geolocation) { setError("unsupported"); return; }
+    setError(null);
+    const id = navigator.geolocation.watchPosition(
+      (pos) => {
+        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+        setError(null);
+      },
+      (err) => setError(err.code === 1 ? "denied" : err.code === 2 ? "unavailable" : "timeout"),
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+    );
+    return () => navigator.geolocation.clearWatch(id);
+  }, [seq]);
+
+  return { coords, error, reintentar: () => setSeq((s) => s + 1) };
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DATOS SEMILLA — funcionan sin backend (modo demo)
+   Reflejan el mismo shape que devuelve GET /api/inicializar
+═══════════════════════════════════════════════════════════ */
+const SEED_OBJETIVOS = [
+  { id:1, nombre:"Barrio Privado La Alameda",      tipo:"Barrios",    subtipo:"barrio_multipuesto", modalidad:"multipuesto", direccion:"Ruta 8 km 42, Pilar",           lat:-34.4589, lng:-58.9142, radio_geocerca_m:400, visitas_meta_mes:8,  visitas_mes:5 },
+  { id:2, nombre:"Barrio Privado Los Pinos",       tipo:"Barrios",    subtipo:"barrio_unipersonal", modalidad:"unipersonal", direccion:"Av. Los Pinos 1200, Escobar",   lat:-34.3487, lng:-58.7934, radio_geocerca_m:250, visitas_meta_mes:6,  visitas_mes:4 },
+  { id:3, nombre:"Industria Metalúrgica Del Sur",  tipo:"Industrias", subtipo:"industria",          modalidad:"multipuesto", direccion:"Parque Ind. Norte, Malvinas",   lat:-34.5012, lng:-58.7021, radio_geocerca_m:500, visitas_meta_mes:10, visitas_mes:7 },
+  { id:4, nombre:"Industria Agroexport SA",        tipo:"Industrias", subtipo:"industria",          modalidad:"multipuesto", direccion:"Ruta 9 km 61, Campana",         lat:-34.1634, lng:-58.9591, radio_geocerca_m:500, visitas_meta_mes:6,  visitas_mes:2 },
+  { id:5, nombre:"Local Comercial Av. Corrientes", tipo:"Locales",    subtipo:"local_comercial",    modalidad:"unipersonal", direccion:"Av. Corrientes 2450, CABA",     lat:-34.6037, lng:-58.3968, radio_geocerca_m:120, visitas_meta_mes:12, visitas_mes:9 },
+  { id:6, nombre:"Shopping Norte",                 tipo:"Locales",    subtipo:"local_comercial",    modalidad:"multipuesto", direccion:"Av. Cabildo 3100, CABA",        lat:-34.5567, lng:-58.4614, radio_geocerca_m:200, visitas_meta_mes:8,  visitas_mes:6 },
+  { id:7, nombre:"Corporativo Torre Madero",       tipo:"Locales",    subtipo:"empresa_oficinas",   modalidad:"unipersonal", direccion:"Juana Manso 1150, Pto. Madero", lat:-34.6098, lng:-58.3627, radio_geocerca_m:150, visitas_meta_mes:6,  visitas_mes:3 },
+  { id:8, nombre:"Barrio Demo Cercano",             tipo:"Barrios",    subtipo:"barrio_unipersonal",  modalidad:"unipersonal", direccion:"Mendoza, Argentina (ubicación de prueba)", lat:-32.93945, lng:-68.85075, radio_geocerca_m:500, visitas_meta_mes:4,  visitas_mes:0 },
+];
+
+const SEED_VIGILADORES = [
+  { id:1, legajo:1024, nombre:"Carlos Alberto Rodríguez", dni:"28.541.730", puesto:"Vigilador Nocturno B", estado:"activo",
+    credencial_numero:"CR-4521-B", credencial_venc:"2026-08-15", es_chofer:true,  licencia_cat:"B2", licencia_venc:"2027-03-10", armado:false,
+    telefono:"11-5423-9087", domicilio:"Av. Rivadavia 8842, CABA", fecha_nacimiento:"1981-04-22", nacionalidad:"Argentina", convenio:"UPSRA", tiene_radio:true,
+    objetivo_asignado:"Barrio Privado La Alameda" },
+  { id:2, legajo:1087, nombre:"Miguel Ángel Sosa", dni:"31.208.446", puesto:"Vigilador Diurno A", estado:"activo",
+    credencial_numero:"MS-4890-A", credencial_venc:"2026-09-02", es_chofer:false, licencia_cat:null, licencia_venc:null, armado:false,
+    telefono:"11-6012-3345", domicilio:"Belgrano 455, Pilar", fecha_nacimiento:"1985-11-08", nacionalidad:"Argentina", convenio:"UPSRA", tiene_radio:true,
+    objetivo_asignado:"Barrio Privado La Alameda" },
+  { id:3, legajo:1153, nombre:"Jorge Luis Benítez", dni:"26.774.219", puesto:"Jefe de Puesto", estado:"activo",
+    credencial_numero:"JB-3312-C", credencial_venc:"2026-08-04", es_chofer:true,  licencia_cat:"D1", licencia_venc:"2026-08-20", armado:true,
+    telefono:"11-4477-2210", domicilio:"San Martín 1290, Escobar", fecha_nacimiento:"1978-02-14", nacionalidad:"Argentina", convenio:"UPSRA", tiene_radio:true,
+    objetivo_asignado:"Industria Metalúrgica Del Sur" },
+  { id:4, legajo:1201, nombre:"Néstor Fabián Quiroga", dni:"33.901.556", puesto:"Vigilador Nocturno C", estado:"suspendido",
+    credencial_numero:"NQ-5104-B", credencial_venc:"2027-01-30", es_chofer:false, licencia_cat:null, licencia_venc:null, armado:false,
+    telefono:"11-3388-9921", domicilio:"Mitre 733, Campana", fecha_nacimiento:"1988-07-30", nacionalidad:"Argentina", convenio:"UPSRA", tiene_radio:false,
+    objetivo_asignado:"Local Comercial Av. Corrientes" },
+];
+
+const SEED_HISTORIAL = {
+  1024: [
+    { tipo:"Acta",    descripcion:"Demora de 22 min en inicio de turno",          fecha:"2026-05-12" },
+    { tipo:"Sanción", descripcion:"Uniforme incompleto — sin chaleco reflectivo", fecha:"2026-03-08" },
+    { tipo:"Acta",    descripcion:"Ausencia sin aviso previo",                    fecha:"2025-11-20" },
+  ],
+  1153: [{ tipo:"Acta", descripcion:"Observación por libro de guardia incompleto", fecha:"2026-06-02" }],
+  1201: [{ tipo:"Sanción", descripcion:"Abandono de puesto durante el turno noche", fecha:"2026-06-28" }],
+};
+
+const SEED_SANCIONES = {
+  1024: [{ descripcion:"Apercibimiento escrito por uniforme incompleto", estado:"cumplida", fecha:"2026-03-10" }],
+  1153: [{ descripcion:"Llamado de atención por libro de guardia",       estado:"apelada",  fecha:"2026-06-05" }],
+  1201: [{ descripcion:"Suspensión 3 días por abandono de puesto",       estado:"activa",   fecha:"2026-06-30" }],
+};
+
+/* ── Secciones del checklist (PRD §3.3) ── */
+const SEED_SECCIONES = [
+  { id:1, clave:"seguridad",   nombre:"Elementos de seguridad",      color:"azul",    orden:1 },
+  { id:2, clave:"habilidades", nombre:"Comprobación de habilidades", color:"verde",   orden:2 },
+  { id:3, clave:"logistica",   nombre:"Logística / Infraestructura", color:"naranja", orden:3 },
+  { id:4, clave:"rrhh",        nombre:"RRHH / Personal",             color:"rojo",    orden:4 },
+];
+
+const TODOS_TIPOS = ["barrio_multipuesto","barrio_unipersonal","local_comercial","industria","empresa_oficinas"];
+
+const SEED_CHECKLIST = [
+  { id:1,  seccion_clave:"seguridad",   titulo_corto:"Uniforme completo",             area_responsable:"Supervisión",   tipos_objetivo:TODOS_TIPOS, orden:1,
+    criterio_completo:"Verificar camisa con identificación de la empresa, pantalón reglamentario, chaleco reflectante y calzado de seguridad en buen estado." },
+  { id:2,  seccion_clave:"seguridad",   titulo_corto:"Credencial visible y vigente",  area_responsable:"RRHH",          tipos_objetivo:TODOS_TIPOS, orden:2,
+    criterio_completo:"La credencial habilitante debe estar a la vista, en buen estado y con fecha de vencimiento posterior al día de la inspección." },
+  { id:3,  seccion_clave:"seguridad",   titulo_corto:"Elementos reglamentarios",      area_responsable:"Logística",     tipos_objetivo:["barrio_multipuesto","barrio_unipersonal","industria"], orden:3,
+    criterio_completo:"Linterna con carga suficiente, radio operativa con batería, bastón retráctil y silbato según corresponda al puesto." },
+  { id:4,  seccion_clave:"seguridad",   titulo_corto:"Elementos de protección personal", area_responsable:"Logística",  tipos_objetivo:["industria"], orden:4,
+    criterio_completo:"EPP acorde al riesgo del objetivo: guantes, calzado con puntera, casco o chaleco antibalas si el contrato lo requiere." },
+
+  { id:5,  seccion_clave:"habilidades", titulo_corto:"Protocolo de emergencia",       area_responsable:"Operaciones",   tipos_objetivo:TODOS_TIPOS, orden:1,
+    criterio_completo:"El vigilador debe describir correctamente los pasos ante incendio, robo o emergencia médica, y los teléfonos de contacto." },
+  { id:6,  seccion_clave:"habilidades", titulo_corto:"Manejo de radio",               area_responsable:"Operaciones",   tipos_objetivo:["barrio_multipuesto","barrio_unipersonal","industria"], orden:2,
+    criterio_completo:"Verificar que sabe encender, cambiar de canal, emitir y responder comunicaciones usando el código operativo de la empresa." },
+  { id:7,  seccion_clave:"habilidades", titulo_corto:"Procedimiento ante intrusión",  area_responsable:"Operaciones",   tipos_objetivo:TODOS_TIPOS, orden:3,
+    criterio_completo:"Debe explicar la secuencia: no confrontar, dar aviso por radio, registrar características y esperar refuerzos policiales." },
+  { id:8,  seccion_clave:"habilidades", titulo_corto:"Identificación de zonas de riesgo", area_responsable:"Operaciones", tipos_objetivo:["barrio_multipuesto","industria","empresa_oficinas"], orden:4,
+    criterio_completo:"Reconoce los puntos ciegos, accesos vulnerables y sectores restringidos del objetivo donde presta servicio." },
+  { id:9,  seccion_clave:"habilidades", titulo_corto:"Protocolo de control de acceso", area_responsable:"Operaciones",  tipos_objetivo:["local_comercial","empresa_oficinas"], orden:5,
+    criterio_completo:"Verificar que aplica correctamente el registro de visitas, identificación de proveedores y autorización previa de ingresos." },
+
+  { id:10, seccion_clave:"logistica",   titulo_corto:"Estado del móvil",              area_responsable:"Logística",     tipos_objetivo:["barrio_multipuesto","industria"], orden:1,
+    criterio_completo:"Kilometraje registrado, nivel de combustible, luces, cubiertas y ausencia de daños nuevos en la carrocería." },
+  { id:11, seccion_clave:"logistica",   titulo_corto:"Cámaras activas",               area_responsable:"Mantenimiento", tipos_objetivo:TODOS_TIPOS, orden:2,
+    criterio_completo:"Todas las cámaras del objetivo deben mostrar imagen en vivo, sin pérdida de señal ni lentes obstruidos." },
+  { id:12, seccion_clave:"logistica",   titulo_corto:"DVR / NVR operativo",           area_responsable:"Mantenimiento", tipos_objetivo:TODOS_TIPOS, orden:3,
+    criterio_completo:"El grabador debe estar encendido, con espacio de almacenamiento disponible y grabando las últimas 24 horas." },
+  { id:13, seccion_clave:"logistica",   titulo_corto:"Botón de pánico",               area_responsable:"Mantenimiento", tipos_objetivo:["barrio_multipuesto","barrio_unipersonal","local_comercial","industria"], orden:4,
+    criterio_completo:"Probar el disparo del botón de pánico y confirmar recepción de la alarma en la central de monitoreo." },
+  { id:14, seccion_clave:"logistica",   titulo_corto:"Garitas y portones",            area_responsable:"Mantenimiento", tipos_objetivo:["barrio_multipuesto","barrio_unipersonal","industria"], orden:5,
+    criterio_completo:"Estructura de la garita en condiciones, iluminación perimetral funcionando y portones automáticos operativos." },
+
+  { id:15, seccion_clave:"rrhh",        titulo_corto:"Puntualidad",                   area_responsable:"RRHH",          tipos_objetivo:TODOS_TIPOS, orden:1,
+    criterio_completo:"Verificar que el vigilador ingresó en el horario pactado y que el relevo del turno anterior se realizó sin demoras." },
+  { id:16, seccion_clave:"rrhh",        titulo_corto:"Presentación personal",         area_responsable:"RRHH",          tipos_objetivo:TODOS_TIPOS, orden:2,
+    criterio_completo:"Higiene, afeitado, cabello prolijo y uniforme limpio y planchado acorde a la imagen institucional." },
+  { id:17, seccion_clave:"rrhh",        titulo_corto:"Estado de alerta",              area_responsable:"Supervisión",   tipos_objetivo:TODOS_TIPOS, orden:3,
+    criterio_completo:"El vigilador debe estar despierto, atento al entorno y sin usar el celular con fines personales durante la guardia." },
+  { id:18, seccion_clave:"rrhh",        titulo_corto:"Conducta y trato",              area_responsable:"RRHH",          tipos_objetivo:TODOS_TIPOS, orden:4,
+    criterio_completo:"Trato cordial y profesional con residentes, clientes y proveedores. Sin conflictos reportados en el turno." },
+  { id:19, seccion_clave:"rrhh",        titulo_corto:"Comunicación con supervisión",  area_responsable:"Supervisión",   tipos_objetivo:TODOS_TIPOS, orden:5,
+    criterio_completo:"Reportó novedades del turno, respondió a las comunicaciones y completó el libro de guardia correctamente." },
+];
+
+/* ── Ítems exclusivos de un objetivo: fuera de toda plantilla (tipos_objetivo vacío) ── */
+SEED_CHECKLIST.push(
+  { id:20, seccion_clave:"habilidades", titulo_corto:"Registro de visitas y proveedores", area_responsable:"Operaciones",   tipos_objetivo:[], orden:6,
+    criterio_completo:"El libro digital de visitas debe estar completo: nombre, DNI, empresa, piso de destino y horario de ingreso y egreso." },
+  { id:21, seccion_clave:"logistica",   titulo_corto:"Control de acceso a cocheras",      area_responsable:"Mantenimiento", tipos_objetivo:[], orden:6,
+    criterio_completo:"Verificar que la barrera vehicular responde al control remoto y que se registra la patente de cada vehículo que ingresa." },
+  { id:22, seccion_clave:"logistica",   titulo_corto:"Balanza y control de carga",        area_responsable:"Logística",     tipos_objetivo:[], orden:7,
+    criterio_completo:"La balanza de camiones debe estar calibrada y operativa, con registro de pesaje de cada salida de mercadería." },
+);
+
+/* ── Ajustes por objetivo: solo las diferencias contra la plantilla del tipo ── */
+const SEED_AJUSTES = [
+  { objetivo_id:6, item_id:10, incluido:true,  nota:"El objetivo tiene móvil de ronda asignado" },
+  { objetivo_id:6, item_id:14, incluido:true,  nota:"Accesos vehiculares en subsuelo" },
+  { objetivo_id:6, item_id:21, incluido:true,  nota:"Cochera de 400 lugares" },
+  { objetivo_id:7, item_id:20, incluido:true,  nota:"Exigido por el contrato" },
+  { objetivo_id:7, item_id:21, incluido:true,  nota:"Barrera vehicular en Juana Manso" },
+  { objetivo_id:4, item_id:22, incluido:true,  nota:"Salida de mercadería a granel" },
+  { objetivo_id:5, item_id:13, incluido:false, nota:"Depende del sistema del edificio, no del puesto" },
+  { objetivo_id:2, item_id:12, incluido:false, nota:"El monitoreo es externo, no hay grabador en el objetivo" },
+];
+
+/* ───────────────────────────────────────────────
+   Checklist efectivo de un objetivo.
+   Plantilla por tipo de servicio + las diferencias
+   propias del objetivo (quitar o sumar ítems).
+─────────────────────────────────────────────── */
+function resolverChecklist(objetivo, defs, ajustes) {
+  if (!objetivo) return [];
+  const sub    = objetivo.subtipo || "barrio_unipersonal";
+  const propios = new Map(
+    (ajustes || [])
+      .filter(a => String(a.objetivo_id) === String(objetivo.id))
+      .map(a => [String(a.item_id), a])
+  );
+
+  return defs.filter(d => {
+    const ajuste = propios.get(String(d.id));
+    if (ajuste) return ajuste.incluido;              // el objetivo decide explícitamente
+    return (d.tipos_objetivo || []).includes(sub);   // si no, manda la plantilla del tipo
+  });
+}
+
+/* ── Catálogo de observaciones predefinidas (PRD §4.1) ── */
+const SEED_OBSERVACIONES = [
+  { area:"Logística",     texto:"Sin elementos de protección personal" },
+  { area:"Logística",     texto:"Móvil sin combustible" },
+  { area:"Logística",     texto:"Cámara sin señal" },
+  { area:"Logística",     texto:"DVR apagado" },
+  { area:"Logística",     texto:"Linterna sin carga" },
+  { area:"Logística",     texto:"Radio sin batería" },
+  { area:"Supervisión",   texto:"Ausencia en puesto" },
+  { area:"Supervisión",   texto:"Abandono de guardia" },
+  { area:"Supervisión",   texto:"Uso de celular en horario" },
+  { area:"Supervisión",   texto:"Uniforme incompleto" },
+  { area:"Supervisión",   texto:"Falta de presentación" },
+  { area:"Operaciones",   texto:"No conoce protocolo de emergencia" },
+  { area:"Operaciones",   texto:"No sabe operar la radio" },
+  { area:"Operaciones",   texto:"Desconoce procedimiento de intrusión" },
+  { area:"Operaciones",   texto:"No identifica zona de riesgo" },
+  { area:"RRHH",          texto:"Trato inadecuado" },
+  { area:"RRHH",          texto:"Actitud negligente" },
+  { area:"RRHH",          texto:"Falta de comunicación" },
+  { area:"RRHH",          texto:"Reincidencia en falta ya sancionada" },
+  { area:"RRHH",          texto:"Negativa a firmar el acta de supervisión" },
+  { area:"Mantenimiento", texto:"Portón automático sin funcionar" },
+  { area:"Mantenimiento", texto:"Garita en mal estado" },
+  { area:"Mantenimiento", texto:"Iluminación perimetral apagada" },
+  { area:"Mantenimiento", texto:"Cerradura forzada" },
+];
+
+const SEED_TICKETS = [
+  { id:"INC-202607-0041", obj:"Barrio Privado La Alameda",      sup:"María González", val:"M", area:"RRHH",          estado:"Activo",  desc:"Uniforme incompleto en turno nocturno",   item:"Uniforme completo",       vig:"Carlos A. Rodríguez", fecha:"13/07 · 02:15", isNew:false },
+  { id:"INC-202607-0039", obj:"Industria Metalúrgica Del Sur",  sup:"Jorge Pérez",    val:"R", area:"Mantenimiento", estado:"Activo",  desc:"Cámara sin señal en acceso norte",        item:"Cámaras activas",         vig:"Jorge L. Benítez",    fecha:"12/07 · 23:45", isNew:false },
+  { id:"INC-202607-0038", obj:"Local Comercial Av. Corrientes", sup:"Ana Suárez",     val:"R", area:"Operaciones",   estado:"Activo",  desc:"Demora en protocolo de cierre",           item:"Protocolo de emergencia", vig:"Néstor F. Quiroga",   fecha:"12/07 · 21:30", isNew:false },
+  { id:"INC-202607-0035", obj:"Barrio Privado Los Pinos",       sup:"Carlos Méndez",  val:"M", area:"Logística",     estado:"Activo",  desc:"Vehículo de ronda con falla mecánica",    item:"Estado del móvil",        vig:"Miguel Á. Sosa",      fecha:"11/07 · 18:00", isNew:false },
+  { id:"INC-202607-0031", obj:"Industria Agroexport SA",        sup:"Roberto Silva",  val:"R", area:"Operaciones",   estado:"Cerrado", desc:"Punto de control sin confirmar en ronda", item:"Manejo de radio",         vig:"Jorge L. Benítez",    fecha:"10/07 · 14:22", isNew:false, resolucion:"Se reforzó la capacitación del puesto." },
+];
+
+const SEED_RONDAS = [
+  { id:"ACTA-20260713-000042", supervisor:"Jorge Pérez",  objetivo:"Industria Metalúrgica Del Sur",  tipo:"presencial", gpsStatus:"inside",  fecha:new Date(Date.now()-7200000),  tickets:[] },
+  { id:"ACTA-20260713-000041", supervisor:"Ana Suárez",   objetivo:"Local Comercial Av. Corrientes", tipo:"remota",     gpsStatus:"outside", fecha:new Date(Date.now()-18000000), tickets:["INC-202607-0038"] },
+];
+
+const SEED_FEED = [
+  { hora:"17:42", sup:"M. González", obj:"B.P. La Alameda",  tipo:"Presencial", ok:true,  isNew:false },
+  { hora:"17:15", sup:"J. Pérez",    obj:"Ind. Metalúrgica", tipo:"Remota",     ok:false, isNew:false },
+  { hora:"16:58", sup:"A. Suárez",   obj:"Local Corrientes", tipo:"Presencial", ok:true,  isNew:false },
+  { hora:"16:30", sup:"C. Méndez",   obj:"B.P. Los Pinos",   tipo:"Presencial", ok:true,  isNew:false },
+  { hora:"15:55", sup:"R. Silva",    obj:"Agroexport SA",    tipo:"Remota",     ok:false, isNew:false },
+];
+
+const BASE_VISITAS = 36; // rondas previas del mes (seed) para que el KPI arranque con historia
+
+/* ── Paletas por sección / área / severidad ── */
+const SECCION_THEME = {
+  azul:    { ink:"#1d4ed8", soft:"#dbeafe", chip:"bg-brand-100 text-brand-700", bar:"#3b82f6" },
+  verde:   { ink:"#047857", soft:"#d1fae5", chip:"bg-good-soft text-good-ink",  bar:"#10b981" },
+  naranja: { ink:"#c2410c", soft:"#ffedd5", chip:"bg-tang-soft text-tang-ink",  bar:"#f97316" },
+  rojo:    { ink:"#be123c", soft:"#ffe4e6", chip:"bg-bad-soft text-bad-ink",    bar:"#f43f5e" },
+};
+
+const AREA_THEME = {
+  "Logística":     { tone:"tang", label:"Logística" },
+  "Supervisión":   { tone:"brand",label:"Supervisión" },
+  "Operaciones":   { tone:"good", label:"Operaciones" },
+  "RRHH":          { tone:"plum", label:"RRHH" },
+  "Mantenimiento": { tone:"warn", label:"Mantenimiento" },
+};
+
+const VALOR = {
+  B: { label:"Bueno",   tone:"good", icon:"check",    desc:"Todo en orden" },
+  R: { label:"Regular", tone:"warn", icon:"alert",    desc:"Requiere observación" },
+  M: { label:"Malo",    tone:"bad",  icon:"x-circle", desc:"Incumplimiento detectado" },
+};
+
+const SUBTIPO_LABEL = {
+  barrio_multipuesto: "Barrio · Multipuesto",
+  barrio_unipersonal: "Barrio · Unipersonal",
+  local_comercial:    "Local comercial",
+  industria:          "Industria / Planta",
+  empresa_oficinas:   "Empresa / Oficinas",
+};
+
+/* ═══════════════════════════════════════════════════════════
+   ICONOS SVG (lucide-style, stroke 2, sin emojis)
+═══════════════════════════════════════════════════════════ */
+const ICON_PATHS = {
+  shield:      "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
+  "shield-ok": "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z|M9 12l2 2 4-4",
+  user:        "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2|M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
+  users:       "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2|M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z|M23 21v-2a4 4 0 0 0-3-3.87|M16 3.13a4 4 0 0 1 0 7.75",
+  "user-plus": "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2|M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z|M19 8v6|M22 11h-6",
+  clipboard:   "M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2|M9 2h6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z|M9 12h6|M9 16h4",
+  chart:       "M3 3v18h18|M7 15l4-5 3 3 5-7",
+  search:      "M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z|M21 21l-4.35-4.35",
+  wifi:        "M5 12.55a11 11 0 0 1 14 0|M8.5 16.1a6 6 0 0 1 7 0|M2 8.82a15 15 0 0 1 20 0|M12 20h.01",
+  "wifi-off":  "M1 1l22 22|M16.72 11.06A10.9 10.9 0 0 1 19 12.55|M5 12.55a10.9 10.9 0 0 1 5.17-2.39|M10.71 5.05A16 16 0 0 1 22 8.82|M1.42 9a15.9 15.9 0 0 1 4.7-2.88|M8.53 16.11a6 6 0 0 1 6.95 0|M12 20h.01",
+  pin:         "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z|M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
+  camera:      "M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z|M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
+  pen:         "M12 19l7-7 3 3-7 7-3-3z|M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z|M2 2l7.586 7.586|M11 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
+  check:       "M20 6L9 17l-5-5",
+  "check-circle":"M22 11.08V12a10 10 0 1 1-5.93-9.14|M22 4L12 14.01l-3-3",
+  x:           "M18 6L6 18|M6 6l12 12",
+  "x-circle":  "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z|M15 9l-6 6|M9 9l6 6",
+  alert:       "M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z|M12 9v4|M12 17h.01",
+  info:        "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z|M12 16v-4|M12 8h.01",
+  chevron:     "M6 9l6 6 6-6",
+  "chevron-r": "M9 18l6-6-6-6",
+  "arrow-r":   "M5 12h14|M12 5l7 7-7 7",
+  "arrow-l":   "M19 12H5|M12 19l-7-7 7-7",
+  logout:      "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4|M16 17l5-5-5-5|M21 12H9",
+  plus:        "M12 5v14|M5 12h14",
+  trash:       "M3 6h18|M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2|M10 11v6|M14 11v6",
+  refresh:     "M23 4v6h-6|M1 20v-6h6|M3.51 9a9 9 0 0 1 14.85-3.36L23 10|M1 14l4.64 4.36A9 9 0 0 0 20.49 15",
+  clock:       "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z|M12 6v6l4 2",
+  calendar:    "M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z|M16 2v4|M8 2v4|M3 10h18",
+  phone:       "M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z",
+  home:        "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z|M9 22V12h6v10",
+  badge:       "M12 15a7 7 0 1 0 0-14 7 7 0 0 0 0 14z|M8.21 13.89L7 23l5-3 5 3-1.21-9.12",
+  file:        "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z|M14 2v6h6|M16 13H8|M16 17H8|M10 9H8",
+  image:       "M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z|M8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z|M21 15l-5-5L5 21",
+  lock:        "M19 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2z|M7 11V7a5 5 0 0 1 10 0v4",
+  eye:         "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z|M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
+  "eye-off":   "M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94|M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19|M14.12 14.12a3 3 0 1 1-4.24-4.24|M1 1l22 22",
+  radio:       "M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z|M16.24 7.76a6 6 0 0 1 0 8.49|M7.76 16.24a6 6 0 0 1 0-8.49|M19.07 4.93a10 10 0 0 1 0 14.14|M4.93 19.07a10 10 0 0 1 0-14.14",
+  car:         "M5 17H3v-5l2-5h14l2 5v5h-2|M7 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4z|M17 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4z|M9 19h6|M5 12h14",
+  building:    "M3 21h18|M5 21V7l7-4 7 4v14|M9 9h.01|M15 9h.01|M9 13h.01|M15 13h.01|M10 21v-4h4v4",
+  store:       "M3 9l1-5h16l1 5|M3 9v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9|M3 9h18|M9 21v-6h6v6",
+  factory:     "M2 20h20V9l-6 4V9l-6 4V4H4l-2 16z|M8 20v-4|M14 20v-4",
+  filter:      "M22 3H2l8 9.46V19l4 2v-8.54z|",
+  trending:    "M23 6l-9.5 9.5-5-5L1 18|M17 6h6v6",
+  activity:    "M22 12h-4l-3 9L9 3l-3 9H2",
+  bolt:        "M13 2L3 14h9l-1 8 10-12h-9l1-8z",
+  gauge:       "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z|M12 12l4-4",
+  target:      "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z|M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12z|M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
+  cloud:       "M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z",
+  "cloud-off": "M22.61 16.95A5 5 0 0 0 18 10h-1.26a8 8 0 0 0-7.05-6M5 5a8 8 0 0 0 4 15h9a5 5 0 0 0 1.7-.3|M1 1l22 22",
+  layers:      "M12 2L2 7l10 5 10-5-10-5z|M2 17l10 5 10-5|M2 12l10 5 10-5",
+  settings:    "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z|M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z",
+  link:        "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71|M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71",
+  ticket:      "M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 6v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-6z|M13 5v2|M13 11v2|M13 17v2",
+  inbox:       "M22 12h-6l-2 3h-4l-2-3H2|M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z",
+  send:        "M22 2L11 13|M22 2l-7 20-4-9-9-4 20-7z",
+  save:        "M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z|M17 21v-8H7v8|M7 3v5h8",
+  stamp:       "M5 22h14|M5 18h14v-2a4 4 0 0 0-4-4h-1l.5-3a3 3 0 0 0-5 0l.5 3H9a4 4 0 0 0-4 4z",
+  minus:       "M5 12h14",
+};
+
+function Icon({ name, size = 20, className = "", strokeWidth = 2, fill = "none" }) {
+  const d = ICON_PATHS[name];
+  if (!d) return null;
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor"
+      strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"
+      className={cx("shrink-0", className)} aria-hidden="true" focusable="false">
+      {d.split("|").filter(Boolean).map((p, i) => <path key={i} d={p} />)}
+    </svg>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PRIMITIVAS CLAY
+═══════════════════════════════════════════════════════════ */
+function Clay({ children, className = "", inset = false, tint, as: Tag = "div", ...rest }) {
+  return (
+    <Tag className={cx(inset ? "clay-inset" : tint ? "clay-tint" : "clay", className)}
+      style={tint ? { background: tint, ...(rest.style || {}) } : rest.style} {...rest}>
+      {children}
+    </Tag>
+  );
+}
+
+const BTN_VARIANTS = {
+  primary: "bg-gradient-to-br from-brand-500 to-brand-700 text-white",
+  aqua:    "bg-gradient-to-br from-aqua-300 to-aqua-500 text-white",
+  success: "bg-gradient-to-br from-good to-emerald-600 text-white",
+  danger:  "bg-gradient-to-br from-bad to-rose-600 text-white",
+  warn:    "bg-gradient-to-br from-warn to-amber-500 text-white",
+  white:   "bg-white text-ink-soft",
+  soft:    "bg-brand-50 text-brand-700",
+  ghost:   "bg-transparent text-ink-mute shadow-none",
+};
+
+function Btn({ children, variant = "primary", size = "md", icon, iconRight, full, className = "", disabled, loading, ...rest }) {
+  const sizes = {
+    sm: "px-3.5 py-2.5 text-xs gap-1.5 rounded-[14px]",
+    md: "px-5 py-3.5 text-sm gap-2 rounded-[18px]",
+    lg: "px-6 py-4.5 text-base gap-2.5 rounded-[20px]",
+    xl: "px-6 py-5 text-lg gap-3 rounded-[22px]",
+  };
+  const dis = disabled || loading;
+  return (
+    <button disabled={dis}
+      className={cx(
+        "clay-btn inline-flex items-center justify-center font-bold tracking-tight no-select",
+        sizes[size], full && "w-full",
+        dis ? "bg-slate-200 text-slate-400" : BTN_VARIANTS[variant],
+        variant === "ghost" && "shadow-none",
+        className
+      )} {...rest}>
+      {loading ? <Icon name="refresh" size={17} className="a-spin" /> : icon ? <Icon name={icon} size={17} /> : null}
+      {children}
+      {iconRight && !loading && <Icon name={iconRight} size={17} />}
+    </button>
+  );
+}
+
+const TONE_CHIP = {
+  good:  "bg-good-soft  text-good-ink",
+  warn:  "bg-warn-soft  text-warn-ink",
+  bad:   "bg-bad-soft   text-bad-ink",
+  brand: "bg-brand-100  text-brand-700",
+  aqua:  "bg-aqua-100   text-sky-700",
+  plum:  "bg-plum-soft  text-plum-ink",
+  tang:  "bg-tang-soft  text-tang-ink",
+  gray:  "bg-slate-100  text-slate-600",
+};
+
+function Badge({ tone = "gray", children, icon, className = "" }) {
+  return (
+    <span className={cx("inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap", TONE_CHIP[tone] || TONE_CHIP.gray, className)}>
+      {icon && <Icon name={icon} size={12} strokeWidth={2.6} />}
+      {children}
+    </span>
+  );
+}
+
+function Dot({ tone = "good", pulse }) {
+  const c = { good:"bg-good", warn:"bg-warn", bad:"bg-bad", brand:"bg-brand-500", gray:"bg-slate-400" };
+  return <span className={cx("w-2 h-2 rounded-full shrink-0", c[tone], pulse && "a-pulse")} />;
+}
+
+/* ── Encabezado de sección ── */
+function SH({ title, sub, right }) {
+  return (
+    <div className="flex items-end justify-between gap-3 mb-1">
+      <div>
+        <h2 className="text-[21px] font-black text-ink tracking-tight leading-tight">{title}</h2>
+        {sub && <p className="text-xs text-ink-mute mt-1 leading-snug">{sub}</p>}
+      </div>
+      {right}
+    </div>
+  );
+}
+
+/* ── Etiqueta pequeña tipo overline ── */
+function Label({ children, className = "" }) {
+  return <p className={cx("text-[10px] font-black uppercase tracking-[.13em] text-ink-faint", className)}>{children}</p>;
+}
+
+/* ── Campo de texto clay ── */
+function Input({ label, icon, error, className = "", ...rest }) {
+  return (
+    <label className="block">
+      {label && <Label className="mb-1.5">{label}</Label>}
+      <div className={cx("clay-inset flex items-center gap-2.5 px-3.5 py-3 transition-shadow", error && "ring-2 ring-bad/40")}>
+        {icon && <Icon name={icon} size={17} className="text-ink-faint" />}
+        <input className={cx("flex-1 bg-transparent outline-none text-[15px] font-semibold text-ink placeholder:text-ink-faint placeholder:font-medium min-w-0", className)} {...rest} />
+      </div>
+      {error && <p className="text-[11px] text-bad-ink font-semibold mt-1.5 flex items-center gap-1"><Icon name="alert" size={12} />{error}</p>}
+    </label>
+  );
+}
+
+function Textarea({ label, hint, className = "", ...rest }) {
+  return (
+    <label className="block">
+      {label && <Label className="mb-1.5">{label}</Label>}
+      <div className="clay-inset px-3.5 py-3">
+        <textarea className={cx("w-full bg-transparent outline-none text-sm font-medium text-ink placeholder:text-ink-faint resize-none leading-relaxed", className)} {...rest} />
+      </div>
+      {hint}
+    </label>
+  );
+}
+
+/* ── Anillo de progreso ── */
+function Ring({ value, max, color = "#2563eb", size = 116, label }) {
+  const r = 43, c = 2 * Math.PI * r;
+  const pct = max > 0 ? Math.min(value / max, 1) : 0;
+  return (
+    <svg width={size} height={size} viewBox="0 0 110 110" className="shrink-0">
+      <defs>
+        <filter id="ringSoft" x="-40%" y="-40%" width="180%" height="180%">
+          <feDropShadow dx="2" dy="3" stdDeviation="3" floodColor={color} floodOpacity=".28" />
+        </filter>
+      </defs>
+      <circle cx="55" cy="55" r={r} fill="none" stroke="#e2edfb" strokeWidth="11" />
+      <circle cx="55" cy="55" r={r} fill="none" stroke={color} strokeWidth="11" strokeLinecap="round"
+        strokeDasharray={c} strokeDashoffset={c - pct * c} transform="rotate(-90 55 55)"
+        filter="url(#ringSoft)" style={{ transition: "stroke-dashoffset 1.3s cubic-bezier(.22,1,.36,1)" }} />
+      <text x="55" y="52" textAnchor="middle" fill="#0f172a" fontSize="23" fontWeight="900" fontFamily="Inter">{Math.round(pct * 100)}%</text>
+      <text x="55" y="68" textAnchor="middle" fill="#5b6b82" fontSize="10" fontWeight="600" fontFamily="Inter">{label || `${value}/${max}`}</text>
+    </svg>
+  );
+}
+
+/* ── Barra de progreso ── */
+function Bar({ value, max, color = "#3b82f6", height = 10 }) {
+  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
+  return (
+    <div className="clay-inset w-full overflow-hidden" style={{ height, borderRadius: height }}>
+      <div className="h-full rounded-full transition-[width] duration-1000 ease-out"
+        style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${color}cc, ${color})`, boxShadow: `0 1px 6px ${color}66` }} />
+    </div>
+  );
+}
+
+/* ── Avatar clay ── */
+function Avatar({ nombre, size = 48, tone = "brand", src }) {
+  const grad = {
+    brand: "linear-gradient(135deg,#60a5fa,#2563eb)",
+    aqua:  "linear-gradient(135deg,#7dd3fc,#0ea5e9)",
+    plum:  "linear-gradient(135deg,#c4b5fd,#8b5cf6)",
+    warn:  "linear-gradient(135deg,#fcd34d,#f59e0b)",
+  }[tone];
+  return (
+    <div className="rounded-[35%] shrink-0 flex items-center justify-center font-black text-white overflow-hidden"
+      style={{ width:size, height:size, background:grad, fontSize:size*.34,
+               boxShadow:"5px 5px 12px rgba(37,99,235,.22), -3px -3px 8px rgba(255,255,255,.85)" }}>
+      {src ? <img src={src} alt="" className="w-full h-full object-cover" /> : iniciales(nombre)}
+    </div>
+  );
+}
+
+/* ── Stepper del wizard ── */
+function Stepper({ steps, current }) {
+  return (
+    <div className="flex items-center gap-1.5 px-4 py-3 shrink-0">
+      {steps.map((s, i) => (
+        <div key={s} className="flex-1 flex flex-col gap-1.5">
+          <div className={cx("h-[5px] rounded-full transition-all duration-500",
+            i < current ? "bg-brand-500" : i === current ? "bg-gradient-to-r from-brand-500 to-aqua-300" : "bg-slate-200")} />
+          <span className={cx("text-[9px] font-bold tracking-tight truncate transition-colors",
+            i === current ? "text-brand-700" : i < current ? "text-brand-400" : "text-slate-400")}>{s}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Selector segmentado ── */
+function Segmented({ options, value, onChange, tone = "brand" }) {
+  const activeBg = { brand:"bg-brand-600", plum:"bg-plum", aqua:"bg-aqua-500" }[tone];
+  return (
+    <div className="clay-inset flex gap-1 p-1.5">
+      {options.map(([k, label, count]) => (
+        <button key={k} onClick={() => onChange(k)}
+          className={cx("flex-1 py-2.5 rounded-[13px] text-xs font-bold transition-all duration-200 clay-press",
+            value === k ? cx(activeBg, "text-white shadow-md") : "text-ink-mute hover:text-ink-soft")}>
+          {label}{count != null && <span className="ml-1 opacity-70 tnum">{count}</span>}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ── Bottom sheet ── */
+function Sheet({ open, onClose, title, sub, children, maxH = "86%" }) {
+  useEffect(() => {
+    if (!open) return;
+    const h = e => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [open, onClose]);
+
+  if (!open) return null;
+  return (
+    <div className="absolute inset-0 z-50 flex items-end a-fade" style={{ background:"rgba(15,23,42,.34)", backdropFilter:"blur(3px)" }}
+      onClick={e => e.target === e.currentTarget && onClose()} role="dialog" aria-modal="true">
+      <div className="w-full bg-[#f2f7fe] a-sheet flex flex-col"
+        style={{ maxHeight:maxH, borderRadius:"30px 30px 0 0", boxShadow:"0 -14px 40px rgba(15,23,42,.20)" }}>
+        <div className="flex justify-center pt-3 pb-1 shrink-0">
+          <div className="w-11 h-1.5 rounded-full bg-slate-300" />
+        </div>
+        <div className="flex items-start justify-between gap-3 px-5 pt-2 pb-3 shrink-0">
+          <div className="min-w-0">
+            <h3 className="text-lg font-black text-ink tracking-tight leading-tight">{title}</h3>
+            {sub && <p className="text-xs text-ink-mute mt-0.5 leading-snug">{sub}</p>}
+          </div>
+          <button onClick={onClose} aria-label="Cerrar"
+            className="clay-sm w-10 h-10 rounded-full flex items-center justify-center text-ink-mute clay-press shrink-0 focus-ring">
+            <Icon name="x" size={18} />
+          </button>
+        </div>
+        <div className="scroll-y px-5 pb-6 flex-1">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Estado vacío ── */
+function Empty({ icon = "inbox", title, sub }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-14 px-6 text-center gap-3">
+      <div className="clay-inset w-20 h-20 rounded-full flex items-center justify-center text-brand-300">
+        <Icon name={icon} size={34} strokeWidth={1.8} />
+      </div>
+      <div>
+        <p className="font-black text-ink text-sm">{title}</p>
+        {sub && <p className="text-xs text-ink-mute mt-1 leading-relaxed max-w-[240px]">{sub}</p>}
+      </div>
+    </div>
+  );
+}
+
+/* ── Skeleton loader ── */
+function Skeleton({ h = 78, className = "" }) {
+  return <div className={cx("skeleton rounded-[20px]", className)} style={{ height: h }} />;
+}
+
+/* ── Fila etiqueta/valor ── */
+function Row({ k, v, tone, last }) {
+  return (
+    <div className={cx("flex justify-between items-center gap-3 py-3", !last && "border-b border-slate-100")}>
+      <span className="text-[13px] text-ink-mute font-medium shrink-0">{k}</span>
+      {tone
+        ? <Badge tone={tone}>{v}</Badge>
+        : <span className="text-[13px] font-bold text-ink text-right leading-snug">{v}</span>}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MARCA DE AGUA SOBRE FOTO (PRD §8 paso 5 · §10)
+   Estampa fecha, hora, coordenadas y supervisor en el canvas.
+═══════════════════════════════════════════════════════════ */
+function estamparFoto(dataUrl, meta) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const maxW  = 1080;
+      const scale = Math.min(1, maxW / img.width);
+      const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+      const cv = document.createElement("canvas");
+      cv.width = w; cv.height = h;
+      const ctx = cv.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+
+      const barH = Math.max(70, Math.round(h * 0.16));
+      const g = ctx.createLinearGradient(0, h - barH, 0, h);
+      g.addColorStop(0, "rgba(2,6,23,0)");
+      g.addColorStop(.4, "rgba(2,6,23,.72)");
+      g.addColorStop(1, "rgba(2,6,23,.93)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, h - barH, w, barH);
+
+      const pad = Math.round(w * .035);
+      const fs  = Math.max(14, Math.round(h * .028));
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `800 ${fs}px Inter, system-ui, sans-serif`;
+      ctx.fillText(meta.l1, pad, h - barH + fs * 1.7);
+      ctx.fillStyle = "#bae6fd";
+      ctx.font = `600 ${Math.round(fs * .84)}px Inter, system-ui, sans-serif`;
+      ctx.fillText(meta.l2, pad, h - barH + fs * 3.0);
+      ctx.fillText(meta.l3, pad, h - barH + fs * 4.15);
+
+      resolve(cv.toDataURL("image/jpeg", .82));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CONTEXTO GLOBAL — única fuente de verdad de la app
+   Funciona con datos semilla y, si hay API conectada,
+   sustituye por los datos reales de PostgreSQL.
+═══════════════════════════════════════════════════════════ */
+const AppContext = createContext();
+
+function AppProvider({ children }) {
+  /* ── Estado operativo (modo demo / espejo local) ── */
+  const [rondasGuardadas, setRondasGuardadas] = useState(SEED_RONDAS);
+  const [ticketsActivos,  setTicketsActivos]  = useState(SEED_TICKETS);
+  const [liveFeed,        setLiveFeed]        = useState(SEED_FEED);
+  const [visitasPorObj,   setVisitasPorObj]   = useState(
+    () => Object.fromEntries(SEED_OBJETIVOS.map(o => [o.id, o.visitas_mes]))
+  );
+
+  /* ── Conectividad y cola offline (PRD §10) ── */
+  const [offline, setOffline] = useState(false);
+  const [queue,   setQueue]   = useState([]);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState(null);
+  const [ticketSeq, setTicketSeq] = useState(42);
+
+  /* ── Capa de API ── */
+  const [apiUrl,      setApiUrl]      = useState("");
+  const [apiStatus,   setApiStatus]   = useState("unconfigured"); // unconfigured|connecting|connected|error
+  const [apiError,    setApiError]    = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [apiToken,    setApiToken]    = useState(null);
+
+  /* ── Catálogos (semilla o API) ── */
+  const [objetivos,     setObjetivos]     = useState(SEED_OBJETIVOS);
+  const [vigiladores,   setVigiladores]   = useState(SEED_VIGILADORES);
+  const [secciones,     setSecciones]     = useState(SEED_SECCIONES);
+  const [checklistDefs, setChecklistDefs] = useState(SEED_CHECKLIST);
+  const [ajustes,       setAjustes]       = useState(SEED_AJUSTES);
+  const [observaciones, setObservaciones] = useState(SEED_OBSERVACIONES);
+
+  const online = apiStatus === "connected" && !offline;
+
+  const apiFetch = useCallback((path, opts = {}) => {
+    const base = apiUrl.replace(/\/$/, "");
+    return fetch(base + path, {
+      ...opts,
+      headers: {
+        "Content-Type": "application/json",
+        "bypass-tunnel-reminder": "true",
+        ...(apiToken ? { Authorization: `Bearer ${apiToken}` } : {}),
+        ...(opts.headers || {}),
+      },
+    });
+  }, [apiUrl, apiToken]);
+
+  /* ── Probar y fijar la URL del servidor ── */
+  const conectarApi = async (url) => {
+    const base = url.trim().replace(/\/$/, "");
+    if (!base) return;
+    setApiUrl(base); setApiStatus("connecting"); setApiError(null);
+    try {
+      const res  = await fetch(base + "/", { headers: { "bypass-tunnel-reminder":"true" } });
+      const data = await res.json();
+      if (data.ok) { setApiStatus("connected"); }
+      else { setApiStatus("error"); setApiError("El servidor respondió con un estado inesperado."); }
+    } catch (e) {
+      setApiStatus("error");
+      setApiError("No se pudo alcanzar el servidor. Verificá la URL.");
+    }
+  };
+
+  const desconectarApi = () => {
+    setApiStatus("unconfigured"); setApiUrl(""); setApiToken(null); setApiError(null);
+    setObjetivos(SEED_OBJETIVOS); setVigiladores(SEED_VIGILADORES);
+    setSecciones(SEED_SECCIONES); setChecklistDefs(SEED_CHECKLIST); setObservaciones(SEED_OBSERVACIONES);
+  };
+
+  /* ── Cargar catálogos reales tras el login ── */
+  const cargarCatalogos = useCallback(async () => {
+    try {
+      const res  = await apiFetch("/api/inicializar");
+      const data = await res.json();
+      if (!data.ok) return;
+      if (data.objetivos?.length)     { setObjetivos(data.objetivos); setVisitasPorObj(Object.fromEntries(data.objetivos.map(o => [o.id, o.visitas_mes || 0]))); }
+      if (data.vigiladores?.length)   setVigiladores(data.vigiladores);
+      if (data.secciones?.length)     setSecciones(data.secciones);
+      if (data.checklist?.length)     setChecklistDefs(data.checklist.map(i => ({ ...i, seccion_clave: i.seccion_clave })));
+      if (data.ajustes)               setAjustes(data.ajustes);
+      if (data.observaciones?.length) setObservaciones(data.observaciones);
+    } catch (e) { console.warn("[catalogos]", e.message); }
+  }, [apiFetch]);
+
+  // Los catálogos requieren token: se cargan recién cuando hay sesión iniciada
+  useEffect(() => {
+    if (apiStatus === "connected" && apiToken) cargarCatalogos();
+  }, [apiStatus, apiToken]);
+
+  /* ── KPIs calculados reactivamente sobre el estado local ── */
+  const kpis = useMemo(() => {
+    const metaTotal = objetivos.reduce((a, o) => a + (o.visitas_meta_mes || 0), 0);
+    const hechas    = objetivos.reduce((a, o) => a + (visitasPorObj[o.id] || 0), 0);
+    const porTipo = {};
+    for (const o of objetivos) {
+      const t = o.tipo || "Otros";
+      porTipo[t] = porTipo[t] || { completadas: 0, total: 0 };
+      porTipo[t].completadas += visitasPorObj[o.id] || 0;
+      porTipo[t].total       += o.visitas_meta_mes || 0;
+    }
+    return {
+      visitas:     hechas,
+      metaVisitas: metaTotal || 1,
+      criticas:    ticketsActivos.filter(t => t.val === "M" && t.estado === "Activo").length,
+      activas:     ticketsActivos.filter(t => t.estado === "Activo").length,
+      cerradas:    ticketsActivos.filter(t => t.estado === "Cerrado").length,
+      porTipo,
+      porObjetivo: objetivos.map(o => ({ ...o, realizadas: visitasPorObj[o.id] || 0 })),
+    };
+  }, [objetivos, visitasPorObj, ticketsActivos]);
+
+  /* ── Commit atómico al estado local ── */
+  const _commit = (payloads) => {
+    setRondasGuardadas(r => [...payloads.map(p => p.ronda), ...r]);
+    const tks = payloads.flatMap(p => p.tickets);
+    if (tks.length) setTicketsActivos(t => [...tks, ...t]);
+    setLiveFeed(f => [...payloads.map(p => p.feed), ...f].slice(0, 9));
+    setVisitasPorObj(v => {
+      const n = { ...v };
+      for (const p of payloads) if (p.objetivoId != null) n[p.objetivoId] = (n[p.objetivoId] || 0) + 1;
+      return n;
+    });
+  };
+
+  /* ── Construir el payload de una ronda terminada ── */
+  const construirActa = (rd, supervisorNombre) => {
+    const now   = new Date();
+    const stamp = fmtFecha(now) + " · " + fmtHora(now);
+    const seq   = String(Date.now()).slice(-6);
+
+    // Cada ítem R/M genera un ticket dirigido al área de la observación elegida
+    let n = ticketSeq;
+    const tickets = Object.entries(rd.respuestas || {})
+      .filter(([, r]) => r.estado === "R" || r.estado === "M")
+      .map(([itemId, r]) => {
+        const def   = checklistDefs.find(d => String(d.id) === String(itemId)) || {};
+        const obs   = r.obsPred?.[0] || r.obsLibre || def.titulo_corto || "Observación registrada";
+        const catal = observaciones.find(o => o.texto === r.obsPred?.[0]);
+        const area  = catal?.area || def.area_responsable || "Operaciones";
+        n += 1;
+        return {
+          id:     `INC-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,"0")}-${String(n).padStart(4,"0")}`,
+          _itemId: def.id, obj: rd.objetivo?.nombre || "—", sup: supervisorNombre,
+          val: r.estado, area, estado: "Activo", desc: obs, item: def.titulo_corto,
+          vig: rd.vigiladores?.[0]?.nombre || "—", fecha: stamp, isNew: true,
+        };
+      });
+
+    // La negativa a firmar genera su propio ticket a RRHH (PRD §5.2)
+    for (const v of rd.vigiladores || []) {
+      const f = rd.firmas?.[v.id];
+      if (f?.nego) {
+        n += 1;
+        tickets.push({
+          id: `INC-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,"0")}-${String(n).padStart(4,"0")}`,
+          obj: rd.objetivo?.nombre || "—", sup: supervisorNombre, val: "M", area: "RRHH", estado: "Activo",
+          desc: `Negativa a firmar el acta — ${v.nombre} (legajo ${v.legajo})`,
+          item: "Firma del acta", vig: v.nombre, fecha: stamp, isNew: true,
+        });
+      }
+    }
+    setTicketSeq(n);
+
+    const codigo = `ACTA-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,"0")}${String(now.getDate()).padStart(2,"0")}-${seq}`;
+    const ronda = {
+      id: codigo, supervisor: supervisorNombre, objetivo: rd.objetivo?.nombre || "—",
+      tipo: rd.tipo || "presencial", gpsStatus: rd.gpsStatus, fecha: now,
+      tickets: tickets.map(t => t.id),
+    };
+    const partes = supervisorNombre.split(" ");
+    const feed = {
+      hora: fmtHora(now),
+      sup:  (partes[0][0] || "") + ". " + partes[partes.length - 1],
+      obj:  cortar(rd.objetivo?.nombre || "Objetivo", 20),
+      tipo: rd.tipo === "remota" ? "Remota" : "Presencial",
+      ok:   tickets.length === 0, isNew: true,
+    };
+
+    return { ronda, tickets, feed, codigo, objetivoId: rd.objetivo?.id, generadaEn: now };
+  };
+
+  /* ── Enviar el acta al backend real ── */
+  const enviarActaApi = useCallback(async (rd, acta) => {
+    const objId = rd.objetivo?.id;
+    if (!objId) return;
+    const body = {
+      objetivo_id: objId,
+      tipo: rd.tipo || "presencial",
+      en_geocerca: rd.gpsStatus === "inside",
+      lat: rd.deviceCoords?.lat ?? null, lng: rd.deviceCoords?.lng ?? null,
+      justificacion_fuera: rd.justificacion || null,
+      sincronizado_offline: Boolean(rd._offline),
+      hora_inicio: rd.horaInicio ? new Date(rd.horaInicio).toISOString() : null,
+      hora_fin:    new Date().toISOString(),
+      vigiladores: (rd.vigiladores || []).map(v => ({
+        id: v.id,
+        firma_base64: rd.firmas?.[v.id]?.dataUrl || null,
+        nego_firmar:  Boolean(rd.firmas?.[v.id]?.nego),
+      })),
+      checklist: Object.entries(rd.respuestas || {}).map(([itemId, r]) => {
+        const def = checklistDefs.find(d => String(d.id) === String(itemId)) || {};
+        return {
+          item_id: def.id, pregunta: def.titulo_corto, valoracion: r.estado,
+          observacion_pred: (r.obsPred || []).join(" · ") || null,
+          observacion_libre: r.obsLibre || null,
+        };
+      }),
+      incidencias: acta.tickets.map(t => ({
+        item_id: t._itemId, item_titulo: t.item, valoracion: t.val,
+        area_responsable: t.area, categoria: t.area, descripcion: t.desc,
+        vigilador_id: (rd.vigiladores || [])[0]?.id,
+      })),
+      evidencias: (rd.fotos || []).map(f => ({ imagen_base64: f.dataUrl, lat: f.lat, lng: f.lng })),
+    };
+    const res  = await apiFetch("/api/rondas", { method:"POST", body: JSON.stringify(body) });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.mensaje || "El servidor rechazó el acta.");
+    return data;
+  }, [apiFetch, checklistDefs]);
+
+  /* ── Guardar ronda: commit inmediato o cola FIFO offline ── */
+  const guardarRonda = async (rd, supervisorNombre) => {
+    const acta = construirActa(rd, supervisorNombre);
+
+    if (offline) {
+      setQueue(q => [...q, { acta, rd: { ...rd, _offline: true } }]);
+      return { estado: "encolada", acta };
+    }
+
+    _commit([acta]);
+
+    if (apiStatus === "connected" && currentUser?.rol === "supervisor") {
+      try {
+        const r = await enviarActaApi(rd, acta);
+        return { estado: "guardada", acta: { ...acta, codigo: r.codigo_acta || acta.codigo }, servidor: true };
+      } catch (e) {
+        return { estado: "guardada", acta, servidor: false, aviso: e.message };
+      }
+    }
+    return { estado: "guardada", acta, servidor: false };
+  };
+
+  /* ── Sincronizar la cola pendiente ── */
+  const queueRef = useRef(queue);
+  useEffect(() => { queueRef.current = queue; }, [queue]);
+
+  const sincronizar = useCallback(async () => {
+    const pend = queueRef.current;
+    if (!pend.length || syncing) return;
+    setSyncing(true); setSyncMsg(null);
+
+    await new Promise(r => setTimeout(r, 1400)); // latencia simulada de red
+    _commit(pend.map(p => p.acta));
+
+    if (apiStatus === "connected" && currentUser?.rol === "supervisor") {
+      for (const p of pend) { try { await enviarActaApi(p.rd, p.acta); } catch (e) { console.warn("[sync]", e.message); } }
+    }
+
+    setQueue([]); setSyncing(false);
+    const n = pend.length;
+    setSyncMsg({ tone:"good", text:`${n} acta${n > 1 ? "s" : ""} sincronizada${n > 1 ? "s" : ""} con el servidor.` });
+    setTimeout(() => setSyncMsg(null), 5200);
+  }, [apiStatus, currentUser, enviarActaApi, syncing]);
+
+  /* Reintento automático cada 60s mientras haya cola y conexión (PRD §10) */
+  useEffect(() => {
+    if (offline || queue.length === 0) return;
+    const t = setInterval(() => { sincronizar(); }, 60000);
+    return () => clearInterval(t);
+  }, [offline, queue.length, sincronizar]);
+
+  const alternarConexion = () => {
+    if (offline) { setOffline(false); setTimeout(() => sincronizar(), 300); }
+    else { setOffline(true); setSyncMsg(null); }
+  };
+
+  /* ── Cerrar ticket (Admin) ── */
+  const cerrarTicket = (id, resolucion) => {
+    setTicketsActivos(t => t.map(tk => tk.id === id ? { ...tk, estado:"Cerrado", resolucion, isNew:false } : tk));
+  };
+
+  const cerrarSesion = () => { setCurrentUser(null); setApiToken(null); };
+
+  return (
+    <AppContext.Provider value={{
+      rondasGuardadas, ticketsActivos, liveFeed, kpis, visitasPorObj,
+      offline, queue, syncing, syncMsg, online,
+      guardarRonda, alternarConexion, sincronizar, cerrarTicket, cerrarSesion,
+      apiUrl, apiStatus, apiError, apiFetch, conectarApi, desconectarApi, cargarCatalogos,
+      currentUser, setCurrentUser, apiToken, setApiToken,
+      objetivos, vigiladores, secciones, checklistDefs, ajustes, observaciones,
+    }}>
+      {children}
+    </AppContext.Provider>
+  );
+}
+
+const useApp = () => useContext(AppContext);
+
+/* ═══════════════════════════════════════════════════════════
+   SHELL — cabecera, barra de conexión, aviso de sincronización
+═══════════════════════════════════════════════════════════ */
+function PanelHeader({ icon, rol, nombre, tone = "brand" }) {
+  const { cerrarSesion } = useApp();
+  const grad = {
+    brand: "linear-gradient(135deg,#60a5fa,#2563eb)",
+    plum:  "linear-gradient(135deg,#c4b5fd,#8b5cf6)",
+    warn:  "linear-gradient(135deg,#fcd34d,#f59e0b)",
+  }[tone];
+  return (
+    <div className="flex items-center justify-between gap-3 px-4 py-3 shrink-0 bg-[#eaf2fd]">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="w-11 h-11 rounded-[15px] flex items-center justify-center text-white shrink-0"
+          style={{ background:grad, boxShadow:"5px 5px 12px rgba(37,99,235,.22), -3px -3px 8px rgba(255,255,255,.9)" }}>
+          <Icon name={icon} size={21} />
+        </div>
+        <div className="min-w-0">
+          <p className="text-[11px] font-black text-ink tracking-wide uppercase leading-tight truncate">{rol}</p>
+          <p className="text-xs text-ink-mute truncate">{nombre}</p>
+        </div>
+      </div>
+      <button onClick={cerrarSesion}
+        className="clay-sm clay-press w-10 h-10 rounded-[14px] flex items-center justify-center text-ink-mute shrink-0 focus-ring"
+        aria-label="Cerrar sesión" title="Cerrar sesión">
+        <Icon name="logout" size={17} />
+      </button>
+    </div>
+  );
+}
+
+function ConnBar() {
+  const { offline, alternarConexion, syncing, queue, apiStatus } = useApp();
+  return (
+    <div className="flex items-center justify-between gap-2 px-4 py-2 shrink-0">
+      <div className="flex items-center gap-2 min-w-0">
+        {syncing ? (
+          <><Icon name="refresh" size={14} className="a-spin text-brand-600" />
+            <span className="text-[11px] font-bold text-brand-700">Sincronizando…</span></>
+        ) : offline ? (
+          <><Icon name="wifi-off" size={14} className="text-bad" />
+            <span className="text-[11px] font-bold text-bad-ink">Sin conexión · {queue.length} en cola</span></>
+        ) : (
+          <><Dot tone="good" pulse />
+            <span className="text-[11px] font-bold text-ink-mute">
+              {apiStatus === "connected" ? "Conectado · PostgreSQL" : "Online · Modo demo"}
+            </span></>
+        )}
+      </div>
+      <button onClick={alternarConexion} disabled={syncing}
+        className={cx("clay-btn px-3 py-1.5 rounded-full text-[10px] font-black tracking-wide uppercase transition-colors",
+          offline ? "bg-bad text-white" : "bg-white text-ink-mute")}>
+        {offline ? "Reconectar" : "Simular corte"}
+      </button>
+    </div>
+  );
+}
+
+function SyncToast() {
+  const { syncMsg, syncing, offline, queue } = useApp();
+  let text = null, tone = "brand", icon = "cloud";
+
+  if (syncing)            { text = `Procesando ${queue.length} acta${queue.length !== 1 ? "s" : ""} en cola…`; tone = "brand"; icon = "refresh"; }
+  else if (syncMsg)       { text = syncMsg.text; tone = syncMsg.tone; icon = "check-circle"; }
+  else if (offline && queue.length) { text = `${queue.length} acta${queue.length > 1 ? "s" : ""} en cola local · se enviará al recuperar señal`; tone = "warn"; icon = "cloud-off"; }
+
+  if (!text) return null;
+  const bg = { brand:"bg-brand-100 text-brand-800", good:"bg-good-soft text-good-ink", warn:"bg-warn-soft text-warn-ink" }[tone];
+  return (
+    <div className={cx("mx-4 mb-1 rounded-[16px] px-3.5 py-2.5 flex items-center gap-2 a-dn shrink-0", bg)}>
+      <Icon name={icon} size={15} className={syncing ? "a-spin" : ""} />
+      <span className="text-[11px] font-bold leading-snug">{text}</span>
+    </div>
+  );
+}
+
+/* ── Panel de conexión al servidor (colapsable) ── */
+function ApiConfigBar() {
+  const { apiStatus, apiError, apiUrl, conectarApi, desconectarApi } = useApp();
+  const [open,  setOpen]  = useState(false);
+  const [input, setInput] = useState("http://localhost:3000");
+
+  const S = {
+    unconfigured: { tone:"gray",  label:"Modo demo",   detail:"Datos locales de ejemplo" },
+    connecting:   { tone:"warn",  label:"Conectando…", detail:"Probando el servidor" },
+    connected:    { tone:"good",  label:"Conectado",   detail:apiUrl },
+    error:        { tone:"bad",   label:"Sin conexión",detail:apiError || "Revisá la URL" },
+  }[apiStatus];
+
+  return (
+    <div className="w-full max-w-[404px] mx-auto mb-2.5">
+      <button onClick={() => setOpen(o => !o)}
+        className="clay w-full flex items-center gap-2.5 px-4 py-2.5 clay-press focus-ring">
+        <Dot tone={S.tone} pulse={apiStatus === "connecting"} />
+        <span className="text-[11px] font-black text-ink tracking-wide">{S.label}</span>
+        <span className="text-[10px] text-ink-faint truncate flex-1 text-left font-medium">{S.detail}</span>
+        <Icon name="chevron" size={15} className={cx("text-ink-faint transition-transform", open && "rotate-180")} />
+      </button>
+
+      {open && (
+        <Clay className="mt-2 p-4 a-dn">
+          <Label className="mb-2">Servidor ASI — URL de la API</Label>
+          <div className="flex gap-2">
+            <div className="clay-inset flex-1 flex items-center gap-2 px-3 py-2.5 min-w-0">
+              <Icon name="link" size={15} className="text-ink-faint" />
+              <input value={input} onChange={e => setInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && conectarApi(input)}
+                placeholder="http://localhost:3000" spellCheck="false"
+                className="flex-1 bg-transparent outline-none text-[12px] font-mono font-semibold text-ink min-w-0" />
+            </div>
+            {apiStatus === "connected"
+              ? <Btn size="sm" variant="white" onClick={desconectarApi}>Salir</Btn>
+              : <Btn size="sm" onClick={() => conectarApi(input)} loading={apiStatus === "connecting"}>Conectar</Btn>}
+          </div>
+          <p className="text-[10px] text-ink-faint mt-2.5 leading-relaxed">
+            Sin conexión la app funciona con datos de ejemplo. Al conectar, los objetivos, vigiladores y el
+            checklist se leen de PostgreSQL.
+          </p>
+        </Clay>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LOGIN — usuario y contraseña (PRD §1)
+═══════════════════════════════════════════════════════════ */
+const DEMO_CRED = {
+  supervisor: { username:"supervisor", password:"supervisor123", nombre:"María González",  rol:"supervisor" },
+  admin:      { username:"admin",      password:"admin123",      nombre:"Roberto Valente", rol:"admin" },
+  dueno:      { username:"dueno",      password:"dueno123",      nombre:"Gerencia General",rol:"dueno" },
+};
+
+function LoginScreen() {
+  const { apiStatus, apiFetch, setCurrentUser, setApiToken } = useApp();
+  const [user, setUser]   = useState("");
+  const [pass, setPass]   = useState("");
+  const [ver,  setVer]    = useState(false);
+  const [load, setLoad]   = useState(false);
+  const [err,  setErr]    = useState(null);
+
+  const entrar = async () => {
+    setErr(null);
+    if (!user.trim() || !pass) { setErr("Ingresá usuario y contraseña."); return; }
+    setLoad(true);
+
+    if (apiStatus === "connected") {
+      try {
+        const res  = await apiFetch("/api/login", { method:"POST", body: JSON.stringify({ username:user.trim(), password:pass }) });
+        const data = await res.json();
+        if (data.ok) { setApiToken(data.token); setCurrentUser(data.usuario); }
+        else setErr(data.mensaje || "Credenciales incorrectas.");
+      } catch { setErr("No se pudo contactar al servidor."); }
+      finally { setLoad(false); }
+      return;
+    }
+
+    // Modo demo: valida contra las credenciales locales
+    await new Promise(r => setTimeout(r, 480));
+    const match = Object.values(DEMO_CRED).find(c => c.username === user.trim().toLowerCase() && c.password === pass);
+    if (match) setCurrentUser({ id: 0, nombre: match.nombre, rol: match.rol });
+    else setErr("Usuario o contraseña incorrectos.");
+    setLoad(false);
+  };
+
+  return (
+    <div className="scroll-y px-6 py-7 a-fade" style={{ background:"linear-gradient(170deg,#eff6ff 0%,#e0f0fd 55%,#dbeafe 100%)" }}>
+      {/* Marca */}
+      <div className="flex flex-col items-center mb-7">
+        <div className="relative mb-4 a-pop">
+          <div className="w-[74px] h-[74px] rounded-[26px] flex items-center justify-center text-white"
+            style={{ background:"linear-gradient(135deg,#60a5fa,#1d4ed8)", boxShadow:"9px 9px 22px rgba(37,99,235,.32), -6px -6px 16px rgba(255,255,255,.95)" }}>
+            <Icon name="shield-ok" size={36} strokeWidth={2.1} />
+          </div>
+          <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-good border-[3px] border-[#eaf2fd]" />
+        </div>
+        <h1 className="text-[25px] font-black text-ink tracking-tight text-center leading-tight">Argentina Seguridad</h1>
+        <p className="text-[11px] text-brand-600 font-black tracking-[.22em] uppercase mt-1">Integral · ASI</p>
+      </div>
+
+      <Clay className="p-5 a-up">
+        <SH title="Iniciar sesión" sub="Acceso individual por supervisor" />
+        <div className="flex flex-col gap-3.5 mt-4">
+          <Input label="Usuario" icon="user" value={user} autoCapitalize="none" spellCheck="false"
+            onChange={e => setUser(e.target.value)} placeholder="tu.usuario" />
+          <div>
+            <Label className="mb-1.5">Contraseña</Label>
+            <div className="clay-inset flex items-center gap-2.5 px-3.5 py-3">
+              <Icon name="lock" size={17} className="text-ink-faint" />
+              <input type={ver ? "text" : "password"} value={pass} onChange={e => setPass(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && entrar()} placeholder="••••••••"
+                className="flex-1 bg-transparent outline-none text-[15px] font-semibold text-ink placeholder:text-ink-faint min-w-0" />
+              <button onClick={() => setVer(v => !v)} className="text-ink-faint p-1 focus-ring rounded-lg"
+                aria-label={ver ? "Ocultar contraseña" : "Mostrar contraseña"}>
+                <Icon name={ver ? "eye-off" : "eye"} size={17} />
+              </button>
+            </div>
+          </div>
+
+          {err && (
+            <div className="bg-bad-soft rounded-[14px] px-3.5 py-2.5 flex items-start gap-2 a-dn">
+              <Icon name="alert" size={15} className="text-bad-ink mt-px" />
+              <p className="text-[12px] font-bold text-bad-ink leading-snug">{err}</p>
+            </div>
+          )}
+
+          <Btn full size="lg" onClick={entrar} loading={load} iconRight={load ? null : "arrow-r"}>
+            {load ? "Verificando…" : "Ingresar"}
+          </Btn>
+
+          <div className="flex items-center gap-3 my-0.5">
+            <span className="h-px bg-slate-200 flex-1" />
+            <span className="text-[10px] font-bold text-ink-faint uppercase tracking-wider">o</span>
+            <span className="h-px bg-slate-200 flex-1" />
+          </div>
+
+          <button disabled title="Disponible en la versión corporativa"
+            className="clay-btn w-full py-3.5 rounded-[18px] bg-white text-ink-faint text-xs font-bold flex items-center justify-center gap-2">
+            <Icon name="cloud" size={16} /> Continuar con OneDrive corporativo
+          </button>
+        </div>
+      </Clay>
+
+      {/* Accesos de prueba */}
+      <Clay className="p-4 mt-3.5 a-up" style={{ animationDelay:"90ms" }}>
+        <Label className="mb-2.5">Accesos de prueba</Label>
+        <div className="flex flex-col gap-2">
+          {Object.entries(DEMO_CRED).map(([k, c]) => (
+            <button key={k} onClick={() => { setUser(c.username); setPass(c.password); setErr(null); }}
+              className="clay-inset clay-press flex items-center gap-3 px-3.5 py-2.5 text-left focus-ring">
+              <Icon name={k === "supervisor" ? "shield" : k === "admin" ? "clipboard" : "chart"} size={16} className="text-brand-600" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-black text-ink">{c.nombre}</p>
+                <p className="text-[10px] text-ink-faint font-mono">{c.username} · {c.password}</p>
+              </div>
+              <Icon name="chevron-r" size={14} className="text-ink-faint" />
+            </button>
+          ))}
+        </div>
+      </Clay>
+
+      <p className="text-center text-[10px] text-ink-faint mt-5 font-medium">ASI · Panel de Supervisión v3.0</p>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PASO 1 — Inicio de ronda: objetivo + geocerca (PRD §2)
+═══════════════════════════════════════════════════════════ */
+const TIPO_ICON = { Barrios:"home", Industrias:"factory", Locales:"store" };
+
+function Step1({ rd, setRD, onNext }) {
+  const { objetivos, visitasPorObj } = useApp();
+  const { coords, error: gpsErr, reintentar } = useDeviceGeolocation();
+  const [just, setJust] = useState(rd.justificacion || "");
+  const [busca,setBusca]= useState("");
+  const [tick, setTick] = useState(new Date());
+  const obj = rd.objetivo;
+
+  useEffect(() => { const t = setInterval(() => setTick(new Date()), 1000); return () => clearInterval(t); }, []);
+
+  // Distancia real al objetivo — deriva el estado del geocerco a partir del GPS del dispositivo, no de un valor simulado
+  const distancia = (coords && obj?.lat != null) ? distanciaMetros(coords.lat, coords.lng, obj.lat, obj.lng) : null;
+  const gps = gpsErr ? "error" : !coords ? "searching" : !obj ? "searching" : (distancia <= obj.radio_geocerca_m ? "inside" : "outside");
+
+  useEffect(() => {
+    if (!coords) return;
+    setRD(p => ({ ...p, deviceCoords: coords, gpsStatus: gps, distanciaGeocerca: distancia != null ? Math.round(distancia) : null }));
+  }, [coords, gps, distancia]);
+
+  const lista = useMemo(() => {
+    const q = busca.trim().toLowerCase();
+    return objetivos.filter(o => !q || o.nombre.toLowerCase().includes(q) || (o.direccion || "").toLowerCase().includes(q));
+  }, [objetivos, busca]);
+
+  const grupos = useMemo(() => {
+    const g = {};
+    for (const o of lista) (g[o.tipo] = g[o.tipo] || []).push(o);
+    return g;
+  }, [lista]);
+
+  const elegir = (o) => setRD(p => ({ ...p, objetivo: o }));
+
+  const puedePresencial = gps === "inside"  && obj;
+  const puedeRemota     = (gps === "outside" || gps === "error") && obj && just.trim().length >= 10;
+
+  const arrancar = (tipo) => {
+    setRD(p => ({ ...p, tipo, justificacion: tipo === "remota" ? just : null, horaInicio: new Date() }));
+    onNext();
+  };
+
+  const GPS_ERR_TXT = {
+    denied:      "Permiso de ubicación denegado",
+    unavailable: "Señal GPS no disponible",
+    timeout:     "Tiempo de espera agotado",
+    unsupported: "Este dispositivo no soporta GPS",
+  };
+
+  const GPS_UI = {
+    searching: { tone:"warn", txt:"Buscando señal GPS…",     icon:"pin" },
+    inside:    { tone:"good", txt:"Dentro del geocerco",     icon:"shield-ok" },
+    outside:   { tone:"bad",  txt:"Fuera del geocerco",      icon:"alert" },
+    error:     { tone:"bad",  txt: GPS_ERR_TXT[gpsErr] || "Error de GPS", icon:"alert" },
+  }[gps];
+
+  return (
+    <div className="flex flex-col gap-4 px-4 py-4 a-fade">
+      <SH title="Inicio de ronda" sub="Elegí el objetivo y validá tu presencia en el lugar" />
+
+      {/* Reloj + estado GPS */}
+      <Clay className="p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <Label>Hora del dispositivo</Label>
+            <p className="text-[34px] font-black text-ink tnum leading-none mt-1.5">{tick.toLocaleTimeString("es-AR")}</p>
+            <p className="text-xs text-ink-mute mt-1 capitalize">{fmtLargo(tick)}</p>
+          </div>
+          <div className={cx("w-14 h-14 rounded-[19px] flex items-center justify-center shrink-0",
+            gps === "inside" ? "bg-good-soft text-good-ink" : (gps === "outside" || gps === "error") ? "bg-bad-soft text-bad-ink" : "bg-warn-soft text-warn-ink")}>
+            <Icon name={GPS_UI.icon} size={26} />
+          </div>
+        </div>
+        <div className="clay-inset flex items-center gap-2.5 px-3.5 py-2.5 mt-3.5">
+          <Dot tone={GPS_UI.tone} pulse={gps === "searching"} />
+          <span className={cx("text-xs font-bold",
+            gps === "inside" ? "text-good-ink" : (gps === "outside" || gps === "error") ? "text-bad-ink" : "text-warn-ink")}>{GPS_UI.txt}</span>
+          {obj && distancia != null && <span className="text-[10px] text-ink-faint ml-auto tnum">{Math.round(distancia)} m · radio {obj.radio_geocerca_m} m</span>}
+        </div>
+        {coords && (
+          <p className="text-[10px] text-ink-faint mt-2 font-mono tnum">
+            {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)} · precisión ±{Math.round(coords.accuracy)} m
+          </p>
+        )}
+        {gps === "error" && (
+          <button onClick={reintentar} className="clay-btn w-full mt-3 py-2.5 rounded-[14px] text-xs font-black flex items-center justify-center gap-1.5 bg-white text-ink-mute">
+            <Icon name="refresh" size={14} /> Reintentar ubicación
+          </button>
+        )}
+      </Clay>
+
+      {/* Selector de objetivo */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <Label>Objetivo de la ronda</Label>
+          {obj && <Badge tone="brand" icon="check">Seleccionado</Badge>}
+        </div>
+        <div className="clay-inset flex items-center gap-2.5 px-3.5 py-2.5 mb-2.5">
+          <Icon name="search" size={16} className="text-ink-faint" />
+          <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar objetivo o dirección…"
+            className="flex-1 bg-transparent outline-none text-sm font-semibold text-ink placeholder:text-ink-faint placeholder:font-medium min-w-0" />
+          {busca && <button onClick={() => setBusca("")} className="text-ink-faint p-0.5" aria-label="Limpiar"><Icon name="x" size={15} /></button>}
+        </div>
+
+        {lista.length === 0 && <Empty icon="search" title="Sin resultados" sub="Probá con otro nombre o dirección." />}
+
+        <div className="flex flex-col gap-3">
+          {Object.entries(grupos).map(([tipo, arr]) => (
+            <div key={tipo}>
+              <div className="flex items-center gap-1.5 mb-1.5 px-1">
+                <Icon name={TIPO_ICON[tipo] || "building"} size={13} className="text-ink-faint" />
+                <span className="text-[10px] font-black uppercase tracking-wider text-ink-faint">{tipo}</span>
+              </div>
+              <div className="flex flex-col gap-2">
+                {arr.map(o => {
+                  const hechas = visitasPorObj[o.id] ?? o.visitas_mes ?? 0;
+                  const meta   = o.visitas_meta_mes || 0;
+                  const sel    = obj?.id === o.id;
+                  const cumple = meta > 0 && hechas >= meta;
+                  return (
+                    <button key={o.id} onClick={() => elegir(o)}
+                      className={cx("clay-press text-left p-3.5 rounded-[20px] transition-all duration-200 focus-ring",
+                        sel ? "bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-lg" : "clay")}>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className={cx("text-sm font-black leading-tight", sel ? "text-white" : "text-ink")}>{o.nombre}</p>
+                          <p className={cx("text-[10px] mt-0.5 truncate", sel ? "text-brand-100" : "text-ink-faint")}>
+                            {SUBTIPO_LABEL[o.subtipo] || o.tipo}{o.direccion ? ` · ${o.direccion}` : ""}
+                          </p>
+                        </div>
+                        {sel
+                          ? <span className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center shrink-0"><Icon name="check" size={14} strokeWidth={3} /></span>
+                          : <span className={cx("text-[10px] font-black tnum px-2 py-1 rounded-full shrink-0", cumple ? "bg-good-soft text-good-ink" : "bg-brand-50 text-brand-700")}>{hechas}/{meta}</span>}
+                      </div>
+                      {/* Cumplimiento mensual del objetivo (PRD §7) */}
+                      <div className="mt-2.5">
+                        <div className={cx("w-full rounded-full overflow-hidden", sel ? "bg-white/25" : "bg-slate-100")} style={{ height:6 }}>
+                          <div className="h-full rounded-full transition-all duration-700"
+                            style={{ width:`${meta ? Math.min(hechas / meta * 100, 100) : 0}%`,
+                                     background: sel ? "#ffffff" : cumple ? "#10b981" : "#3b82f6" }} />
+                        </div>
+                        <p className={cx("text-[10px] mt-1 font-semibold", sel ? "text-brand-100" : "text-ink-faint")}>
+                          {hechas} de {meta} visitas este mes
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {!obj && gps !== "searching" && (
+        <div className="bg-warn-soft rounded-[16px] px-4 py-3 flex items-center gap-2 a-up">
+          <Icon name="info" size={15} className="text-warn-ink" />
+          <p className="text-xs font-bold text-warn-ink">Seleccioná un objetivo para continuar.</p>
+        </div>
+      )}
+
+      {gps === "inside" && (
+        <Btn full size="xl" variant="success" icon="shield-ok" disabled={!puedePresencial}
+          onClick={() => arrancar("presencial")}>
+          Iniciar checklist presencial
+        </Btn>
+      )}
+
+      {(gps === "outside" || gps === "error") && (
+        <div className="flex flex-col gap-3 a-up">
+          <Clay className="p-4" tint="linear-gradient(135deg,#fff1f2,#ffe4e6)">
+            <div className="flex items-start gap-2.5">
+              <Icon name="alert" size={18} className="text-bad-ink mt-px" />
+              <div>
+                <p className="text-sm font-black text-bad-ink">Modo presencial bloqueado</p>
+                <p className="text-xs text-bad-ink/80 mt-1 leading-relaxed">
+                  {gps === "error"
+                    ? "No se pudo obtener tu ubicación real. Podés registrar una supervisión remota justificando el motivo."
+                    : "Estás fuera del geocerco. Podés registrar una supervisión remota justificando el motivo."}
+                </p>
+              </div>
+            </div>
+          </Clay>
+          <Textarea label="Justificación obligatoria" value={just} onChange={e => setJust(e.target.value)}
+            rows={3} placeholder="Ej: Superviso por cámara desde la central a pedido del cliente…"
+            hint={<p className={cx("text-[11px] font-bold mt-1.5", just.trim().length >= 10 ? "text-good-ink" : "text-ink-faint")}>
+              {just.trim().length >= 10 ? `${just.trim().length} caracteres` : `Faltan ${10 - just.trim().length} caracteres`}
+            </p>} />
+          <Btn full size="xl" variant="warn" icon="radio" disabled={!puedeRemota} onClick={() => arrancar("remota")}>
+            Iniciar supervisión remota
+          </Btn>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PERFIL DEL VIGILADOR — 4 pestañas (PRD §9)
+═══════════════════════════════════════════════════════════ */
+const ESTADO_TONE = { activo:"good", suspendido:"bad", "baja temporal":"warn", baja:"warn" };
+
+function PerfilVigilador({ v, historial = [], sanciones = [], incidencias = [] }) {
+  const [tab, setTab] = useState("principal");
+  const dCred = diasHasta(v.credencial_venc);
+  const dLic  = diasHasta(v.licencia_venc);
+
+  const alertas = [];
+  if (dCred != null && dCred <= 30) alertas.push({ txt:`La credencial vence en ${dCred} días`, tone:"bad" });
+  if (v.es_chofer && dLic != null && dLic <= 30) alertas.push({ txt:`El carnet de conducir vence en ${dLic} días`, tone:"warn" });
+
+  return (
+    <div className="flex flex-col gap-3.5">
+      {/* Cabecera */}
+      <div className="flex items-center gap-3.5">
+        <Avatar nombre={v.nombre} size={60} src={v.foto_url} />
+        <div className="min-w-0 flex-1">
+          <p className="text-[15px] font-black text-ink leading-tight">{v.nombre}</p>
+          <p className="text-xs text-ink-mute mt-0.5">{v.puesto}</p>
+          <div className="flex gap-1.5 mt-1.5 flex-wrap">
+            <Badge tone="brand">Legajo {v.legajo}</Badge>
+            <Badge tone={ESTADO_TONE[v.estado] || "gray"} icon={v.estado === "activo" ? "check" : "alert"}>
+              {v.estado?.charAt(0).toUpperCase() + v.estado?.slice(1)}
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      {alertas.map((a, i) => (
+        <div key={i} className={cx("rounded-[15px] px-3.5 py-2.5 flex items-start gap-2",
+          a.tone === "bad" ? "bg-bad-soft" : "bg-warn-soft")}>
+          <Icon name="alert" size={15} className={a.tone === "bad" ? "text-bad-ink" : "text-warn-ink"} />
+          <p className={cx("text-[11px] font-bold leading-snug", a.tone === "bad" ? "text-bad-ink" : "text-warn-ink")}>
+            {a.txt} · se notifica a RRHH automáticamente
+          </p>
+        </div>
+      ))}
+
+      <Segmented value={tab} onChange={setTab} options={[
+        ["principal","Principales"], ["personal","Personales"], ["caract","Caract."], ["actas","Actas"],
+      ]} />
+
+      <Clay className="p-4 a-fade">
+        {tab === "principal" && (
+          <div>
+            <Row k="Nombre completo"   v={v.nombre} />
+            <Row k="Nº de legajo"      v={v.legajo} />
+            <Row k="DNI"               v={v.dni || "—"} />
+            <Row k="Estado"            v={v.estado} tone={ESTADO_TONE[v.estado] || "gray"} />
+            <Row k="Objetivo asignado" v={v.objetivo_asignado || "Sin asignar"} last />
+          </div>
+        )}
+
+        {tab === "personal" && (
+          <div>
+            <Row k="Teléfono"          v={v.telefono || "—"} />
+            <Row k="Domicilio"         v={v.domicilio || "—"} />
+            <Row k="Fecha de nac."     v={v.fecha_nacimiento ? fmtFecha(v.fecha_nacimiento) : "—"} />
+            <Row k="Nacionalidad"      v={v.nacionalidad || "—"} last />
+          </div>
+        )}
+
+        {tab === "caract" && (
+          <div>
+            <Row k="Nº credencial"     v={v.credencial_numero || "—"} />
+            <Row k="Venc. credencial"
+                 v={v.credencial_venc ? `${fmtFecha(v.credencial_venc)}${dCred != null ? ` · ${dCred}d` : ""}` : "—"}
+                 tone={dCred != null && dCred <= 30 ? "bad" : "good"} />
+            <Row k="Habilitado chofer" v={v.es_chofer ? "Sí" : "No"} tone={v.es_chofer ? "good" : "gray"} />
+            {v.es_chofer && <Row k="Categoría licencia" v={v.licencia_cat || "—"} tone="brand" />}
+            {v.es_chofer && <Row k="Venc. licencia"
+                 v={v.licencia_venc ? `${fmtFecha(v.licencia_venc)}${dLic != null ? ` · ${dLic}d` : ""}` : "—"}
+                 tone={dLic != null && dLic <= 30 ? "warn" : "good"} />}
+            <Row k="Portación de arma" v={v.armado ? "Sí" : "No"} tone={v.armado ? "tang" : "gray"} />
+            <Row k="Tiene radio"       v={v.tiene_radio ? "Sí" : "No"} tone={v.tiene_radio ? "good" : "gray"} />
+            <Row k="Convenio"          v={v.convenio || "UPSRA"} tone="plum" last />
+          </div>
+        )}
+
+        {tab === "actas" && (
+          <div className="flex flex-col gap-4">
+            <div>
+              <Label className="mb-2">Sanciones registradas</Label>
+              {sanciones.length === 0
+                ? <p className="text-xs text-ink-faint py-1">Sin sanciones registradas.</p>
+                : sanciones.map((s, i) => (
+                  <div key={i} className={cx("flex items-start gap-2.5 py-2.5", i < sanciones.length - 1 && "border-b border-slate-100")}>
+                    <Badge tone={{ activa:"bad", cumplida:"good", apelada:"warn" }[s.estado] || "gray"}>{s.estado}</Badge>
+                    <div className="min-w-0">
+                      <p className="text-[12px] text-ink font-semibold leading-snug">{s.descripcion}</p>
+                      <p className="text-[10px] text-ink-faint mt-0.5">{fmtFecha(s.fecha)}</p>
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            <div>
+              <Label className="mb-2">Historial de actas</Label>
+              {historial.length === 0
+                ? <p className="text-xs text-ink-faint py-1">Sin actas previas.</p>
+                : historial.map((h, i) => (
+                  <div key={i} className={cx("flex items-start gap-2.5 py-2.5", i < historial.length - 1 && "border-b border-slate-100")}>
+                    <Badge tone={h.tipo === "Sanción" ? "bad" : "warn"}>{h.tipo}</Badge>
+                    <div className="min-w-0">
+                      <p className="text-[12px] text-ink font-semibold leading-snug">{h.descripcion || h.desc}</p>
+                      <p className="text-[10px] text-ink-faint mt-0.5">{fmtFecha(h.fecha)}</p>
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            {incidencias.length > 0 && (
+              <div>
+                <Label className="mb-2">Incidencias asociadas</Label>
+                {incidencias.map((t, i) => (
+                  <div key={i} className={cx("py-2.5", i < incidencias.length - 1 && "border-b border-slate-100")}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono font-bold text-ink-mute">{t.codigo_ticket}</span>
+                      <Badge tone={t.estado === "ABIERTO" ? "bad" : "good"}>{t.estado}</Badge>
+                    </div>
+                    <p className="text-[12px] text-ink font-semibold leading-snug mt-1">{t.descripcion}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </Clay>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PASO 2 — Vigiladores a inspeccionar (múltiples · PRD §2.1)
+═══════════════════════════════════════════════════════════ */
+function Step2({ rd, setRD, onNext, onBack }) {
+  const { vigiladores, apiStatus, apiFetch } = useApp();
+  const [legajo, setLegajo] = useState("");
+  const [error,  setError]  = useState(null);
+  const [busy,   setBusy]   = useState(false);
+  const [perfil, setPerfil] = useState(null);
+  const sel = rd.vigiladores || [];
+
+  const agregar = async () => {
+    setError(null);
+    const n = legajo.trim();
+    if (!n) return;
+    if (sel.some(v => String(v.legajo) === n)) { setError("Ese vigilador ya está en la lista."); setLegajo(""); return; }
+
+    setBusy(true);
+    let encontrado = vigiladores.find(v => String(v.legajo) === n);
+
+    // Con API conectada trae el perfil completo (sanciones, historial, incidencias)
+    if (apiStatus === "connected") {
+      try {
+        const res  = await apiFetch(`/api/vigilador/${n}`);
+        const data = await res.json();
+        if (data.ok) encontrado = { ...data.vigilador, _historial: data.historial, _sanciones: data.sanciones, _incidencias: data.incidencias };
+      } catch { /* cae al catálogo local */ }
+    }
+    setBusy(false);
+
+    if (!encontrado) { setError(`No se encontró el legajo ${n}.`); return; }
+    setRD(p => ({ ...p, vigiladores: [...(p.vigiladores || []), encontrado] }));
+    setLegajo("");
+  };
+
+  const quitar = (id) => setRD(p => ({
+    ...p,
+    vigiladores: (p.vigiladores || []).filter(v => v.id !== id),
+    firmas: Object.fromEntries(Object.entries(p.firmas || {}).filter(([k]) => String(k) !== String(id))),
+  }));
+
+  const datosPerfil = (v) => ({
+    historial:   v._historial   || SEED_HISTORIAL[v.legajo] || [],
+    sanciones:   v._sanciones   || SEED_SANCIONES[v.legajo] || [],
+    incidencias: v._incidencias || [],
+  });
+
+  return (
+    <div className="flex flex-col gap-4 px-4 py-4 a-fade">
+      <SH title="Vigiladores" sub={`Cargá el legajo de cada persona a inspeccionar en ${cortar(rd.objetivo?.nombre || "el objetivo", 26)}`} />
+
+      <Clay className="p-4">
+        <Label className="mb-2">Número de legajo</Label>
+        <div className="flex gap-2">
+          <div className="clay-inset flex items-center gap-2.5 px-3.5 py-3 flex-1 min-w-0">
+            <Icon name="badge" size={17} className="text-ink-faint" />
+            <input type="number" inputMode="numeric" value={legajo}
+              onChange={e => { setLegajo(e.target.value); setError(null); }}
+              onKeyDown={e => e.key === "Enter" && agregar()} placeholder="1024"
+              className="flex-1 bg-transparent outline-none text-xl font-black text-ink tnum placeholder:text-ink-faint placeholder:font-semibold min-w-0" />
+          </div>
+          <Btn onClick={agregar} loading={busy} icon="user-plus" className="px-4">Sumar</Btn>
+        </div>
+        {error && <p className="text-[11px] text-bad-ink font-bold mt-2 flex items-center gap-1"><Icon name="alert" size={12} />{error}</p>}
+        <p className="text-[10px] text-ink-faint mt-2">Podés inspeccionar varios vigiladores en la misma ronda.</p>
+      </Clay>
+
+      {sel.length === 0 ? (
+        <Empty icon="users" title="Todavía no cargaste vigiladores"
+          sub="Ingresá un número de legajo para traer sus datos desde el sistema." />
+      ) : (
+        <div className="flex flex-col gap-2.5">
+          <Label>{sel.length} vigilador{sel.length > 1 ? "es" : ""} en esta ronda</Label>
+          {sel.map((v, i) => {
+            const dCred = diasHasta(v.credencial_venc);
+            const alerta = (dCred != null && dCred <= 30) || v.estado !== "activo";
+            return (
+              <Clay key={v.id} className="p-3.5 a-up" style={{ animationDelay:`${i * 60}ms` }}>
+                <div className="flex items-center gap-3">
+                  <Avatar nombre={v.nombre} size={46} src={v.foto_url} tone={alerta ? "warn" : "brand"} />
+                  <button onClick={() => setPerfil(v)} className="flex-1 min-w-0 text-left focus-ring rounded-lg">
+                    <p className="text-[13px] font-black text-ink leading-tight truncate">{v.nombre}</p>
+                    <p className="text-[10px] text-ink-mute mt-0.5 truncate">{v.puesto} · Legajo {v.legajo}</p>
+                    <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                      <Badge tone={ESTADO_TONE[v.estado] || "gray"}>{v.estado}</Badge>
+                      {dCred != null && dCred <= 30 && <Badge tone="bad" icon="alert">Credencial {dCred}d</Badge>}
+                      {v.es_chofer && <Badge tone="brand" icon="car">Chofer</Badge>}
+                    </div>
+                  </button>
+                  <div className="flex flex-col gap-1.5 shrink-0">
+                    <button onClick={() => setPerfil(v)} aria-label={`Ver perfil de ${v.nombre}`}
+                      className="clay-sm clay-press w-9 h-9 rounded-[12px] flex items-center justify-center text-brand-600 focus-ring">
+                      <Icon name="eye" size={15} />
+                    </button>
+                    <button onClick={() => quitar(v.id)} aria-label={`Quitar a ${v.nombre}`}
+                      className="clay-sm clay-press w-9 h-9 rounded-[12px] flex items-center justify-center text-bad focus-ring">
+                      <Icon name="trash" size={15} />
+                    </button>
+                  </div>
+                </div>
+              </Clay>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="flex gap-2.5 mt-1">
+        <Btn variant="white" icon="arrow-l" onClick={onBack} className="px-4">Atrás</Btn>
+        <Btn full size="lg" disabled={sel.length === 0} onClick={onNext} iconRight="arrow-r">
+          Continuar al checklist
+        </Btn>
+      </div>
+
+      <Sheet open={!!perfil} onClose={() => setPerfil(null)} title="Perfil del vigilador" sub="Datos del legajo en el sistema">
+        {perfil && <PerfilVigilador v={perfil} {...datosPerfil(perfil)} />}
+      </Sheet>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PASO 3 — Checklist Likert por secciones (PRD §3 y §4)
+═══════════════════════════════════════════════════════════ */
+function ItemChecklist({ def, resp, onEstado, onAbrirObs }) {
+  const [criterio, setCriterio] = useState(false);
+  const timer = useRef(null);
+
+  // Long-press abre el criterio completo; el botón "i" hace lo mismo de forma accesible
+  const press   = () => { timer.current = setTimeout(() => setCriterio(true), 480); };
+  const release = () => { clearTimeout(timer.current); };
+  useEffect(() => () => clearTimeout(timer.current), []);
+
+  const estado = resp?.estado || null;
+  const obs    = [...(resp?.obsPred || []), ...(resp?.obsLibre ? [resp.obsLibre] : [])];
+
+  return (
+    <div className={cx("rounded-[20px] overflow-hidden transition-all duration-300",
+      estado === "M" ? "bg-bad-soft" : estado === "R" ? "bg-warn-soft" : "clay")}>
+      <div className="p-3.5">
+        <div className="flex items-start gap-2 mb-3">
+          <p className="flex-1 text-[13px] font-black text-ink leading-snug no-select"
+            onMouseDown={press} onMouseUp={release} onMouseLeave={release}
+            onTouchStart={press} onTouchEnd={release} onTouchCancel={release}>
+            {def.titulo_corto}
+          </p>
+          <button onClick={() => setCriterio(c => !c)} aria-label="Ver criterio de evaluación"
+            className={cx("shrink-0 p-1 rounded-lg focus-ring transition-colors", criterio ? "text-brand-600" : "text-ink-faint")}>
+            <Icon name="info" size={15} />
+          </button>
+        </div>
+
+        {criterio && (
+          <div className="clay-inset px-3 py-2.5 mb-3 a-dn">
+            <p className="text-[11px] text-ink-soft leading-relaxed">{def.criterio_completo}</p>
+            <p className="text-[10px] text-ink-faint mt-1.5 font-bold">Área responsable: {def.area_responsable}</p>
+          </div>
+        )}
+
+        <div className="flex gap-2">
+          {["B","R","M"].map(k => {
+            const v = VALOR[k], on = estado === k;
+            const bg = { B:"bg-good", R:"bg-warn", M:"bg-bad" }[k];
+            return (
+              <button key={k} onClick={() => onEstado(k)}
+                aria-pressed={on} aria-label={`${def.titulo_corto}: ${v.label}`}
+                className={cx("clay-btn flex-1 py-3 rounded-[15px] flex flex-col items-center gap-0.5 transition-all",
+                  on ? cx(bg, "text-white") : "bg-white text-ink-mute")}>
+                <Icon name={v.icon} size={16} strokeWidth={2.4} />
+                <span className="text-[10px] font-black">{v.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {(estado === "R" || estado === "M") && (
+        <button onClick={onAbrirObs}
+          className="w-full px-3.5 py-3 border-t border-white/60 text-left clay-press focus-ring">
+          {obs.length === 0 ? (
+            <div className="flex items-center gap-2">
+              <Icon name="alert" size={14} className={estado === "M" ? "text-bad-ink" : "text-warn-ink"} />
+              <span className={cx("text-[11px] font-black", estado === "M" ? "text-bad-ink" : "text-warn-ink")}>
+                Registrá la observación
+              </span>
+              <Icon name="chevron-r" size={14} className="ml-auto text-ink-faint" />
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <Icon name="ticket" size={12} className={estado === "M" ? "text-bad-ink" : "text-warn-ink"} />
+                <span className={cx("text-[10px] font-black uppercase tracking-wide", estado === "M" ? "text-bad-ink" : "text-warn-ink")}>
+                  Genera ticket
+                </span>
+                <Icon name="chevron-r" size={13} className="ml-auto text-ink-faint" />
+              </div>
+              <p className="text-[11px] text-ink-soft font-semibold leading-snug">{obs.join(" · ")}</p>
+            </div>
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function Step3({ rd, setRD, onNext, onBack }) {
+  const { checklistDefs, secciones, observaciones, ajustes } = useApp();
+  const [abierta, setAbierta] = useState(["seguridad"]);
+  const [obsItem, setObsItem] = useState(null);
+  const [tmpPred, setTmpPred] = useState([]);
+  const [tmpLibre,setTmpLibre]= useState("");
+
+  const respuestas = rd.respuestas || {};
+
+  // Checklist propio del objetivo: plantilla del tipo + sus ajustes (PRD §6)
+  const items = useMemo(
+    () => resolverChecklist(rd.objetivo, checklistDefs, ajustes),
+    [checklistDefs, ajustes, rd.objetivo]
+  );
+
+  const porSeccion = useMemo(() => {
+    const g = {};
+    for (const s of secciones) g[s.clave] = items.filter(i => i.seccion_clave === s.clave).sort((a,b) => a.orden - b.orden);
+    return g;
+  }, [items, secciones]);
+
+  const total     = items.length;
+  const completos = items.filter(i => respuestas[i.id]?.estado).length;
+  const pendientes= total - completos;
+
+  // Un ítem R/M sin observación bloquea el avance (PRD §3.1)
+  const sinObs = items.filter(i => {
+    const r = respuestas[i.id];
+    return (r?.estado === "R" || r?.estado === "M") && !(r.obsPred?.length || r.obsLibre?.trim());
+  });
+
+  const tickets = items.filter(i => ["R","M"].includes(respuestas[i.id]?.estado));
+
+  const setEstado = (item, estado) => {
+    setRD(p => {
+      const prev = p.respuestas?.[item.id] || {};
+      const next = estado === "B"
+        ? { estado:"B", obsPred:[], obsLibre:"" }
+        : { ...prev, estado };
+      return { ...p, respuestas: { ...(p.respuestas || {}), [item.id]: next } };
+    });
+    if (estado !== "B") abrirObs(item, estado);
+  };
+
+  const abrirObs = (item, estadoForzado) => {
+    const r = respuestas[item.id] || {};
+    setTmpPred(r.obsPred || []); setTmpLibre(r.obsLibre || "");
+    setObsItem({ ...item, _estado: estadoForzado || r.estado });
+  };
+
+  const guardarObs = () => {
+    setRD(p => ({
+      ...p,
+      respuestas: {
+        ...(p.respuestas || {}),
+        [obsItem.id]: { ...(p.respuestas?.[obsItem.id] || {}), obsPred: tmpPred, obsLibre: tmpLibre.trim() },
+      },
+    }));
+    setObsItem(null);
+  };
+
+  const toggleSec = (clave) => setAbierta(a => a.includes(clave) ? a.filter(x => x !== clave) : [...a, clave]);
+
+  // Observaciones sugeridas: primero el área del ítem, luego el resto
+  const obsAgrupadas = useMemo(() => {
+    if (!obsItem) return [];
+    const area = obsItem.area_responsable;
+    const g = {};
+    for (const o of observaciones) (g[o.area] = g[o.area] || []).push(o);
+    return Object.entries(g).sort(([a],[b]) => (a === area ? -1 : b === area ? 1 : a.localeCompare(b)));
+  }, [obsItem, observaciones]);
+
+  return (
+    <div className="flex flex-col gap-3.5 px-4 py-4 a-fade">
+      <SH title="Checklist de ronda"
+        sub={`${cortar(rd.objetivo?.nombre || "Objetivo", 30)} · ${SUBTIPO_LABEL[rd.objetivo?.subtipo] || ""} · ${total} ítems`} />
+
+      {/* Progreso */}
+      <Clay className="p-4">
+        <div className="flex items-center justify-between mb-2.5">
+          <div>
+            <p className="text-[13px] font-black text-ink">{completos} de {total} ítems evaluados</p>
+            <p className="text-[10px] text-ink-faint mt-0.5">
+              {pendientes > 0 ? `Faltan ${pendientes}` : "Checklist completo"}
+              {tickets.length > 0 && ` · ${tickets.length} incidencia${tickets.length > 1 ? "s" : ""}`}
+            </p>
+          </div>
+          <span className="text-2xl font-black text-brand-600 tnum">{total ? Math.round(completos / total * 100) : 0}%</span>
+        </div>
+        <Bar value={completos} max={total} color="#2563eb" height={9} />
+      </Clay>
+
+      {/* Secciones acordeón */}
+      {secciones.map(s => {
+        const arr = porSeccion[s.clave] || [];
+        if (!arr.length) return null;
+        const th   = SECCION_THEME[s.color] || SECCION_THEME.azul;
+        const done = arr.filter(i => respuestas[i.id]?.estado).length;
+        const open = abierta.includes(s.clave);
+        const mal  = arr.filter(i => ["R","M"].includes(respuestas[i.id]?.estado)).length;
+        return (
+          <div key={s.clave}>
+            <button onClick={() => toggleSec(s.clave)} aria-expanded={open}
+              className="clay w-full flex items-center gap-3 p-3.5 clay-press focus-ring">
+              <span className="w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0"
+                style={{ background:th.soft, color:th.ink }}>
+                <Icon name={{ seguridad:"shield", habilidades:"target", logistica:"layers", rrhh:"users" }[s.clave] || "clipboard"} size={19} />
+              </span>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-[13px] font-black text-ink leading-tight">{s.nombre}</p>
+                <p className="text-[10px] text-ink-faint mt-0.5 tnum">
+                  {done}/{arr.length} evaluados{mal > 0 ? ` · ${mal} con observación` : ""}
+                </p>
+              </div>
+              {done === arr.length
+                ? <span className="w-6 h-6 rounded-full bg-good-soft text-good-ink flex items-center justify-center shrink-0"><Icon name="check" size={13} strokeWidth={3} /></span>
+                : <span className="text-[10px] font-black tnum px-2 py-1 rounded-full shrink-0" style={{ background:th.soft, color:th.ink }}>{arr.length - done}</span>}
+              <Icon name="chevron" size={16} className={cx("text-ink-faint transition-transform shrink-0", open && "rotate-180")} />
+            </button>
+
+            {open && (
+              <div className="flex flex-col gap-2.5 mt-2.5 pl-1">
+                {arr.map((def, i) => (
+                  <div key={def.id} className="a-up" style={{ animationDelay:`${i * 45}ms` }}>
+                    <ItemChecklist def={def} resp={respuestas[def.id]}
+                      onEstado={k => setEstado(def, k)} onAbrirObs={() => abrirObs(def)} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* Tickets que se van a generar */}
+      {tickets.length > 0 && (
+        <Clay className="p-4 a-up" tint="linear-gradient(135deg,#fff7ed,#ffedd5)">
+          <div className="flex items-center gap-2 mb-2">
+            <Icon name="ticket" size={16} className="text-tang-ink" />
+            <p className="text-[12px] font-black text-tang-ink">
+              {tickets.length} ticket{tickets.length > 1 ? "s" : ""} se generará{tickets.length > 1 ? "n" : ""} al guardar
+            </p>
+          </div>
+          <div className="flex flex-col gap-1">
+            {tickets.map(t => {
+              const r = respuestas[t.id];
+              const area = observaciones.find(o => o.texto === r.obsPred?.[0])?.area || t.area_responsable;
+              return (
+                <div key={t.id} className="flex items-center gap-2">
+                  <Badge tone={r.estado === "M" ? "bad" : "warn"}>{VALOR[r.estado].label}</Badge>
+                  <span className="text-[11px] text-ink-soft font-semibold truncate flex-1">{t.titulo_corto}</span>
+                  <span className="text-[10px] text-ink-faint font-bold shrink-0">{area}</span>
+                </div>
+              );
+            })}
+          </div>
+        </Clay>
+      )}
+
+      {sinObs.length > 0 && (
+        <div className="bg-warn-soft rounded-[16px] px-4 py-3 flex items-start gap-2">
+          <Icon name="alert" size={15} className="text-warn-ink mt-px" />
+          <p className="text-[11px] font-bold text-warn-ink leading-snug">
+            {sinObs.length} ítem{sinObs.length > 1 ? "s" : ""} marcado{sinObs.length > 1 ? "s" : ""} como Regular o Malo
+            sin observación. Tocá la fila para completarla.
+          </p>
+        </div>
+      )}
+
+      <div className="flex gap-2.5">
+        <Btn variant="white" icon="arrow-l" onClick={onBack} className="px-4">Atrás</Btn>
+        <Btn full size="lg" disabled={pendientes > 0 || sinObs.length > 0} onClick={onNext} iconRight="arrow-r">
+          {pendientes > 0 ? `Faltan ${pendientes} ítems` : sinObs.length > 0 ? "Completá las observaciones" : "Continuar a evidencia"}
+        </Btn>
+      </div>
+
+      {/* Hoja de observaciones predefinidas */}
+      <Sheet open={!!obsItem} onClose={() => setObsItem(null)}
+        title={obsItem?.titulo_corto} sub={`Valoración ${obsItem ? VALOR[obsItem._estado]?.label : ""} · elegí la observación que corresponda`}>
+        {obsItem && (
+          <div className="flex flex-col gap-4">
+            <div className="clay-inset px-3.5 py-3">
+              <p className="text-[11px] text-ink-soft leading-relaxed">{obsItem.criterio_completo}</p>
+            </div>
+
+            {obsAgrupadas.map(([area, arr]) => (
+              <div key={area}>
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge tone={AREA_THEME[area]?.tone || "gray"}>{area}</Badge>
+                  {area === obsItem.area_responsable && <span className="text-[10px] font-bold text-ink-faint">sugerida</span>}
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  {arr.map(o => {
+                    const on = tmpPred.includes(o.texto);
+                    return (
+                      <button key={o.texto}
+                        onClick={() => setTmpPred(p => on ? p.filter(x => x !== o.texto) : [...p, o.texto])}
+                        className={cx("clay-press flex items-center gap-2.5 px-3.5 py-3 rounded-[15px] text-left transition-all focus-ring",
+                          on ? "bg-brand-600 text-white" : "clay-sm text-ink-soft")}>
+                        <span className={cx("w-4.5 h-4.5 rounded-md flex items-center justify-center shrink-0 border-2",
+                          on ? "bg-white/25 border-white/50" : "border-slate-300")} style={{ width:18, height:18 }}>
+                          {on && <Icon name="check" size={11} strokeWidth={3.5} />}
+                        </span>
+                        <span className="text-[12px] font-semibold leading-snug">{o.texto}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+            <Textarea label="Otra observación" value={tmpLibre} onChange={e => setTmpLibre(e.target.value)} rows={3}
+              placeholder="Describí la situación si no está en el listado…" />
+
+            <div className="flex gap-2.5 pb-1">
+              <Btn variant="white" onClick={() => setObsItem(null)} className="px-5">Cancelar</Btn>
+              <Btn full size="lg" icon="check" disabled={!tmpPred.length && !tmpLibre.trim()} onClick={guardarObs}>
+                Guardar observación
+              </Btn>
+            </div>
+          </div>
+        )}
+      </Sheet>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PASO 4 — Evidencia fotográfica con marca de agua (PRD §8.5)
+═══════════════════════════════════════════════════════════ */
+function Step4({ rd, setRD, onNext, onBack, supervisor }) {
+  const [cargando, setCargando] = useState(false);
+  const [ver, setVer] = useState(null);
+  const inputRef = useRef(null);
+  const fotos = rd.fotos || [];
+
+  const tomar = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setCargando(true);
+    const now = new Date();
+
+    // GPS real al momento de la captura; si no hay señal, cae a la última posición conocida del dispositivo (paso 1)
+    let lat = rd.deviceCoords?.lat, lng = rd.deviceCoords?.lng;
+    if (navigator.geolocation) {
+      try {
+        const pos = await new Promise((res, rej) =>
+          navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true, timeout: 8000, maximumAge: 4000 }));
+        lat = pos.coords.latitude; lng = pos.coords.longitude;
+      } catch { /* se mantiene el fallback */ }
+    }
+
+    for (const file of files) {
+      const dataUrl = await new Promise(res => {
+        const fr = new FileReader();
+        fr.onload = () => res(fr.result);
+        fr.readAsDataURL(file);
+      });
+      const estampada = await estamparFoto(dataUrl, {
+        l1: `${fmtFecha(now)} · ${now.toLocaleTimeString("es-AR")}`,
+        l2: lat != null ? `GPS ${lat.toFixed(5)}, ${lng.toFixed(5)}` : "GPS no disponible",
+        l3: `${supervisor} · ${rd.objetivo?.nombre || ""}`,
+      });
+      setRD(p => ({ ...p, fotos: [...(p.fotos || []), { dataUrl: estampada, lat, lng, ts: now.toISOString() }] }));
+    }
+    setCargando(false);
+    e.target.value = "";
+  };
+
+  const quitar = (i) => setRD(p => ({ ...p, fotos: (p.fotos || []).filter((_, k) => k !== i) }));
+
+  return (
+    <div className="flex flex-col gap-4 px-4 py-4 a-fade">
+      <SH title="Evidencia fotográfica" sub="Opcional · cada foto se sella con fecha, hora, GPS y supervisor" />
+
+      <input ref={inputRef} type="file" accept="image/*" capture="environment" multiple onChange={tomar} className="hidden" />
+
+      <button onClick={() => inputRef.current?.click()} disabled={cargando}
+        className="clay-btn w-full py-8 rounded-clay2 bg-white flex flex-col items-center gap-2.5 focus-ring">
+        <span className="w-16 h-16 rounded-full bg-brand-50 flex items-center justify-center text-brand-600">
+          <Icon name={cargando ? "refresh" : "camera"} size={28} className={cargando ? "a-spin" : ""} />
+        </span>
+        <div className="text-center">
+          <p className="text-sm font-black text-ink">{cargando ? "Procesando…" : "Capturar evidencia"}</p>
+          <p className="text-[11px] text-ink-faint mt-0.5">Cámara o galería · se puede sumar más de una</p>
+        </div>
+      </button>
+
+      {fotos.length > 0 && (
+        <div>
+          <Label className="mb-2">{fotos.length} foto{fotos.length > 1 ? "s" : ""} adjunta{fotos.length > 1 ? "s" : ""}</Label>
+          <div className="grid grid-cols-2 gap-2.5">
+            {fotos.map((f, i) => (
+              <div key={i} className="clay p-1.5 a-pop relative overflow-hidden" style={{ animationDelay:`${i * 60}ms` }}>
+                <button onClick={() => setVer(f)} className="block w-full focus-ring rounded-[16px] overflow-hidden">
+                  <img src={f.dataUrl} alt={`Evidencia ${i + 1}`} className="w-full h-28 object-cover rounded-[16px]" />
+                </button>
+                <button onClick={() => quitar(i)} aria-label="Quitar foto"
+                  className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/95 text-bad flex items-center justify-center shadow-md">
+                  <Icon name="x" size={14} strokeWidth={2.6} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <Clay className="p-3.5 flex items-start gap-2.5" tint="linear-gradient(135deg,#eff6ff,#dbeafe)">
+        <Icon name="stamp" size={16} className="text-brand-700 mt-px" />
+        <p className="text-[11px] text-brand-800 leading-relaxed font-medium">
+          La marca de agua se aplica al momento de la captura y no puede modificarse después.
+        </p>
+      </Clay>
+
+      <div className="flex gap-2.5">
+        <Btn variant="white" icon="arrow-l" onClick={onBack} className="px-4">Atrás</Btn>
+        <Btn full size="lg" onClick={onNext} iconRight="arrow-r">
+          {fotos.length ? "Continuar a firmas" : "Omitir y firmar"}
+        </Btn>
+      </div>
+
+      <Sheet open={!!ver} onClose={() => setVer(null)} title="Evidencia" sub="Marca de agua no editable">
+        {ver && <img src={ver.dataUrl} alt="Evidencia ampliada" className="w-full rounded-[18px]" />}
+      </Sheet>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PASO 5 — Firma individual por vigilador (PRD §5.2)
+═══════════════════════════════════════════════════════════ */
+function CanvasFirma({ onChange, disabled }) {
+  const ref     = useRef(null);
+  const dibuja  = useRef(false);
+  const trazado = useRef(false); // ref, no estado: `stop` corre en el mismo tick que el último `move`
+  const ultimo  = useRef(null);
+  const [hay, setHay] = useState(false);
+
+  const pos = (e, cv) => {
+    const r = cv.getBoundingClientRect();
+    const sx = cv.width / r.width, sy = cv.height / r.height;
+    const p = e.touches ? e.touches[0] : e;
+    return { x: (p.clientX - r.left) * sx, y: (p.clientY - r.top) * sy };
+  };
+
+  const start = e => { if (disabled) return; dibuja.current = true; ultimo.current = pos(e, ref.current); };
+  const move  = e => {
+    if (!dibuja.current || disabled) return;
+    e.preventDefault();
+    const cv = ref.current, ctx = cv.getContext("2d"), p = pos(e, cv);
+    ctx.beginPath();
+    ctx.strokeStyle = "#1d4ed8"; ctx.lineWidth = 2.8; ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.moveTo(ultimo.current.x, ultimo.current.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+    ultimo.current = p;
+    if (!trazado.current) { trazado.current = true; setHay(true); }
+  };
+  const stop = () => {
+    if (!dibuja.current) return;
+    dibuja.current = false;
+    if (trazado.current) onChange(ref.current.toDataURL("image/png"));
+  };
+  const limpiar = () => {
+    const cv = ref.current;
+    cv.getContext("2d").clearRect(0, 0, cv.width, cv.height);
+    trazado.current = false; setHay(false); onChange(null);
+  };
+
+  useEffect(() => { if (disabled) limpiar(); }, [disabled]);
+
+  return (
+    <div>
+      <div className={cx("clay-inset overflow-hidden transition-all", disabled && "opacity-40")}>
+        <canvas ref={ref} width={340} height={140} className="w-full sig-canvas"
+          onMouseDown={start} onMouseMove={move} onMouseUp={stop} onMouseLeave={stop}
+          onTouchStart={start} onTouchMove={move} onTouchEnd={stop} />
+      </div>
+      <div className="flex items-center justify-between mt-2">
+        <p className="text-[10px] text-ink-faint font-medium">
+          {disabled ? "Negativa registrada" : hay ? "Firma capturada" : "Firmá con el dedo o el cursor"}
+        </p>
+        {hay && !disabled && (
+          <button onClick={limpiar} className="text-[10px] font-black text-brand-600 flex items-center gap-1 focus-ring rounded px-1">
+            <Icon name="refresh" size={12} /> Rehacer
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Step5({ rd, setRD, onGuardar, onBack, guardando }) {
+  const { offline, apiStatus } = useApp();
+  const vigs   = rd.vigiladores || [];
+  const firmas = rd.firmas || {};
+  const [activo, setActivo] = useState(vigs[0]?.id);
+
+  const setFirma = (id, dataUrl) => setRD(p => ({
+    ...p, firmas: { ...(p.firmas || {}), [id]: { ...(p.firmas?.[id] || {}), dataUrl } },
+  }));
+  const setNego = (id) => setRD(p => {
+    const prev = p.firmas?.[id] || {};
+    return { ...p, firmas: { ...(p.firmas || {}), [id]: { dataUrl: prev.nego ? prev.dataUrl : null, nego: !prev.nego } } };
+  });
+
+  const firmados = vigs.filter(v => firmas[v.id]?.dataUrl || firmas[v.id]?.nego).length;
+  const puede    = firmados > 0 && firmados === vigs.length;
+  const negativas= vigs.filter(v => firmas[v.id]?.nego);
+
+  const items = Object.entries(rd.respuestas || {});
+  const inc   = items.filter(([, r]) => r.estado === "R" || r.estado === "M").length;
+
+  return (
+    <div className="flex flex-col gap-4 px-4 py-4 a-fade">
+      <SH title="Firma y cierre" sub="Cada vigilador inspeccionado debe firmar el acta" />
+
+      {/* Resumen del acta */}
+      <Clay className="p-4">
+        <Label className="mb-2.5">Resumen de la ronda</Label>
+        <Row k="Objetivo"    v={rd.objetivo?.nombre || "—"} />
+        <Row k="Modalidad"   v={rd.tipo === "remota" ? "Remota" : "Presencial"} tone={rd.tipo === "remota" ? "warn" : "good"} />
+        <Row k="Geocerca"    v={rd.gpsStatus === "inside" ? "Dentro" : "Fuera"} tone={rd.gpsStatus === "inside" ? "good" : "bad"} />
+        <Row k="Vigiladores" v={vigs.length} />
+        <Row k="Ítems evaluados" v={items.length} />
+        <Row k="Incidencias" v={inc} tone={inc > 0 ? "bad" : "good"} />
+        <Row k="Evidencia"   v={`${(rd.fotos || []).length} fotos`} last />
+      </Clay>
+
+      {/* Progreso de firmas */}
+      <Clay className="p-3.5">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[12px] font-black text-ink">{firmados} de {vigs.length} firmas registradas</p>
+          {puede && <Badge tone="good" icon="check">Completo</Badge>}
+        </div>
+        <Bar value={firmados} max={vigs.length} color="#10b981" height={8} />
+      </Clay>
+
+      {/* Selector de vigilador */}
+      {vigs.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+          {vigs.map(v => {
+            const f = firmas[v.id];
+            const ok = f?.dataUrl || f?.nego;
+            return (
+              <button key={v.id} onClick={() => setActivo(v.id)}
+                className={cx("clay-btn shrink-0 px-3.5 py-2.5 rounded-[15px] flex items-center gap-2 text-[11px] font-black transition-all",
+                  activo === v.id ? "bg-brand-600 text-white" : "bg-white text-ink-mute")}>
+                {ok && <Icon name={f.nego ? "x-circle" : "check-circle"} size={13} />}
+                {cortar(v.nombre.split(" ")[0] + " " + (v.nombre.split(" ").slice(-1)[0] || ""), 16)}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Panel de firma del vigilador activo */}
+      {vigs.filter(v => v.id === activo).map(v => {
+        const f = firmas[v.id] || {};
+        return (
+          <Clay key={v.id} className="p-4 a-fade">
+            <div className="flex items-center gap-3 mb-3.5">
+              <Avatar nombre={v.nombre} size={44} src={v.foto_url} />
+              <div className="min-w-0">
+                <p className="text-[13px] font-black text-ink leading-tight truncate">{v.nombre}</p>
+                <p className="text-[10px] text-ink-mute">Legajo {v.legajo} · DNI {v.dni || "—"}</p>
+              </div>
+            </div>
+
+            {f.nego ? (
+              <div className="clay-inset py-9 flex flex-col items-center gap-2">
+                <Icon name="x-circle" size={30} className="text-bad" />
+                <p className="text-[12px] font-black text-bad-ink">Negativa a firmar registrada</p>
+              </div>
+            ) : (
+              <CanvasFirma onChange={d => setFirma(v.id, d)} disabled={false} />
+            )}
+
+            <button onClick={() => setNego(v.id)}
+              className={cx("clay-btn w-full mt-3 py-3 rounded-[15px] text-[11px] font-black flex items-center justify-center gap-2",
+                f.nego ? "bg-bad text-white" : "bg-white text-bad")}>
+              <Icon name={f.nego ? "refresh" : "x-circle"} size={15} />
+              {f.nego ? "Deshacer negativa" : "Registrar negativa a firmar"}
+            </button>
+          </Clay>
+        );
+      })}
+
+      {negativas.length > 0 && (
+        <div className="bg-bad-soft rounded-[16px] px-4 py-3 flex items-start gap-2 a-up">
+          <Icon name="alert" size={15} className="text-bad-ink mt-px" />
+          <p className="text-[11px] font-bold text-bad-ink leading-snug">
+            {negativas.length} negativa{negativas.length > 1 ? "s" : ""} a firmar · se generará un ticket a RRHH por cada una.
+          </p>
+        </div>
+      )}
+
+      {offline && (
+        <div className="bg-warn-soft rounded-[16px] px-4 py-3 flex items-start gap-2">
+          <Icon name="cloud-off" size={15} className="text-warn-ink mt-px" />
+          <p className="text-[11px] font-bold text-warn-ink leading-snug">
+            Sin conexión: el acta se guarda en el dispositivo y se sincroniza automáticamente al recuperar señal.
+          </p>
+        </div>
+      )}
+
+      <div className="flex gap-2.5">
+        <Btn variant="white" icon="arrow-l" onClick={onBack} className="px-4">Atrás</Btn>
+        <Btn full size="xl" variant={offline ? "warn" : "success"} icon={offline ? "cloud-off" : "save"}
+          disabled={!puede} loading={guardando} onClick={onGuardar}>
+          {guardando ? "Guardando…" : !puede ? `Faltan ${vigs.length - firmados} firmas` : offline ? "Guardar en cola" : "Guardar acta"}
+        </Btn>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PASO 6 — Acta de supervisión generada (PRD §5.1)
+═══════════════════════════════════════════════════════════ */
+function ActaGenerada({ rd, resultado, supervisor, onNueva }) {
+  const { checklistDefs } = useApp();
+  const { acta, estado, servidor, aviso } = resultado;
+  const encolada = estado === "encolada";
+  const fin = acta.generadaEn || new Date();
+
+  const respuestas = Object.entries(rd.respuestas || {}).map(([id, r]) => ({
+    def: checklistDefs.find(d => String(d.id) === String(id)) || { titulo_corto:"Ítem" }, r,
+  }));
+  const conObs = respuestas.filter(({ r }) => r.estado === "R" || r.estado === "M");
+
+  return (
+    <div className="flex flex-col gap-4 px-4 py-5 a-fade">
+      {/* Confirmación */}
+      <div className="flex flex-col items-center gap-3 pb-1">
+        <div className={cx("w-20 h-20 rounded-full flex items-center justify-center a-pop",
+          encolada ? "bg-warn-soft text-warn-ink" : "bg-good-soft text-good-ink")}
+          style={{ boxShadow:"7px 7px 18px rgba(37,99,235,.14), -5px -5px 14px rgba(255,255,255,.95)" }}>
+          <Icon name={encolada ? "cloud-off" : "check-circle"} size={38} strokeWidth={2.2} />
+        </div>
+        <div className="text-center">
+          <h2 className="text-xl font-black text-ink tracking-tight">
+            {encolada ? "Acta guardada localmente" : "Acta registrada"}
+          </h2>
+          <p className="text-xs text-ink-mute mt-1 leading-relaxed max-w-[280px]">
+            {encolada
+              ? "Sin conexión. Se enviará automáticamente al recuperar señal."
+              : servidor
+                ? "Sellada digitalmente y sincronizada con el servidor."
+                : "Sellada digitalmente. Los paneles se actualizaron al instante."}
+          </p>
+          {aviso && <p className="text-[10px] text-warn-ink font-bold mt-1.5">{aviso}</p>}
+        </div>
+      </div>
+
+      {/* Documento */}
+      <Clay className="overflow-hidden">
+        {/* Encabezado institucional */}
+        <div className="px-4 py-4 text-white" style={{ background:"linear-gradient(135deg,#2563eb,#1d4ed8)" }}>
+          <div className="flex items-center gap-2.5">
+            <span className="w-10 h-10 rounded-[13px] bg-white/20 flex items-center justify-center">
+              <Icon name="shield-ok" size={20} />
+            </span>
+            <div>
+              <p className="text-[13px] font-black leading-tight">Argentina Seguridad Integral</p>
+              <p className="text-[10px] text-brand-100">Acta de Supervisión</p>
+            </div>
+          </div>
+          <div className="clay-inset mt-3 px-3 py-2" style={{ background:"rgba(255,255,255,.16)", boxShadow:"none" }}>
+            <p className="text-[11px] font-mono font-black tracking-wide">{acta.codigo}</p>
+          </div>
+        </div>
+
+        <div className="p-4 flex flex-col gap-4">
+          {/* Objetivo */}
+          <div>
+            <Label className="mb-1.5">Objetivo</Label>
+            <p className="text-[13px] font-black text-ink">{rd.objetivo?.nombre}</p>
+            <p className="text-[11px] text-ink-mute mt-0.5">{rd.objetivo?.direccion || "—"}</p>
+            <p className="text-[10px] text-ink-faint mt-1 font-mono">
+              {SUBTIPO_LABEL[rd.objetivo?.subtipo]}
+              {rd.objetivo?.lat != null && ` · ${rd.objetivo.lat.toFixed(5)}, ${rd.objetivo.lng.toFixed(5)}`}
+            </p>
+          </div>
+
+          <div className="h-px bg-slate-100" />
+
+          {/* Datos de la ronda */}
+          <div>
+            <Row k="Supervisor"    v={supervisor} />
+            <Row k="Inicio"        v={rd.horaInicio ? `${fmtFecha(rd.horaInicio)} · ${fmtHora(rd.horaInicio)}` : "—"} />
+            <Row k="Cierre"        v={`${fmtFecha(fin)} · ${fmtHora(fin)}`} />
+            <Row k="Modalidad"     v={rd.tipo === "remota" ? "Remota" : "Presencial"} tone={rd.tipo === "remota" ? "warn" : "good"} />
+            <Row k="Validación GPS"v={rd.gpsStatus === "inside" ? "Dentro del geocerco" : "Fuera del geocerco"} tone={rd.gpsStatus === "inside" ? "good" : "bad"} last />
+          </div>
+
+          {rd.justificacion && (
+            <div className="clay-inset px-3.5 py-3">
+              <Label className="mb-1">Justificación de supervisión remota</Label>
+              <p className="text-[11px] text-ink-soft leading-relaxed">{rd.justificacion}</p>
+            </div>
+          )}
+
+          <div className="h-px bg-slate-100" />
+
+          {/* Vigiladores + firmas */}
+          <div>
+            <Label className="mb-2">Vigiladores inspeccionados</Label>
+            <div className="flex flex-col gap-2.5">
+              {(rd.vigiladores || []).map(v => {
+                const f = rd.firmas?.[v.id] || {};
+                return (
+                  <div key={v.id} className="clay-inset p-3">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <div className="min-w-0">
+                        <p className="text-[12px] font-black text-ink truncate">{v.nombre}</p>
+                        <p className="text-[10px] text-ink-faint">Legajo {v.legajo} · DNI {v.dni || "—"}</p>
+                      </div>
+                      <Badge tone={f.nego ? "bad" : "good"}>{f.nego ? "No firmó" : "Firmado"}</Badge>
+                    </div>
+                    {f.dataUrl
+                      ? <div className="bg-white rounded-[12px] p-1"><img src={f.dataUrl} alt={`Firma de ${v.nombre}`} className="w-full h-16 object-contain" /></div>
+                      : <div className="bg-white rounded-[12px] h-16 flex items-center justify-center">
+                          <p className="text-[10px] font-bold text-bad-ink">Negativa registrada · ticket a RRHH</p>
+                        </div>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="h-px bg-slate-100" />
+
+          {/* Resultado del checklist */}
+          <div>
+            <Label className="mb-2">Resultado del checklist</Label>
+            <div className="flex gap-2 mb-2.5">
+              {["B","R","M"].map(k => {
+                const n = respuestas.filter(({ r }) => r.estado === k).length;
+                return (
+                  <div key={k} className={cx("flex-1 rounded-[13px] py-2 text-center",
+                    k === "B" ? "bg-good-soft" : k === "R" ? "bg-warn-soft" : "bg-bad-soft")}>
+                    <p className={cx("text-lg font-black tnum leading-none",
+                      k === "B" ? "text-good-ink" : k === "R" ? "text-warn-ink" : "text-bad-ink")}>{n}</p>
+                    <p className={cx("text-[9px] font-bold mt-0.5",
+                      k === "B" ? "text-good-ink" : k === "R" ? "text-warn-ink" : "text-bad-ink")}>{VALOR[k].label}</p>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex flex-col">
+              {respuestas.map(({ def, r }, i) => (
+                <div key={i} className={cx("flex items-center gap-2 py-2", i < respuestas.length - 1 && "border-b border-slate-100")}>
+                  <span className={cx("w-5 h-5 rounded-md flex items-center justify-center shrink-0 text-white",
+                    r.estado === "B" ? "bg-good" : r.estado === "R" ? "bg-warn" : "bg-bad")}>
+                    <Icon name={VALOR[r.estado].icon} size={11} strokeWidth={3} />
+                  </span>
+                  <span className="text-[11px] text-ink-soft font-semibold flex-1 leading-snug">{def.titulo_corto}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Observaciones e incidencias */}
+          {conObs.length > 0 && (
+            <>
+              <div className="h-px bg-slate-100" />
+              <div>
+                <Label className="mb-2">Observaciones e incidencias</Label>
+                <div className="flex flex-col gap-2">
+                  {conObs.map(({ def, r }, i) => {
+                    const tk = acta.tickets.find(t => t.item === def.titulo_corto);
+                    return (
+                      <div key={i} className={cx("rounded-[14px] p-3", r.estado === "M" ? "bg-bad-soft" : "bg-warn-soft")}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge tone={r.estado === "M" ? "bad" : "warn"}>{VALOR[r.estado].label}</Badge>
+                          {tk && <span className="text-[10px] font-mono font-black text-ink-mute">{tk.id}</span>}
+                        </div>
+                        <p className="text-[11px] font-black text-ink">{def.titulo_corto}</p>
+                        <p className="text-[11px] text-ink-soft mt-0.5 leading-snug">
+                          {[...(r.obsPred || []), r.obsLibre].filter(Boolean).join(" · ")}
+                        </p>
+                        {tk && <p className="text-[10px] text-ink-faint mt-1 font-bold">Área responsable: {tk.area}</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Evidencia */}
+          {(rd.fotos || []).length > 0 && (
+            <>
+              <div className="h-px bg-slate-100" />
+              <div>
+                <Label className="mb-2">Evidencia fotográfica</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {rd.fotos.map((f, i) => (
+                    <img key={i} src={f.dataUrl} alt={`Evidencia ${i + 1}`} className="w-full h-20 object-cover rounded-[12px]" />
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Sello */}
+          <div className="clay-inset px-3.5 py-3 stripe-bg">
+            <div className="flex items-start gap-2">
+              <Icon name="stamp" size={16} className="text-brand-700 mt-px" />
+              <div>
+                <p className="text-[10px] font-black text-brand-800 uppercase tracking-wide">Sello digital · no modificable</p>
+                <p className="text-[10px] text-ink-mute mt-1 font-mono leading-relaxed">
+                  {fmtFecha(fin)} {fin.toLocaleTimeString("es-AR")}<br />
+                  {rd.deviceCoords?.lat != null ? `GPS ${rd.deviceCoords.lat.toFixed(5)}, ${rd.deviceCoords.lng.toFixed(5)}` : "GPS no disponible"}<br />
+                  {supervisor}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Clay>
+
+      {/* Tickets emitidos */}
+      {acta.tickets.length > 0 && (
+        <Clay className="p-4">
+          <div className="flex items-center gap-2 mb-2.5">
+            <Icon name="send" size={16} className="text-brand-600" />
+            <p className="text-[12px] font-black text-ink">
+              {acta.tickets.length} ticket{acta.tickets.length > 1 ? "s" : ""} {encolada ? "pendiente de envío" : "enviado a las áreas"}
+            </p>
+          </div>
+          <div className="flex flex-col gap-2">
+            {acta.tickets.map(t => (
+              <div key={t.id} className="clay-inset px-3 py-2.5 flex items-center gap-2">
+                <Badge tone={AREA_THEME[t.area]?.tone || "gray"}>{t.area}</Badge>
+                <span className="text-[11px] text-ink-soft font-semibold truncate flex-1">{t.item}</span>
+                <span className="text-[9px] font-mono font-black text-ink-faint shrink-0">{t.id}</span>
+              </div>
+            ))}
+          </div>
+        </Clay>
+      )}
+
+      <Btn full size="xl" icon="refresh" onClick={onNueva}>Iniciar nueva ronda</Btn>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PANEL SUPERVISOR — wizard de 5 pasos + acta
+═══════════════════════════════════════════════════════════ */
+const PASOS = ["Inicio", "Vigiladores", "Checklist", "Evidencia", "Firmas"];
+
+function SupervisorPanel() {
+  const { currentUser, guardarRonda } = useApp();
+  const [paso, setPaso] = useState(0);
+  const [rd,   setRD]   = useState({});
+  const [res,  setRes]  = useState(null);
+  const [busy, setBusy] = useState(false);
+  const scrollRef = useRef(null);
+
+  const supervisor = currentUser?.nombre || "Supervisor";
+
+  const ir = (n) => { setPaso(n); scrollRef.current?.scrollTo({ top:0, behavior:"smooth" }); };
+  const reiniciar = () => { setRD({}); setRes(null); ir(0); };
+
+  const guardar = async () => {
+    setBusy(true);
+    const r = await guardarRonda(rd, supervisor);
+    setRes(r); setBusy(false);
+    scrollRef.current?.scrollTo({ top:0, behavior:"smooth" });
+  };
+
+  const pantallas = [
+    <Step1 rd={rd} setRD={setRD} onNext={() => ir(1)} />,
+    <Step2 rd={rd} setRD={setRD} onNext={() => ir(2)} onBack={() => ir(0)} />,
+    <Step3 rd={rd} setRD={setRD} onNext={() => ir(3)} onBack={() => ir(1)} />,
+    <Step4 rd={rd} setRD={setRD} onNext={() => ir(4)} onBack={() => ir(2)} supervisor={supervisor} />,
+    <Step5 rd={rd} setRD={setRD} onGuardar={guardar} onBack={() => ir(3)} guardando={busy} />,
+  ];
+
+  return (
+    <div className="flex flex-col h-full">
+      <PanelHeader icon="shield" rol="Supervisor de campo" nombre={supervisor} tone="brand" />
+      <ConnBar />
+      <SyncToast />
+      {!res && <Stepper steps={PASOS} current={paso} />}
+      <div ref={scrollRef} className="scroll-y flex-1">
+        {res
+          ? <ActaGenerada rd={rd} resultado={res} supervisor={supervisor} onNueva={reiniciar} />
+          : pantallas[paso]}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PANEL ADMINISTRATIVO — gestión de incidencias
+═══════════════════════════════════════════════════════════ */
+function AdminPanel() {
+  const { ticketsActivos, cerrarTicket, apiStatus, apiFetch, currentUser } = useApp();
+  const [apiTickets, setApiTickets] = useState(null);
+  const [cargando,   setCargando]   = useState(false);
+  const [filtro,     setFiltro]     = useState("activo");
+  const [area,       setArea]       = useState("todas");
+  const [sel,        setSel]        = useState(null);
+  const [resol,      setResol]      = useState("");
+  const [cerrando,   setCerrando]   = useState(false);
+
+  const conApi  = apiStatus === "connected" && apiTickets !== null;
+  const tickets = conApi ? apiTickets : ticketsActivos;
+
+  useEffect(() => {
+    if (apiStatus !== "connected") { setApiTickets(null); return; }
+    setCargando(true);
+    apiFetch("/api/tickets?limite=100").then(r => r.json()).then(d => {
+      if (!d.ok) return;
+      setApiTickets(d.tickets.map(t => ({
+        id: t.codigo_ticket, _dbId: t.id, obj: t.objetivo, sup: t.supervisor,
+        val: t.valoracion || "R", area: t.area_responsable, item: t.item_titulo,
+        vig: t.vigilador, estado: t.estado === "ABIERTO" ? "Activo" : "Cerrado",
+        desc: t.descripcion, resolucion: t.resolucion,
+        fecha: new Date(t.fecha_creacion).toLocaleString("es-AR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" }),
+        isNew: false,
+      })));
+    }).catch(e => console.warn("[tickets]", e.message)).finally(() => setCargando(false));
+  }, [apiStatus]);
+
+  const stats = {
+    crit: tickets.filter(t => t.val === "M" && t.estado === "Activo").length,
+    act:  tickets.filter(t => t.estado === "Activo").length,
+    cer:  tickets.filter(t => t.estado === "Cerrado").length,
+  };
+
+  const areas = useMemo(() => {
+    const s = {};
+    for (const t of tickets) if (t.estado === "Activo") s[t.area] = (s[t.area] || 0) + 1;
+    return s;
+  }, [tickets]);
+
+  const lista = tickets.filter(t =>
+    (filtro === "todas" || (filtro === "activo" ? t.estado === "Activo" : t.estado === "Cerrado")) &&
+    (area === "todas" || t.area === area)
+  );
+
+  const actual = sel ? tickets.find(t => t.id === sel.id) || sel : null;
+
+  const confirmarCierre = async () => {
+    setCerrando(true);
+    if (conApi && actual?._dbId) {
+      try { await apiFetch(`/api/tickets/${actual._dbId}/resolver`, { method:"PATCH", body: JSON.stringify({ resolucion: resol }) }); }
+      catch (e) { console.warn("[cerrar]", e.message); }
+      setApiTickets(ts => ts.map(t => t.id === actual.id ? { ...t, estado:"Cerrado", resolucion: resol } : t));
+    } else {
+      cerrarTicket(actual.id, resol);
+    }
+    setCerrando(false); setSel(null); setResol("");
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <PanelHeader icon="clipboard" rol="Gestión de incidencias" nombre={currentUser?.nombre || "Administración"} tone="plum" />
+      <ConnBar />
+      <SyncToast />
+
+      {/* Contadores */}
+      <div className="flex gap-2 px-4 pb-2.5 shrink-0">
+        {[["Críticas", stats.crit, "bad"], ["Activas", stats.act, "warn"], ["Cerradas", stats.cer, "good"]].map(([l, v, tone]) => (
+          <Clay key={l} className="flex-1 p-3 text-center">
+            <p className={cx("text-2xl font-black tnum leading-none",
+              tone === "bad" ? "text-bad" : tone === "warn" ? "text-warn" : "text-good")}>{v}</p>
+            <p className="text-[10px] font-bold text-ink-mute mt-1">{l}</p>
+          </Clay>
+        ))}
+      </div>
+
+      <div className="px-4 pb-2 shrink-0">
+        <Segmented tone="plum" value={filtro} onChange={setFiltro}
+          options={[["activo","Activas",stats.act],["cerrado","Cerradas",stats.cer],["todas","Todas",tickets.length]]} />
+      </div>
+
+      {/* Filtro por área */}
+      {Object.keys(areas).length > 0 && (
+        <div className="flex gap-2 overflow-x-auto px-4 pb-2.5 shrink-0">
+          <button onClick={() => setArea("todas")}
+            className={cx("clay-btn shrink-0 px-3 py-2 rounded-full text-[10px] font-black",
+              area === "todas" ? "bg-plum text-white" : "bg-white text-ink-mute")}>Todas</button>
+          {Object.entries(areas).map(([a, n]) => (
+            <button key={a} onClick={() => setArea(a)}
+              className={cx("clay-btn shrink-0 px-3 py-2 rounded-full text-[10px] font-black whitespace-nowrap",
+                area === a ? "bg-plum text-white" : "bg-white text-ink-mute")}>
+              {a} <span className="tnum opacity-70">{n}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="scroll-y flex-1 px-4 pb-5 flex flex-col gap-2.5">
+        {cargando && [0,1,2].map(i => <Skeleton key={i} h={112} />)}
+
+        {!cargando && lista.length === 0 && (
+          <Empty icon="check-circle" title="Sin incidencias acá" sub="No hay tickets que coincidan con este filtro." />
+        )}
+
+        {!cargando && lista.map((t, i) => (
+          <button key={t.id} onClick={() => { setSel(t); setResol(""); }}
+            className="clay clay-press w-full text-left p-4 a-up focus-ring" style={{ animationDelay:`${i * 45}ms` }}>
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-[10px] font-mono font-black text-ink-mute">{t.id}</span>
+                {t.isNew && <Badge tone="brand">Nuevo</Badge>}
+              </div>
+              <Badge tone={t.estado === "Activo" ? (t.val === "M" ? "bad" : "warn") : "gray"}>
+                {t.estado}
+              </Badge>
+            </div>
+            <p className="text-[13px] font-black text-ink leading-tight">{t.obj}</p>
+            <p className="text-[11px] text-ink-mute mt-1 leading-snug">{t.desc}</p>
+            {t.item && (
+              <div className="flex items-center gap-1.5 mt-2">
+                <Icon name="clipboard" size={12} className="text-ink-faint" />
+                <span className="text-[10px] text-ink-faint font-semibold">{t.item}</span>
+                <Badge tone={t.val === "M" ? "bad" : "warn"} className="ml-auto">{VALOR[t.val]?.label || t.val}</Badge>
+              </div>
+            )}
+            <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
+              <Badge tone={AREA_THEME[t.area]?.tone || "gray"}>{t.area}</Badge>
+              <span className="text-[10px] text-ink-faint ml-auto">{t.sup} · {t.fecha}</span>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* Detalle y resolución */}
+      <Sheet open={!!sel} onClose={() => setSel(null)} title={actual?.obj} sub={actual?.id}>
+        {actual && (
+          <div className="flex flex-col gap-3.5">
+            <div className="flex gap-1.5 flex-wrap">
+              <Badge tone={AREA_THEME[actual.area]?.tone || "gray"}>{actual.area}</Badge>
+              <Badge tone={actual.val === "M" ? "bad" : "warn"}>{VALOR[actual.val]?.label || actual.val}</Badge>
+              <Badge tone={actual.estado === "Activo" ? "warn" : "good"}>{actual.estado}</Badge>
+            </div>
+
+            <Clay className="p-4">
+              <Label className="mb-1.5">Descripción</Label>
+              <p className="text-[13px] text-ink-soft leading-relaxed">{actual.desc}</p>
+            </Clay>
+
+            <Clay className="p-4">
+              {actual.item && <Row k="Ítem del checklist" v={actual.item} />}
+              {actual.vig  && <Row k="Vigilador" v={actual.vig} />}
+              <Row k="Supervisor" v={actual.sup} />
+              <Row k="Registrado" v={actual.fecha} last />
+            </Clay>
+
+            {actual.estado === "Activo" ? (
+              <>
+                <Textarea label="Resolución técnica" value={resol} onChange={e => setResol(e.target.value)} rows={4}
+                  placeholder="Describí la acción concreta que resolvió esta incidencia…"
+                  hint={<p className="text-[10px] text-ink-faint mt-1.5">Mínimo 5 caracteres.</p>} />
+                <Btn full size="lg" variant="success" icon="check-circle" loading={cerrando}
+                  disabled={resol.trim().length < 5} onClick={confirmarCierre}>
+                  Cerrar incidencia
+                </Btn>
+              </>
+            ) : (
+              <div className="bg-good-soft rounded-[16px] px-4 py-3.5">
+                <div className="flex items-center gap-2 mb-1">
+                  <Icon name="check-circle" size={16} className="text-good-ink" />
+                  <p className="text-[12px] font-black text-good-ink">Incidencia resuelta</p>
+                </div>
+                {actual.resolucion && <p className="text-[11px] text-good-ink/80 leading-relaxed mt-1">{actual.resolucion}</p>}
+              </div>
+            )}
+          </div>
+        )}
+      </Sheet>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PANEL DUEÑO — dashboard ejecutivo
+═══════════════════════════════════════════════════════════ */
+function OwnerPanel() {
+  const { kpis: kpisLocal, liveFeed, apiStatus, apiFetch, currentUser, objetivos } = useApp();
+  const [apiKpis, setApiKpis] = useState(null);
+  const [apiFeed, setApiFeed] = useState(null);
+  const [tab, setTab] = useState("tipo");
+
+  useEffect(() => {
+    if (apiStatus !== "connected") { setApiKpis(null); setApiFeed(null); return; }
+    apiFetch("/api/kpis").then(r => r.json()).then(d => {
+      if (!d.ok) return;
+      const k = d.kpis;
+      const porObjetivo = (k.cumplimiento_objetivos || []).map(o => ({
+        ...o, realizadas: o.rondas_realizadas, visitas_meta_mes: o.visitas_meta_mes,
+      }));
+      const porTipo = {};
+      for (const o of porObjetivo) {
+        porTipo[o.tipo] = porTipo[o.tipo] || { completadas:0, total:0 };
+        porTipo[o.tipo].completadas += o.realizadas;
+        porTipo[o.tipo].total       += o.visitas_meta_mes || 0;
+      }
+      setApiKpis({
+        visitas:     porObjetivo.reduce((a, o) => a + o.realizadas, 0),
+        metaVisitas: porObjetivo.reduce((a, o) => a + (o.visitas_meta_mes || 0), 0) || 1,
+        criticas:    k.tickets.criticos, activas: k.tickets.abiertos, cerradas: k.tickets.cerrados,
+        porArea:     k.tickets.por_area, diasProm: k.tickets.dias_promedio_resolucion,
+        rondas:      k.rondas, porTipo, porObjetivo,
+      });
+    }).catch(e => console.warn("[kpis]", e.message));
+
+    apiFetch("/api/actividad?limite=8").then(r => r.json()).then(d => {
+      if (!d.ok) return;
+      setApiFeed(d.actividad.map(a => ({
+        hora: fmtHora(a.fecha_hora),
+        sup:  a.supervisor.split(" ")[0][0] + ". " + a.supervisor.split(" ").slice(-1)[0],
+        obj:  cortar(a.objetivo, 20),
+        tipo: a.tipo === "remota" ? "Remota" : "Presencial",
+        ok:   a.tickets === 0, isNew: false,
+      })));
+    }).catch(() => {});
+  }, [apiStatus]);
+
+  const k    = apiKpis || kpisLocal;
+  const feed = apiFeed || liveFeed;
+  const pct  = Math.round(k.visitas / k.metaVisitas * 100);
+
+  const TIPO_COLOR = { Barrios:"#3b82f6", Industrias:"#10b981", Locales:"#f59e0b" };
+
+  return (
+    <div className="flex flex-col h-full">
+      <PanelHeader icon="chart" rol="Dashboard ejecutivo" nombre={currentUser?.nombre || "Gerencia"} tone="warn" />
+      <ConnBar />
+      <SyncToast />
+
+      <div className="scroll-y flex-1 px-4 pb-5 flex flex-col gap-3.5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-black text-ink capitalize leading-tight">
+              {new Date().toLocaleDateString("es-AR", { month:"long", year:"numeric" })}
+            </h2>
+            <p className="text-[11px] text-ink-mute">Ciclo mensual de cumplimiento</p>
+          </div>
+          <div className="clay flex items-center gap-1.5 px-3 py-1.5">
+            <Dot tone="bad" pulse />
+            <span className="text-[10px] font-black text-ink-mute uppercase tracking-wide">En vivo</span>
+          </div>
+        </div>
+
+        {/* Cobertura de visitas */}
+        <Clay className="p-4">
+          <Label className="mb-3">Cobertura de visitas mensuales</Label>
+          <div className="flex items-center gap-4">
+            <Ring value={k.visitas} max={k.metaVisitas} color="#2563eb" size={118} label={`${k.visitas} de ${k.metaVisitas}`} />
+            <div className="flex-1 min-w-0">
+              <p className="text-[42px] font-black text-ink tnum leading-none">{pct}<span className="text-xl text-brand-500">%</span></p>
+              <p className="text-xs text-ink-mute mt-1 leading-snug">{k.visitas} visitas realizadas<br />sobre {k.metaVisitas} planificadas</p>
+              {k.rondas && (
+                <div className="flex gap-1.5 mt-2.5">
+                  <Badge tone="good">{k.rondas.presenciales} presenciales</Badge>
+                  <Badge tone="warn">{k.rondas.remotas} remotas</Badge>
+                </div>
+              )}
+            </div>
+          </div>
+        </Clay>
+
+        {/* Incidencias */}
+        <div className="flex gap-2.5">
+          <Clay className="flex-1 p-4" tint={k.criticas > 0 ? "linear-gradient(135deg,#fff1f2,#ffe4e6)" : "linear-gradient(135deg,#ecfdf5,#d1fae5)"}>
+            <Label className={k.criticas > 0 ? "text-bad-ink" : "text-good-ink"}>Críticas</Label>
+            <p className={cx("text-[40px] font-black tnum leading-none mt-1", k.criticas > 0 ? "text-bad" : "text-good")}>{k.criticas}</p>
+            <p className={cx("text-[10px] font-bold mt-1", k.criticas > 0 ? "text-bad-ink" : "text-good-ink")}>
+              {k.criticas > 0 ? "requieren atención" : "todo en orden"}
+            </p>
+          </Clay>
+          <div className="flex-1 flex flex-col gap-2.5">
+            <Clay className="p-3.5">
+              <p className="text-2xl font-black text-warn tnum leading-none">{k.activas}</p>
+              <p className="text-[10px] font-bold text-ink-mute mt-1">Tickets activos</p>
+            </Clay>
+            <Clay className="p-3.5">
+              <p className="text-2xl font-black text-good tnum leading-none">{k.cerradas}</p>
+              <p className="text-[10px] font-bold text-ink-mute mt-1">Resueltos</p>
+            </Clay>
+          </div>
+        </div>
+
+        {k.diasProm > 0 && (
+          <Clay className="p-3.5 flex items-center gap-3">
+            <span className="w-10 h-10 rounded-[14px] bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+              <Icon name="clock" size={19} />
+            </span>
+            <div>
+              <p className="text-[13px] font-black text-ink tnum">{k.diasProm} días</p>
+              <p className="text-[10px] text-ink-mute">Tiempo promedio de resolución</p>
+            </div>
+          </Clay>
+        )}
+
+        {/* Cumplimiento */}
+        <Clay className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <Label>Cumplimiento</Label>
+            <div className="clay-inset flex gap-1 p-1">
+              {[["tipo","Por tipo"],["obj","Por objetivo"]].map(([kk, l]) => (
+                <button key={kk} onClick={() => setTab(kk)}
+                  className={cx("px-2.5 py-1 rounded-[10px] text-[10px] font-black transition-all",
+                    tab === kk ? "bg-brand-600 text-white" : "text-ink-mute")}>{l}</button>
+              ))}
+            </div>
+          </div>
+
+          {tab === "tipo" ? (
+            <div className="flex flex-col gap-3.5">
+              {Object.entries(k.porTipo || {}).map(([tipo, d]) => {
+                const p = d.total ? Math.round(d.completadas / d.total * 100) : 0;
+                return (
+                  <div key={tipo}>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-[12px] font-bold text-ink-soft">{tipo}</span>
+                      <span className="text-[11px] text-ink-mute tnum">
+                        {d.completadas}/{d.total} · <span className="font-black text-ink">{p}%</span>
+                      </span>
+                    </div>
+                    <Bar value={d.completadas} max={d.total || 1} color={TIPO_COLOR[tipo] || "#3b82f6"} height={9} />
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {(k.porObjetivo || []).map(o => {
+                const meta = o.visitas_meta_mes || 0;
+                const p = meta ? Math.round(o.realizadas / meta * 100) : 0;
+                return (
+                  <div key={o.id}>
+                    <div className="flex justify-between items-center gap-2 mb-1.5">
+                      <span className="text-[11px] font-bold text-ink-soft truncate flex-1">{o.nombre}</span>
+                      <span className="text-[10px] text-ink-mute tnum shrink-0">{o.realizadas}/{meta}</span>
+                    </div>
+                    <Bar value={o.realizadas} max={meta || 1} color={p >= 100 ? "#10b981" : p >= 60 ? "#3b82f6" : "#f59e0b"} height={7} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Clay>
+
+        {/* Tickets por área */}
+        {k.porArea?.length > 0 && (
+          <Clay className="p-4">
+            <Label className="mb-3">Tickets abiertos por área</Label>
+            <div className="flex flex-col gap-2">
+              {k.porArea.map(a => (
+                <div key={a.area_responsable} className="flex items-center gap-2.5">
+                  <Badge tone={AREA_THEME[a.area_responsable]?.tone || "gray"}>{a.area_responsable}</Badge>
+                  <div className="flex-1"><Bar value={parseInt(a.cantidad)} max={Math.max(...k.porArea.map(x => parseInt(x.cantidad)))} color="#8b5cf6" height={7} /></div>
+                  <span className="text-[11px] font-black text-ink tnum w-4 text-right">{a.cantidad}</span>
+                </div>
+              ))}
+            </div>
+          </Clay>
+        )}
+
+        {/* Feed en vivo */}
+        <Clay className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <Label>Actividad en tiempo real</Label>
+            <div className="flex items-center gap-1.5"><Dot tone="good" pulse /><span className="text-[10px] font-black text-good-ink">Live</span></div>
+          </div>
+          {feed.length === 0
+            ? <Empty icon="activity" title="Sin actividad" sub="Las rondas aparecerán acá al guardarse." />
+            : feed.map((a, i) => (
+              <div key={i} className={cx("flex items-center gap-2.5 py-2.5", i < feed.length - 1 && "border-b border-slate-100")}>
+                <span className="text-[10px] text-ink-faint font-mono w-9 shrink-0 tnum">{a.hora}</span>
+                <Dot tone={a.tipo === "Presencial" ? "good" : "warn"} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-bold text-ink truncate">
+                    {a.isNew && <span className="text-brand-600">● </span>}{a.sup} → {a.obj}
+                  </p>
+                  <p className="text-[10px] text-ink-faint">{a.isNew ? "Recién · " : ""}{a.tipo}{!a.ok ? " · con incidencia" : ""}</p>
+                </div>
+                <Icon name={a.ok ? "check-circle" : "alert"} size={15} className={a.ok ? "text-good" : "text-warn"} />
+              </div>
+            ))}
+        </Clay>
+
+        <p className="text-center text-[10px] text-ink-faint pb-1">ASI · Sistema de Supervisión v3.0</p>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MARCO DE TELÉFONO
+═══════════════════════════════════════════════════════════ */
+function PhoneFrame({ children }) {
+  const { offline } = useApp();
+  const [t, setT] = useState(new Date());
+  useEffect(() => { const i = setInterval(() => setT(new Date()), 20000); return () => clearInterval(i); }, []);
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 pt-3"
+      style={{ background:"radial-gradient(120% 80% at 50% 0%, #f0f7ff 0%, #dbe9fa 45%, #cddef5 100%)" }}>
+      <ApiConfigBar />
+      <div className="w-full" style={{ maxWidth:"392px" }}>
+        <div style={{
+          background:"#eaf2fd", borderRadius:"44px", overflow:"hidden", height:"784px",
+          border:"9px solid #ffffff", position:"relative",
+          display:"flex", flexDirection:"column",
+          boxShadow:"22px 22px 55px rgba(37,99,235,.22), -16px -16px 44px rgba(255,255,255,.95), inset 0 1px 2px rgba(255,255,255,.9)",
+        }}>
+          {/* Barra de estado */}
+          <div className="flex justify-between items-center px-6 pt-3 pb-1.5 shrink-0 relative">
+            <span className="text-[12px] font-black text-ink tnum">{fmtHora(t)}</span>
+            <div className="absolute left-1/2 -translate-x-1/2 top-2.5 w-[86px] h-[26px] rounded-full bg-ink" />
+            <div className="flex items-center gap-1.5 text-ink-soft">
+              <Icon name={offline ? "wifi-off" : "wifi"} size={14} className={offline ? "text-bad" : ""} />
+              <svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true">
+                <rect x="0.5" y="0.5" width="19" height="11" rx="3.5" fill="none" stroke="currentColor" strokeWidth="1.2" opacity=".5" />
+                <rect x="2" y="2" width="15" height="8" rx="2" fill="currentColor" />
+                <rect x="21" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".5" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-hidden flex flex-col">{children}</div>
+
+          <div className="flex justify-center py-2.5 shrink-0">
+            <div className="w-32 h-1.5 rounded-full bg-ink/25" />
+          </div>
+        </div>
+      </div>
+      <p className="text-[10px] text-ink-faint font-semibold mt-3">Argentina Seguridad Integral · Prototipo del Panel de Supervisión</p>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RAÍZ
+═══════════════════════════════════════════════════════════ */
+function AppInner() {
+  const { currentUser } = useApp();
+  return (
+    <PhoneFrame>
+      {!currentUser                     && <LoginScreen />}
+      {currentUser?.rol === "supervisor"&& <SupervisorPanel />}
+      {currentUser?.rol === "admin"     && <AdminPanel />}
+      {currentUser?.rol === "dueno"     && <OwnerPanel />}
+    </PhoneFrame>
+  );
+}
+
+function App() {
+  return <AppProvider><AppInner /></AppProvider>;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
