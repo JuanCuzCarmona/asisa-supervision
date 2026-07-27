@@ -63,8 +63,8 @@ const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN || "http://localhost:5500")
 
 app.use(cors({
   origin: (origin, cb) => {
-    // Permite requests sin origin (Tailscale directo, curl, móvil)
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    // Permite requests sin origin (Tailscale directo, curl, móvil, file://)
+    if (!origin || origin === "null" || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
     cb(new Error("Origen no permitido por CORS"));
   },
   methods:     ["GET","POST","PATCH","OPTIONS"],
@@ -87,7 +87,8 @@ const loginLimiter = rateLimit({
   message:  { ok: false, mensaje: "Demasiados intentos de login. Esperá 15 minutos." },
 });
 
-app.use(express.json({ limit: "5mb" }));
+// Las evidencias fotográficas viajan en base64 → límite generoso
+app.use(express.json({ limit: "25mb" }));
 
 /* ════════════════════════════════════════════
    MIDDLEWARES DE AUTENTICACIÓN Y AUTORIZACIÓN
@@ -153,10 +154,11 @@ app.post("/api/login", loginLimiter, async (req, res) => {
       return res.status(401).json({ ok: false, mensaje: "Usuario o contraseña incorrectos." });
     }
 
+    // PRD §10 — expiración de 8 horas (una jornada de supervisión)
     const token = jwt.sign(
       { id: user.id, nombre: user.nombre, rol: user.rol },
       process.env.JWT_SECRET,
-      { expiresIn: "12h" }
+      { expiresIn: "8h" }
     );
 
     res.json({
@@ -174,29 +176,67 @@ app.post("/api/login", loginLimiter, async (req, res) => {
 /* ════════════════════════════════════════════
    GET /api/inicializar
    Requiere: cualquier rol autenticado
-   Devuelve: { objetivos, vigiladores }
+   Devuelve todo lo que la app necesita para operar:
+   objetivos (con visitas del mes), vigiladores, checklist
+   configurable y catálogo de observaciones.
 ════════════════════════════════════════════ */
 app.get("/api/inicializar", requireAuth, async (req, res) => {
   try {
-    const [objetivos, vigiladores] = await Promise.all([
+    const [objetivos, vigiladores, secciones, items, ajustes, observaciones] = await Promise.all([
+      // Objetivos + contador de visitas del mes en curso (PRD §7)
       pool.query(`
-        SELECT id, nombre, tipo, direccion, lat, lng,
-               radio_geocerca_m, visitas_meta_mes, activo
-        FROM objetivos
-        WHERE activo = TRUE
-        ORDER BY nombre
+        SELECT o.id, o.nombre, o.tipo, o.subtipo, o.modalidad, o.direccion,
+               o.lat, o.lng, o.radio_geocerca_m, o.visitas_meta_mes, o.activo,
+               COUNT(r.id)::int AS visitas_mes
+        FROM objetivos o
+        LEFT JOIN rondas_actas r
+          ON r.objetivo_id = o.id
+         AND date_trunc('month', r.fecha_hora) = date_trunc('month', NOW())
+        WHERE o.activo = TRUE
+        GROUP BY o.id
+        ORDER BY o.nombre
       `),
+
+      // Vigiladores con perfil completo (PRD §9)
       pool.query(`
-        SELECT id, legajo, nombre, dni, puesto,
-               credencial_numero, credencial_venc,
-               es_chofer, licencia_cat, licencia_venc, armado, estado
-        FROM vigiladores
-        WHERE estado = 'activo'
-        ORDER BY nombre
+        SELECT v.id, v.legajo, v.nombre, v.dni, v.puesto,
+               v.credencial_numero, v.credencial_venc,
+               v.es_chofer, v.licencia_cat, v.licencia_venc, v.armado, v.estado,
+               v.telefono, v.domicilio, v.fecha_nacimiento, v.nacionalidad,
+               v.convenio, v.tiene_radio, v.foto_url,
+               o.nombre AS objetivo_asignado
+        FROM vigiladores v
+        LEFT JOIN objetivos o ON v.objetivo_asignado_id = o.id
+        ORDER BY v.nombre
       `),
+
+      pool.query("SELECT id, clave, nombre, color, orden FROM checklist_secciones ORDER BY orden"),
+
+      pool.query(`
+        SELECT i.id, i.seccion_id, s.clave AS seccion_clave,
+               i.titulo_corto, i.criterio_completo, i.area_responsable,
+               i.tipos_objetivo, i.orden
+        FROM checklist_items i
+        JOIN checklist_secciones s ON i.seccion_id = s.id
+        WHERE i.activo = TRUE
+        ORDER BY s.orden, i.orden
+      `),
+
+      // Diferencias del checklist respecto de la plantilla del tipo de objetivo
+      pool.query("SELECT objetivo_id, item_id, incluido, nota FROM objetivo_checklist"),
+
+      pool.query("SELECT id, area, texto FROM observaciones_catalogo ORDER BY area, texto"),
     ]);
 
-    res.json({ ok: true, objetivos: objetivos.rows, vigiladores: vigiladores.rows });
+    res.json({
+      ok:            true,
+      objetivos:     objetivos.rows,
+      vigiladores:   vigiladores.rows,
+      secciones:     secciones.rows,
+      checklist:     items.rows,
+      ajustes:       ajustes.rows,
+      observaciones: observaciones.rows,
+    });
 
   } catch (err) {
     console.error("[inicializar] Error interno:", err.message);
@@ -209,39 +249,64 @@ app.get("/api/inicializar", requireAuth, async (req, res) => {
    Requiere: rol supervisor
    Guarda el acta completa en una transacción atómica.
    Body: {
-     objetivo_id, vigilador_ids: [id, ...],
-     tipo, en_geocerca, lat, lng,
-     justificacion_fuera, sincronizado_offline,
-     checklist: [{ item_id, valoracion, observacion_pred, observacion_libre }],
-     incidencias: [{ item_id, area_responsable, categoria, descripcion }]
+     objetivo_id, tipo, en_geocerca, lat, lng,
+     justificacion_fuera, sincronizado_offline, hora_inicio, hora_fin,
+     vigiladores:  [{ id, firma_base64, nego_firmar }],
+     checklist:    [{ item_id, pregunta, valoracion, observacion_pred, observacion_libre }],
+     incidencias:  [{ item_id, item_titulo, valoracion, vigilador_id,
+                      area_responsable, categoria, descripcion }],
+     evidencias:   [{ imagen_base64, lat, lng }]
    }
 ════════════════════════════════════════════ */
 app.post("/api/rondas", requireAuth, requireRole("supervisor"), async (req, res) => {
   const {
     objetivo_id,
-    vigilador_ids       = [],
-    tipo                = "presencial",
+    tipo                 = "presencial",
     en_geocerca,
     lat,
     lng,
     justificacion_fuera,
     sincronizado_offline = false,
+    hora_inicio,
+    hora_fin,
     checklist            = [],
     incidencias          = [],
+    evidencias           = [],
   } = req.body;
+
+  // Acepta `vigiladores` (formato nuevo, con firma por persona) o `vigilador_ids` (legacy)
+  const vigiladoresRaw = Array.isArray(req.body.vigiladores) && req.body.vigiladores.length > 0
+    ? req.body.vigiladores
+    : (req.body.vigilador_ids || []);
+
+  // Normaliza a { id, firma_base64, nego_firmar } acepte números u objetos
+  const vigiladores = vigiladoresRaw
+    .map(v => (typeof v === "object" && v !== null)
+      ? { id: v.id, firma_base64: v.firma_base64 || null, nego_firmar: Boolean(v.nego_firmar) }
+      : { id: v, firma_base64: null, nego_firmar: false })
+    .filter(v => isPositiveInt(v.id));
 
   // Validación de inputs
   if (!isPositiveInt(objetivo_id)) {
     return res.status(400).json({ ok: false, mensaje: "objetivo_id inválido." });
   }
-  if (!Array.isArray(vigilador_ids) || vigilador_ids.length === 0) {
-    return res.status(400).json({ ok: false, mensaje: "Se requiere al menos un vigilador." });
+  if (vigiladores.length === 0) {
+    return res.status(400).json({ ok: false, mensaje: "Se requiere al menos un vigilador válido." });
   }
   if (!["presencial","remota"].includes(tipo)) {
     return res.status(400).json({ ok: false, mensaje: "tipo debe ser 'presencial' o 'remota'." });
   }
   if (tipo === "remota" && !isString(justificacion_fuera, 10)) {
     return res.status(400).json({ ok: false, mensaje: "Justificación obligatoria para ronda remota (mínimo 10 caracteres)." });
+  }
+  // PRD §5.2 — no se guarda un acta sin al menos una firma o una negativa registrada
+  if (!vigiladores.some(v => v.firma_base64 || v.nego_firmar)) {
+    return res.status(400).json({ ok: false, mensaje: "Se requiere al menos una firma o una negativa registrada." });
+  }
+  for (const v of vigiladores) {
+    if (v.firma_base64 && !String(v.firma_base64).startsWith("data:image/")) {
+      return res.status(400).json({ ok: false, mensaje: `Firma inválida para el vigilador ${v.id}.` });
+    }
   }
 
   const supervisor_id = req.user.id; // viene del JWT, no del body — no se puede falsificar
@@ -254,8 +319,8 @@ app.post("/api/rondas", requireAuth, requireRole("supervisor"), async (req, res)
     const actaResult = await client.query(
       `INSERT INTO rondas_actas
          (supervisor_id, objetivo_id, tipo, en_geocerca, lat, lng,
-          justificacion_fuera, sincronizado_offline)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+          justificacion_fuera, sincronizado_offline, hora_inicio, hora_fin)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
        RETURNING id`,
       [
         supervisor_id, objetivo_id, tipo,
@@ -264,6 +329,8 @@ app.post("/api/rondas", requireAuth, requireRole("supervisor"), async (req, res)
         lng  || null,
         justificacion_fuera || null,
         Boolean(sincronizado_offline),
+        hora_inicio || null,
+        hora_fin    || null,
       ]
     );
     const rondaId = actaResult.rows[0].id;
@@ -273,23 +340,12 @@ app.post("/api/rondas", requireAuth, requireRole("supervisor"), async (req, res)
     const codigoActa = `ACTA-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,"0")}${String(now.getDate()).padStart(2,"0")}-${String(rondaId).padStart(6,"0")}`;
     await client.query("UPDATE rondas_actas SET codigo_acta = $1 WHERE id = $2", [codigoActa, rondaId]);
 
-    // 2. Insertar firma por cada vigilador
-    for (const vid of vigilador_ids) {
-      if (!isPositiveInt(vid)) continue;
-      const entry = typeof vid === "object" ? vid : { id: vid, firma_base64: null, nego_firmar: false };
-      const vId        = entry.id || vid;
-      const firma      = entry.firma_base64 || null;
-      const nego       = entry.nego_firmar  || false;
-
-      // Validar que la firma sea un data URL de imagen (si se provee)
-      if (firma && !firma.startsWith("data:image/")) {
-        throw new Error(`firma_base64 inválida para vigilador ${vId}`);
-      }
-
+    // 2. Una fila por vigilador inspeccionado, con su firma individual (PRD §5.2)
+    for (const v of vigiladores) {
       await client.query(
         `INSERT INTO ronda_vigiladores (ronda_id, vigilador_id, firma_base64, nego_firmar)
          VALUES ($1,$2,$3,$4)`,
-        [rondaId, vId, firma, Boolean(nego)]
+        [rondaId, v.id, v.firma_base64, v.nego_firmar]
       );
     }
 
@@ -302,26 +358,46 @@ app.post("/api/rondas", requireAuth, requireRole("supervisor"), async (req, res)
          VALUES ($1,$2,$3,$4,$5,$6)`,
         [
           rondaId,
-          item.item_id   || null,
-          item.pregunta  || null,
-          item.valoracion || item.categoria || "B",
+          isPositiveInt(item.item_id) ? parseInt(item.item_id) : null,
+          item.pregunta   || null,
+          item.valoracion || "B",
           item.observacion_pred  || null,
-          item.observacion_libre || item.observacion || null,
+          item.observacion_libre || null,
         ]
       );
     }
 
-    // 4. Insertar tickets — código generado desde el ID (sin race condition)
+    // 4. Evidencia fotográfica con marca de agua GPS (PRD §8 paso 5)
+    for (const foto of evidencias) {
+      if (!isString(foto.imagen_base64) || !foto.imagen_base64.startsWith("data:image/")) continue;
+      await client.query(
+        `INSERT INTO evidencias_fotos (ronda_id, imagen_base64, lat, lng)
+         VALUES ($1,$2,$3,$4)`,
+        [rondaId, foto.imagen_base64, foto.lat || null, foto.lng || null]
+      );
+    }
+
+    // 5. Tickets — código generado desde el ID (sin race condition)
     const ticketsCreados = [];
     for (const inc of incidencias) {
       if (!isString(inc.descripcion)) continue;
 
       const ticketResult = await client.query(
         `INSERT INTO tickets_incidencias
-           (ronda_id, area_responsable, categoria, descripcion)
-         VALUES ($1,$2,$3,$4)
+           (ronda_id, area_responsable, categoria, descripcion,
+            checklist_item_id, item_titulo, valoracion, vigilador_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
          RETURNING id`,
-        [rondaId, inc.area_responsable || "Operaciones", inc.categoria || "General", inc.descripcion.trim()]
+        [
+          rondaId,
+          inc.area_responsable || "Operaciones",
+          inc.categoria        || "General",
+          inc.descripcion.trim(),
+          isPositiveInt(inc.item_id)      ? parseInt(inc.item_id)      : null,
+          inc.item_titulo || null,
+          ["R","M"].includes(inc.valoracion) ? inc.valoracion : null,
+          isPositiveInt(inc.vigilador_id) ? parseInt(inc.vigilador_id) : null,
+        ]
       );
       const ticketId     = ticketResult.rows[0].id;
       const mes          = String(now.getMonth()+1).padStart(2,"0");
@@ -331,7 +407,7 @@ app.post("/api/rondas", requireAuth, requireRole("supervisor"), async (req, res)
         "UPDATE tickets_incidencias SET codigo_ticket = $1 WHERE id = $2",
         [codigoTicket, ticketId]
       );
-      ticketsCreados.push({ id: ticketId, codigo_ticket: codigoTicket });
+      ticketsCreados.push({ id: ticketId, codigo_ticket: codigoTicket, item_titulo: inc.item_titulo || null });
     }
 
     await client.query("COMMIT");
@@ -356,10 +432,10 @@ app.post("/api/rondas", requireAuth, requireRole("supervisor"), async (req, res)
 /* ════════════════════════════════════════════
    GET /api/tickets
    Requiere: admin o dueno
-   Query opcional: ?estado=ABIERTO|RESUELTO&objetivo_id=X&limite=50&pagina=1
+   Query opcional: ?estado=ABIERTO|RESUELTO&objetivo_id=X&area=RRHH&limite=50&pagina=1
 ════════════════════════════════════════════ */
 app.get("/api/tickets", requireAuth, requireRole("admin","dueno"), async (req, res) => {
-  const { estado, objetivo_id } = req.query;
+  const { estado, objetivo_id, area } = req.query;
   const limite = Math.min(parseInt(req.query.limite) || 50, 200);
   const pagina = Math.max(parseInt(req.query.pagina) || 1, 1);
   const offset = (pagina - 1) * limite;
@@ -376,6 +452,10 @@ app.get("/api/tickets", requireAuth, requireRole("admin","dueno"), async (req, r
       params.push(parseInt(objetivo_id));
       wheres.push(`r.objetivo_id = $${params.length}`);
     }
+    if (isString(area)) {
+      params.push(area.trim());
+      wheres.push(`t.area_responsable = $${params.length}`);
+    }
 
     const whereClause = wheres.length ? "WHERE " + wheres.join(" AND ") : "";
 
@@ -384,14 +464,18 @@ app.get("/api/tickets", requireAuth, requireRole("admin","dueno"), async (req, r
       SELECT
         t.id, t.codigo_ticket, t.area_responsable, t.categoria, t.descripcion,
         t.estado, t.resolucion, t.fecha_creacion, t.fecha_resolucion,
+        t.item_titulo, t.valoracion,
         u.nombre  AS supervisor,
         o.nombre  AS objetivo,
+        v.nombre  AS vigilador,
         r.tipo    AS tipo_ronda,
+        r.codigo_acta,
         r.en_geocerca
       FROM tickets_incidencias t
       JOIN rondas_actas r ON t.ronda_id      = r.id
       JOIN usuarios     u ON r.supervisor_id = u.id
       JOIN objetivos    o ON r.objetivo_id   = o.id
+      LEFT JOIN vigiladores v ON t.vigilador_id = v.id
       ${whereClause}
       ORDER BY t.fecha_creacion DESC
       LIMIT $${params.length - 1} OFFSET $${params.length}
@@ -482,9 +566,10 @@ app.get("/api/kpis", requireAuth, requireRole("admin","dueno"), async (req, res)
         WHERE date_trunc('month', fecha_hora) = date_trunc('month', NOW())
       `),
 
-      // Tickets abiertos
+      // Tickets abiertos — 'criticos' son los de valoración MALO
       pool.query(`
         SELECT COUNT(*) AS abiertos,
+               COUNT(*) FILTER (WHERE valoracion = 'M') AS criticos,
                COUNT(*) FILTER (WHERE fecha_creacion >= NOW() - INTERVAL '48 hours') AS ultimas_48h
         FROM tickets_incidencias
         WHERE estado = 'ABIERTO'
@@ -501,14 +586,14 @@ app.get("/api/kpis", requireAuth, requireRole("admin","dueno"), async (req, res)
 
       // Rondas completadas vs meta por objetivo este mes
       pool.query(`
-        SELECT o.id, o.nombre, o.tipo, o.visitas_meta_mes,
-               COUNT(r.id) AS rondas_realizadas
+        SELECT o.id, o.nombre, o.tipo, o.subtipo, o.visitas_meta_mes,
+               COUNT(r.id)::int AS rondas_realizadas
         FROM objetivos o
         LEFT JOIN rondas_actas r
           ON r.objetivo_id = o.id
           AND date_trunc('month', r.fecha_hora) = date_trunc('month', NOW())
         WHERE o.activo = TRUE
-        GROUP BY o.id, o.nombre, o.tipo, o.visitas_meta_mes
+        GROUP BY o.id, o.nombre, o.tipo, o.subtipo, o.visitas_meta_mes
         ORDER BY o.nombre
       `),
 
@@ -525,6 +610,13 @@ app.get("/api/kpis", requireAuth, requireRole("admin","dueno"), async (req, res)
     const r = rondas.rows[0];
     const t = ticketsAbiertos.rows[0];
 
+    // Total de tickets cerrados este mes (para el panel del dueño)
+    const cerrados = await pool.query(`
+      SELECT COUNT(*) AS cerrados FROM tickets_incidencias
+      WHERE estado = 'RESUELTO'
+        AND date_trunc('month', fecha_resolucion) = date_trunc('month', NOW())
+    `);
+
     res.json({
       ok: true,
       kpis: {
@@ -535,6 +627,8 @@ app.get("/api/kpis", requireAuth, requireRole("admin","dueno"), async (req, res)
         },
         tickets: {
           abiertos:       parseInt(t.abiertos),
+          criticos:       parseInt(t.criticos),
+          cerrados:       parseInt(cerrados.rows[0].cerrados),
           ultimas_48h:    parseInt(t.ultimas_48h),
           por_area:       ticketsPorArea.rows,
           dias_promedio_resolucion: parseFloat(tiempoResolucion.rows[0].dias_promedio_resolucion) || 0,
@@ -550,9 +644,39 @@ app.get("/api/kpis", requireAuth, requireRole("admin","dueno"), async (req, res)
 });
 
 /* ════════════════════════════════════════════
+   GET /api/actividad
+   Requiere: admin o dueno
+   Últimas rondas registradas — alimenta el feed en vivo.
+════════════════════════════════════════════ */
+app.get("/api/actividad", requireAuth, requireRole("admin","dueno"), async (req, res) => {
+  const limite = Math.min(parseInt(req.query.limite) || 8, 50);
+  try {
+    const result = await pool.query(`
+      SELECT r.id, r.codigo_acta, r.tipo, r.en_geocerca, r.fecha_hora,
+             u.nombre AS supervisor,
+             o.nombre AS objetivo,
+             COUNT(t.id)::int AS tickets
+      FROM rondas_actas r
+      JOIN usuarios  u ON r.supervisor_id = u.id
+      JOIN objetivos o ON r.objetivo_id   = o.id
+      LEFT JOIN tickets_incidencias t ON t.ronda_id = r.id
+      GROUP BY r.id, u.nombre, o.nombre
+      ORDER BY r.fecha_hora DESC
+      LIMIT $1
+    `, [limite]);
+
+    res.json({ ok: true, actividad: result.rows });
+  } catch (err) {
+    console.error("[actividad] Error interno:", err.message);
+    res.status(500).json({ ok: false, mensaje: "Error al obtener la actividad reciente." });
+  }
+});
+
+/* ════════════════════════════════════════════
    GET /api/vigilador/:legajo
    Requiere: supervisor
-   Devuelve perfil del vigilador para la app de ronda
+   Perfil completo del vigilador (PRD §9): datos personales,
+   características, historial de actas, sanciones e incidencias.
 ════════════════════════════════════════════ */
 app.get("/api/vigilador/:legajo", requireAuth, requireRole("supervisor"), async (req, res) => {
   const legajo = parseInt(req.params.legajo);
@@ -561,28 +685,59 @@ app.get("/api/vigilador/:legajo", requireAuth, requireRole("supervisor"), async 
   }
 
   try {
-    const [vigilador, historial] = await Promise.all([
-      pool.query(
-        `SELECT id, legajo, nombre, dni, puesto,
-                credencial_numero, credencial_venc,
-                es_chofer, licencia_cat, licencia_venc, armado, estado
-         FROM vigiladores WHERE legajo = $1`,
-        [legajo]
-      ),
-      pool.query(
-        `SELECT tipo, descripcion, fecha
-         FROM historial_vigiladores
-         WHERE vigilador_id = (SELECT id FROM vigiladores WHERE legajo = $1)
-         ORDER BY fecha DESC LIMIT 10`,
-        [legajo]
-      ),
-    ]);
+    const vigilador = await pool.query(
+      `SELECT v.id, v.legajo, v.nombre, v.dni, v.puesto,
+              v.credencial_numero, v.credencial_venc,
+              v.es_chofer, v.licencia_cat, v.licencia_venc, v.armado, v.estado,
+              v.telefono, v.domicilio, v.fecha_nacimiento, v.nacionalidad,
+              v.convenio, v.tiene_radio, v.foto_url,
+              o.nombre AS objetivo_asignado
+       FROM vigiladores v
+       LEFT JOIN objetivos o ON v.objetivo_asignado_id = o.id
+       WHERE v.legajo = $1`,
+      [legajo]
+    );
 
     if (vigilador.rows.length === 0) {
       return res.status(404).json({ ok: false, mensaje: `No se encontró el legajo ${legajo}.` });
     }
 
-    res.json({ ok: true, vigilador: vigilador.rows[0], historial: historial.rows });
+    const vigId = vigilador.rows[0].id;
+
+    const [historial, sanciones, incidencias] = await Promise.all([
+      pool.query(
+        `SELECT tipo, descripcion, fecha
+         FROM historial_vigiladores
+         WHERE vigilador_id = $1
+         ORDER BY fecha DESC LIMIT 10`,
+        [vigId]
+      ),
+      pool.query(
+        `SELECT id, descripcion, estado, fecha
+         FROM sanciones
+         WHERE vigilador_id = $1
+         ORDER BY fecha DESC`,
+        [vigId]
+      ),
+      pool.query(
+        `SELECT t.codigo_ticket, t.descripcion, t.estado, t.valoracion,
+                t.item_titulo, t.fecha_creacion, o.nombre AS objetivo
+         FROM tickets_incidencias t
+         JOIN rondas_actas r ON t.ronda_id    = r.id
+         JOIN objetivos    o ON r.objetivo_id = o.id
+         WHERE t.vigilador_id = $1
+         ORDER BY t.fecha_creacion DESC LIMIT 10`,
+        [vigId]
+      ),
+    ]);
+
+    res.json({
+      ok:          true,
+      vigilador:   vigilador.rows[0],
+      historial:   historial.rows,
+      sanciones:   sanciones.rows,
+      incidencias: incidencias.rows,
+    });
 
   } catch (err) {
     console.error("[vigilador] Error interno:", err.message);
@@ -596,16 +751,17 @@ app.get("/api/vigilador/:legajo", requireAuth, requireRole("supervisor"), async 
 app.get("/", (req, res) => {
   res.json({
     ok:      true,
-    sistema: "Argentina Seguridad Integral — API v2.0",
+    sistema: "Argentina Seguridad Integral — API v3.0",
     estado:  "Servidor activo",
     endpoints: [
       "POST  /api/login",
       "GET   /api/inicializar          [auth]",
       "POST  /api/rondas               [supervisor]",
+      "GET   /api/vigilador/:legajo    [supervisor]",
       "GET   /api/tickets              [admin, dueno]",
       "PATCH /api/tickets/:id/resolver [admin]",
       "GET   /api/kpis                 [admin, dueno]",
-      "GET   /api/vigilador/:legajo    [supervisor]",
+      "GET   /api/actividad            [admin, dueno]",
     ],
   });
 });
@@ -622,8 +778,7 @@ app.use((err, req, res, _next) => {
    INICIO
 ════════════════════════════════════════════ */
 app.listen(PORT, () => {
-  console.log(`\n🚀 Servidor ASI v2.0 — http://localhost:${PORT}`);
-  console.log(`🔐 JWT activo · Rate limiting activo · CORS restringido`);
-  console.log(`📋 Endpoints: POST /api/login | GET /api/inicializar | POST /api/rondas`);
-  console.log(`             GET /api/tickets | PATCH /api/tickets/:id/resolver | GET /api/kpis\n`);
+  console.log(`\n🚀 Servidor ASI v3.0 — http://localhost:${PORT}`);
+  console.log(`🔐 JWT 8h · Rate limiting activo · CORS restringido`);
+  console.log(`📋 Checklist configurable · Evidencia fotográfica · Firmas múltiples\n`);
 });
