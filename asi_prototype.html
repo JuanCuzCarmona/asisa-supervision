@@ -2169,7 +2169,7 @@ function Step4({ rd, setRD, onNext, onBack, supervisor }) {
             {fotos.map((f, i) => (
               <div key={i} className="clay p-1.5 a-pop relative overflow-hidden" style={{ animationDelay:`${i * 60}ms` }}>
                 <button onClick={() => setVer(f)} className="block w-full focus-ring rounded-[16px] overflow-hidden">
-                  <img src={f.dataUrl} alt={`Evidencia ${i + 1}`} className="w-full h-28 object-cover rounded-[16px]" />
+                  <img src={f.dataUrl} alt={`Evidencia ${i + 1}`} className="w-full h-28 object-cover rounded-[16px]" loading="lazy" />
                 </button>
                 <button onClick={() => quitar(i)} aria-label="Quitar foto"
                   className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/95 text-bad flex items-center justify-center shadow-md">
@@ -2493,7 +2493,7 @@ function ActaGenerada({ rd, resultado, supervisor, onNueva }) {
                       <Badge tone={f.nego ? "bad" : "good"}>{f.nego ? "No firmó" : "Firmado"}</Badge>
                     </div>
                     {f.dataUrl
-                      ? <div className="bg-white rounded-[12px] p-1"><img src={f.dataUrl} alt={`Firma de ${v.nombre}`} className="w-full h-16 object-contain" /></div>
+                      ? <div className="bg-white rounded-[12px] p-1"><img src={f.dataUrl} alt={`Firma de ${v.nombre}`} className="w-full h-16 object-contain" loading="lazy" /></div>
                       : <div className="bg-white rounded-[12px] h-16 flex items-center justify-center">
                           <p className="text-[10px] font-bold text-bad-ink">Negativa registrada · ticket a RRHH</p>
                         </div>}
@@ -2571,7 +2571,7 @@ function ActaGenerada({ rd, resultado, supervisor, onNueva }) {
                 <Label className="mb-2">Evidencia fotográfica</Label>
                 <div className="grid grid-cols-3 gap-2">
                   {rd.fotos.map((f, i) => (
-                    <img key={i} src={f.dataUrl} alt={`Evidencia ${i + 1}`} className="w-full h-20 object-cover rounded-[12px]" />
+                    <img key={i} src={f.dataUrl} alt={`Evidencia ${i + 1}`} className="w-full h-20 object-cover rounded-[12px]" loading="lazy" />
                   ))}
                 </div>
               </div>
