@@ -2,3 +2,6 @@ node_modules/
 .env
 *.log
 certs/
+
+# Generado por `npm run cap:sync-web` a partir de asi_prototype.html (fuente única)
+www/

@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ASI · Argentina Seguridad Integral</title>
-  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -14,7 +14,7 @@
       theme: {
         extend: {
           colors: {
-            ink:   { DEFAULT:"#0f172a", soft:"#334155", mute:"#5b6b82", faint:"#94a3b8" },
+            ink:   { DEFAULT:"#0f172a", soft:"#334155", mute:"#5b6b82", faint:"#64748b" },
             brand: { 50:"#eff6ff",100:"#dbeafe",200:"#bfdbfe",300:"#93c5fd",400:"#60a5fa",500:"#3b82f6",600:"#2563eb",700:"#1d4ed8",800:"#1e40af" },
             aqua:  { 50:"#f0f9ff",100:"#e0f2fe",200:"#bae6fd",300:"#7dd3fc",400:"#38bdf8",500:"#0ea5e9" },
             good:  { DEFAULT:"#10b981", soft:"#d1fae5", ink:"#065f46" },
@@ -63,6 +63,9 @@
       box-shadow:
         inset 5px 5px 11px rgba(37,99,235,.11),
         inset -5px -5px 11px rgba(255,255,255,.95);
+    }
+    .clay-inset:focus-within {
+      outline: 3px solid #2563eb; outline-offset: 2px;
     }
     .clay-tint {
       border-radius: 22px;
@@ -492,11 +495,11 @@ function Clay({ children, className = "", inset = false, tint, as: Tag = "div", 
 }
 
 const BTN_VARIANTS = {
-  primary: "bg-gradient-to-br from-brand-500 to-brand-700 text-white",
+  primary: "bg-gradient-to-br from-brand-600 to-brand-800 text-white",
   aqua:    "bg-gradient-to-br from-aqua-300 to-aqua-500 text-white",
-  success: "bg-gradient-to-br from-good to-emerald-600 text-white",
-  danger:  "bg-gradient-to-br from-bad to-rose-600 text-white",
-  warn:    "bg-gradient-to-br from-warn to-amber-500 text-white",
+  success: "bg-gradient-to-br from-emerald-700 to-emerald-800 text-white",
+  danger:  "bg-gradient-to-br from-rose-600 to-rose-800 text-white",
+  warn:    "bg-gradient-to-br from-amber-700 to-amber-800 text-white",
   white:   "bg-white text-ink-soft",
   soft:    "bg-brand-50 text-brand-700",
   ghost:   "bg-transparent text-ink-mute shadow-none",
@@ -687,7 +690,7 @@ function Sheet({ open, onClose, title, sub, children, maxH = "86%" }) {
 
   if (!open) return null;
   return (
-    <div className="absolute inset-0 z-50 flex items-end a-fade" style={{ background:"rgba(15,23,42,.34)", backdropFilter:"blur(3px)" }}
+    <div className="absolute inset-0 z-50 flex items-end a-fade" style={{ background:"rgba(15,23,42,.42)" }}
       onClick={e => e.target === e.currentTarget && onClose()} role="dialog" aria-modal="true">
       <div className="w-full bg-[#f2f7fe] a-sheet flex flex-col"
         style={{ maxHeight:maxH, borderRadius:"30px 30px 0 0", boxShadow:"0 -14px 40px rgba(15,23,42,.20)" }}>
@@ -785,6 +788,61 @@ function estamparFoto(dataUrl, meta) {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   PERSISTENCIA DE LA COLA OFFLINE — IndexedDB (PRD §10)
+   Sin esto, un refresh o cierre de pestaña mientras hay actas
+   encoladas offline las pierde por completo. Se usa IndexedDB
+   y no localStorage porque las fotos en base64 pueden pesar
+   varios MB y arriesgan QuotaExceededError.
+═══════════════════════════════════════════════════════════ */
+const QUEUE_DB_NAME = "asi_offline_queue";
+const QUEUE_STORE   = "queue";
+
+function abrirQueueDB() {
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB) { reject(new Error("IndexedDB no disponible")); return; }
+    const req = indexedDB.open(QUEUE_DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      if (!req.result.objectStoreNames.contains(QUEUE_STORE)) {
+        req.result.createObjectStore(QUEUE_STORE, { keyPath: "id" });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror   = () => reject(req.error);
+  });
+}
+
+async function leerQueuePersistida() {
+  try {
+    const db = await abrirQueueDB();
+    return await new Promise((resolve, reject) => {
+      const store = db.transaction(QUEUE_STORE, "readonly").objectStore(QUEUE_STORE);
+      const req   = store.getAll();
+      req.onsuccess = () => resolve(req.result.map(r => r.item));
+      req.onerror   = () => reject(req.error);
+    });
+  } catch (e) {
+    console.warn("[queue] IndexedDB no disponible, cola solo en memoria:", e.message);
+    return [];
+  }
+}
+
+async function guardarQueuePersistida(items) {
+  try {
+    const db = await abrirQueueDB();
+    await new Promise((resolve, reject) => {
+      const tx    = db.transaction(QUEUE_STORE, "readwrite");
+      const store = tx.objectStore(QUEUE_STORE);
+      store.clear();
+      items.forEach((item, id) => store.put({ id, item }));
+      tx.oncomplete = resolve;
+      tx.onerror    = () => reject(tx.error);
+    });
+  } catch (e) {
+    console.warn("[queue] no se pudo persistir la cola:", e.message);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
    CONTEXTO GLOBAL — única fuente de verdad de la app
    Funciona con datos semilla y, si hay API conectada,
    sustituye por los datos reales de PostgreSQL.
@@ -806,6 +864,21 @@ function AppProvider({ children }) {
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState(null);
   const [ticketSeq, setTicketSeq] = useState(42);
+
+  // Hidrata la cola desde IndexedDB al montar (sobrevive a un refresh/cierre de pestaña)
+  const [queueHidratada, setQueueHidratada] = useState(false);
+  useEffect(() => {
+    leerQueuePersistida().then(items => {
+      if (items.length) setQueue(items);
+      setQueueHidratada(true);
+    });
+  }, []);
+
+  // Persiste cada cambio — recién después de hidratar, para no pisar lo guardado con [] al montar
+  useEffect(() => {
+    if (!queueHidratada) return;
+    guardarQueuePersistida(queue);
+  }, [queue, queueHidratada]);
 
   /* ── Capa de API ── */
   const [apiUrl,      setApiUrl]      = useState("");
@@ -1042,15 +1115,32 @@ function AppProvider({ children }) {
     setSyncing(true); setSyncMsg(null);
 
     await new Promise(r => setTimeout(r, 1400)); // latencia simulada de red
-    _commit(pend.map(p => p.acta));
+
+    // Trackea éxito/fracaso por acta — una acta que falla queda en la cola
+    // para el próximo reintento en vez de darse por sincronizada igual.
+    const exitosas = [];
+    const fallidas = [];
 
     if (apiStatus === "connected" && currentUser?.rol === "supervisor") {
-      for (const p of pend) { try { await enviarActaApi(p.rd, p.acta); } catch (e) { console.warn("[sync]", e.message); } }
+      for (const p of pend) {
+        try { await enviarActaApi(p.rd, p.acta); exitosas.push(p); }
+        catch (e) { console.warn("[sync]", e.message); fallidas.push(p); }
+      }
+    } else {
+      // Sin backend real conectado: se guarda localmente igual (modo demo/offline permanente)
+      exitosas.push(...pend);
     }
 
-    setQueue([]); setSyncing(false);
-    const n = pend.length;
-    setSyncMsg({ tone:"good", text:`${n} acta${n > 1 ? "s" : ""} sincronizada${n > 1 ? "s" : ""} con el servidor.` });
+    if (exitosas.length) _commit(exitosas.map(p => p.acta));
+    setQueue(fallidas);
+    setSyncing(false);
+
+    const n = exitosas.length, f = fallidas.length;
+    if (f === 0) {
+      setSyncMsg({ tone:"good", text:`${n} acta${n > 1 ? "s" : ""} sincronizada${n > 1 ? "s" : ""} con el servidor.` });
+    } else {
+      setSyncMsg({ tone:"warn", text:`${n} sincronizada${n === 1 ? "" : "s"}, ${f} pendiente${f === 1 ? "" : "s"} — se reintentará.` });
+    }
     setTimeout(() => setSyncMsg(null), 5200);
   }, [apiStatus, currentUser, enviarActaApi, syncing]);
 
@@ -1152,7 +1242,7 @@ function SyncToast() {
   let text = null, tone = "brand", icon = "cloud";
 
   if (syncing)            { text = `Procesando ${queue.length} acta${queue.length !== 1 ? "s" : ""} en cola…`; tone = "brand"; icon = "refresh"; }
-  else if (syncMsg)       { text = syncMsg.text; tone = syncMsg.tone; icon = "check-circle"; }
+  else if (syncMsg)       { text = syncMsg.text; tone = syncMsg.tone; icon = syncMsg.tone === "warn" ? "alert" : "check-circle"; }
   else if (offline && queue.length) { text = `${queue.length} acta${queue.length > 1 ? "s" : ""} en cola local · se enviará al recuperar señal`; tone = "warn"; icon = "cloud-off"; }
 
   if (!text) return null;
@@ -2633,6 +2723,7 @@ function SupervisorPanel() {
   const [res,  setRes]  = useState(null);
   const [busy, setBusy] = useState(false);
   const scrollRef = useRef(null);
+  const guardandoRef = useRef(false); // guard sincrónico: setBusy/disabled tardan un render en aplicarse
 
   const supervisor = currentUser?.nombre || "Supervisor";
 
@@ -2640,10 +2731,17 @@ function SupervisorPanel() {
   const reiniciar = () => { setRD({}); setRes(null); ir(0); };
 
   const guardar = async () => {
+    if (guardandoRef.current) return;
+    guardandoRef.current = true;
     setBusy(true);
-    const r = await guardarRonda(rd, supervisor);
-    setRes(r); setBusy(false);
-    scrollRef.current?.scrollTo({ top:0, behavior:"smooth" });
+    try {
+      const r = await guardarRonda(rd, supervisor);
+      setRes(r);
+    } finally {
+      setBusy(false);
+      guardandoRef.current = false;
+      scrollRef.current?.scrollTo({ top:0, behavior:"smooth" });
+    }
   };
 
   const pantallas = [
@@ -3072,10 +3170,24 @@ function OwnerPanel() {
 /* ═══════════════════════════════════════════════════════════
    MARCO DE TELÉFONO
 ═══════════════════════════════════════════════════════════ */
+const isNativeApp = typeof window !== "undefined" &&
+  !!window.Capacitor && (window.Capacitor.isNativePlatform ? window.Capacitor.isNativePlatform() : true);
+
 function PhoneFrame({ children }) {
   const { offline } = useApp();
   const [t, setT] = useState(new Date());
   useEffect(() => { const i = setInterval(() => setT(new Date()), 20000); return () => clearInterval(i); }, []);
+
+  // En la app nativa (Android/Capacitor) el dispositivo real ya tiene su propia barra de
+  // estado — el marco de teléfono es solo para la preview de escritorio en el navegador.
+  if (isNativeApp) {
+    return (
+      <div className="min-h-screen flex flex-col" style={{ background:"#eaf2fd" }}>
+        <ApiConfigBar />
+        <div className="flex-1 overflow-hidden flex flex-col">{children}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 pt-3"

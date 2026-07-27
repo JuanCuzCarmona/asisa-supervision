@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-27T20:45:00Z",
+  "title": "Design System: ASI · Argentina Seguridad Integral",
+  "extensions": {
+    "colorMeta": {
+      "guardia-azul-600": { "role": "primary", "displayName": "Azul Guardia", "canonical": "#2563eb", "tonalRamp": ["#1e40af", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe", "#eff6ff"] },
+      "cielo-aqua-500": { "role": "secondary", "displayName": "Cielo Aqua", "canonical": "#0ea5e9", "tonalRamp": ["#0ea5e9", "#38bdf8", "#7dd3fc", "#bae6fd", "#e0f2fe", "#f0f9ff"] },
+      "ink": { "role": "neutral", "displayName": "Tinta", "canonical": "#0f172a", "tonalRamp": ["#0f172a", "#334155", "#5b6b82", "#64748b"] },
+      "bien": { "role": "success", "displayName": "Verde Bien", "canonical": "#10b981" },
+      "regular": { "role": "warning", "displayName": "Ámbar Regular", "canonical": "#f59e0b" },
+      "mal": { "role": "error", "displayName": "Rojo Mal", "canonical": "#f43f5e" },
+      "plum": { "role": "tertiary", "displayName": "Violeta Institucional", "canonical": "#8b5cf6" },
+      "tang": { "role": "tertiary", "displayName": "Naranja Alerta Suave", "canonical": "#f97316" },
+      "plum-claro": { "role": "tertiary", "displayName": "Violeta Claro", "canonical": "#c4b5fd" },
+      "regular-claro": { "role": "warning", "displayName": "Ámbar Claro", "canonical": "#fcd34d" },
+      "mal-tint": { "role": "error", "displayName": "Rosa Alerta", "canonical": "#fff1f2" },
+      "bien-tint": { "role": "success", "displayName": "Verde Menta", "canonical": "#ecfdf5" },
+      "tang-tint": { "role": "tertiary", "displayName": "Durazno Suave", "canonical": "#fff7ed" },
+      "page-bg-profundo": { "role": "neutral", "displayName": "Celeste Profundo", "canonical": "#cddef5" },
+      "azul-riel": { "role": "neutral", "displayName": "Azul Riel", "canonical": "#bfd4ee" }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline", "purpose": "Título de marca o de pantalla principal (ej. login)." },
+      "title": { "displayName": "Title", "purpose": "Encabezado de sección de contenido (componente SH)." },
+      "metric": { "displayName": "Metric", "purpose": "Cifras grandes de lectura rápida: reloj, KPIs, porcentajes. Rol propio del producto, fuera de la jerarquía Material estándar." },
+      "body": { "displayName": "Body", "purpose": "Texto de inputs, contenido de tarjetas, cuerpo general." },
+      "meta": { "displayName": "Meta", "purpose": "Título de fila de lista (vigilador, objetivo, ticket) y sub-encabezado dentro de una tarjeta ya densa." },
+      "small": { "displayName": "Small", "purpose": "Texto descriptivo de segundo nivel dentro de una tarjeta — un escalón bajo Body para contenido de apoyo." },
+      "caption": { "displayName": "Caption", "purpose": "El paso de texto secundario más reutilizado: chips de estado, hints de formulario, estado de sincronización." },
+      "label": { "displayName": "Label", "purpose": "Overline/etiqueta de campo, siempre mayúscula." },
+      "micro": { "displayName": "Micro", "purpose": "La etiqueta más pequeña de la pantalla — badges compactos, IDs monoespaciados, timestamps en filas densas." }
+    },
+    "shadows": [
+      { "name": "clay", "value": "8px 8px 18px rgba(37,99,235,.10), -6px -6px 14px rgba(255,255,255,.95), inset -1px -1px 2px rgba(191,219,254,.30), inset 1px 1px 2px rgba(255,255,255,.90)", "purpose": "Tarjeta/contenedor estándar en reposo." },
+      { "name": "clay-sm", "value": "5px 5px 12px rgba(37,99,235,.09), -4px -4px 10px rgba(255,255,255,.92)", "purpose": "Superficie secundaria/compacta." },
+      { "name": "clay-inset", "value": "inset 5px 5px 11px rgba(37,99,235,.11), inset -5px -5px 11px rgba(255,255,255,.95)", "purpose": "Campos hundidos (inputs, contenido de solo lectura)." },
+      { "name": "clay-btn-rest", "value": "6px 6px 14px rgba(37,99,235,.13), -4px -4px 11px rgba(255,255,255,.92)", "purpose": "Botón sin presionar." },
+      { "name": "clay-btn-active", "value": "inset 4px 4px 10px rgba(15,23,42,.16), inset -3px -3px 8px rgba(255,255,255,.35)", "purpose": "Botón presionado — sombra invertida hacia adentro." }
+    ],
+    "motion": [
+      { "name": "clay-press", "value": "transform .18s cubic-bezier(.34,1.4,.64,1), box-shadow .18s ease", "purpose": "Transición estándar de botones/superficies apretables." },
+      { "name": "ease-slide-up", "value": "cubic-bezier(.22,1,.36,1)", "purpose": "Entrada de contenido nuevo (clase .a-up)." },
+      { "name": "ease-pop", "value": "cubic-bezier(.34,1.56,.64,1)", "purpose": "Entrada llamativa con rebote leve (clase .a-pop), uso puntual." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Acción principal de la pantalla — gradiente azul institucional, se hunde al presionar.",
+      "html": "<button class=\"ds-btn-primary\">Ingresar</button>",
+      "css": ".ds-btn-primary { background: linear-gradient(to bottom right, #2563eb, #1e40af); color: #ffffff; font-weight: 700; font-size: 14px; padding: 14px 20px; border-radius: 18px; border: none; box-shadow: 6px 6px 14px rgba(37,99,235,.13), -4px -4px 11px rgba(255,255,255,.92); transition: transform .18s cubic-bezier(.34,1.4,.64,1), box-shadow .18s ease; } .ds-btn-primary:active { transform: translateY(2px) scale(.982); box-shadow: inset 4px 4px 10px rgba(15,23,42,.16), inset -3px -3px 8px rgba(255,255,255,.35); } .ds-btn-primary:focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Acción terciaria de bajo peso visual — única variante sin sombra clay.",
+      "html": "<button class=\"ds-btn-ghost\">Cancelar</button>",
+      "css": ".ds-btn-ghost { background: transparent; color: #5b6b82; font-weight: 700; font-size: 14px; padding: 14px 20px; border-radius: 18px; border: none; box-shadow: none; transition: color .18s ease; } .ds-btn-ghost:focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Contenedor claymorphism estándar — superficie blanca flotando sobre el fondo celeste.",
+      "html": "<div class=\"ds-card\">Contenido</div>",
+      "css": ".ds-card { background: #ffffff; border-radius: 22px; padding: 20px; box-shadow: 8px 8px 18px rgba(37,99,235,.10), -6px -6px 14px rgba(255,255,255,.95), inset -1px -1px 2px rgba(191,219,254,.30), inset 1px 1px 2px rgba(255,255,255,.90); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo de texto hundido (clay-inset) con etiqueta overline arriba.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-label\">Usuario</span><div class=\"ds-input\"><input type=\"text\" placeholder=\"tu.usuario\" /></div></label>",
+      "css": ".ds-field { display: block; } .ds-label { display: block; margin-bottom: 6px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.13em; color: #64748b; } .ds-input { background: #eef5fd; border-radius: 18px; padding: 12px 14px; box-shadow: inset 5px 5px 11px rgba(37,99,235,.11), inset -5px -5px 11px rgba(255,255,255,.95); } .ds-input:focus-within { outline: 3px solid #2563eb; outline-offset: 2px; } .ds-input input { background: transparent; border: none; outline: none; font-size: 15px; font-weight: 600; color: #0f172a; width: 100%; }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Chip de estado semántico (bien/regular/mal/área) — nunca decorativo.",
+      "html": "<span class=\"ds-badge ds-badge-bien\">Completo</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 4px; border-radius: 999px; padding: 4px 10px; font-size: 11px; font-weight: 700; white-space: nowrap; } .ds-badge-bien { background: #d1fae5; color: #065f46; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "La Consola del Puesto de Guardia",
+    "overview": "ASI se siente como el instrumento de una garita: calmo, ordenado, en el que confiás bajo presión sin que te grite encima. No es una landing que busca entusiasmar — es una herramienta que un supervisor abre en movimiento, con una mano, en luz variable, y en la que un admin confía para auditar después. La superficie claymorphism (blancos acolchados, sombras dobles suaves) transmite solidez sin frialdad: nada de vidrio esmerilado ni gradientes de startup, nada de rojo-alarma permanente. El color se raciona — el azul institucional domina, y los tonos semánticos (verde/ámbar/rojo del Likert B/R/M) aparecen solo cuando codifican un estado real, nunca como decoración.\n\nExplícitamente rechazado: la estética de SaaS corporativo genérico (gradientes morado-azul, ilustraciones de stock, el look Notion/Linear que usa todo el mundo). ASI no compite por parecer una startup — compite por parecer un instrumento de trabajo confiable.",
+    "keyCharacteristics": [
+      "Superficies claymorphism blancas sobre fondo celeste — nunca fondo blanco puro ni gris neutro.",
+      "Un solo acento dominante (azul institucional); los demás colores son semánticos, no decorativos.",
+      "Tipografía Inter en negro (900) para toda jerarquía — no hay pesos livianos en la interfaz.",
+      "Botones que se \"hunden\" físicamente al tocarlos — la sombra se invierte, no solo cambia de color."
+    ],
+    "rules": [
+      { "name": "La Regla del Semáforo Honesto", "body": "Verde, ámbar y rojo existen únicamente para codificar el resultado Bien/Regular/Mal de un ítem de checklist o el estado de un ticket. Nunca se usan como color decorativo de marca ni en elementos sin estado real que representar.", "section": "colors" },
+      { "name": "La Regla de Racionamiento del Acento", "body": "El azul primario aparece en como mucho una acción por pantalla más elementos de marca fijos. Si dos elementos compiten por el mismo azul, uno de los dos está mal jerarquizado.", "section": "colors" },
+      { "name": "La Regla del Negro Sostenido", "body": "Casi nada de peso 400/500 en la interfaz: incluso el texto secundario es 600+. La jerarquía se lee por tamaño y color de tinta, no por adelgazar el trazo — eso mantiene la app legible con sol directo o guantes puestos.", "section": "typography" },
+      { "name": "La Regla de los Nueve Escalones", "body": "El ramp tipográfico completo es 9px → 10px → 11px → 12px → 13px → 15px → 21px → 25px → 34px — nueve pasos, todos en Inter, todos 700+. Un tamaño literal fuera de este ramp es drift, no una excepción legítima.", "section": "typography" },
+      { "name": "La Regla del Hundimiento Físico", "body": "Ningún elemento interactivo cambia de estado solo con color u opacidad — el par sombra-exterior/sombra-interior más una traslación de 1–2px es lo que comunica \"esto es tocable y esto ya lo toqué\".", "section": "elevation" }
+    ],
+    "dos": [
+      "Do usar la sombra doble Clay en cualquier superficie de reposo nueva — es la firma visual del sistema, no un detalle opcional.",
+      "Do reservar bien/regular/mal (verde/ámbar/rojo) exclusivamente para estado real — nunca para jerarquía visual o decoración.",
+      "Do mantener el texto en 600+ de peso siempre — la legibilidad en exteriores con luz variable depende de esto.",
+      "Do hacer que cada elemento tocable \"se hunda\" (sombra invertida + traslación) al presionarse."
+    ],
+    "donts": [
+      "Don't introducir gradientes morado-azul de SaaS genérico ni la estética Notion/Linear — es la anti-referencia explícita del producto.",
+      "Don't usar rojo/ámbar/verde fuera de su rol semántico.",
+      "Don't dibujar el bezel de teléfono falso en el build nativo Android — el dispositivo real ya tiene su propia barra de estado.",
+      "Don't usar backdrop-filter: blur() de forma libre — es costoso en WebViews Android de gama media; usar más opacidad de fondo en su lugar."
+    ]
+  }
+}
