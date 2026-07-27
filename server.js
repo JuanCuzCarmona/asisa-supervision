@@ -63,8 +63,12 @@ const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN || "http://localhost:5500")
 
 app.use(cors({
   origin: (origin, cb) => {
-    // Permite requests sin origin (Tailscale directo, curl, móvil, file://)
-    if (!origin || origin === "null" || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    // Permite requests sin origin (Tailscale directo, curl, apps móviles nativas).
+    // No se acepta el Origin literal "null": lo envían tanto file:// (que en este
+    // proyecto no llama a la API, solo corre en modo demo) como cualquier iframe
+    // sandboxeado, y aceptarlo ampliaba la superficie de ataque sin habilitar
+    // ningún flujo real.
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
     cb(new Error("Origen no permitido por CORS"));
   },
   methods:     ["GET","POST","PATCH","OPTIONS"],
@@ -123,7 +127,11 @@ function requireRole(...roles) {
 
 // Helpers de validación rápida
 const isPositiveInt = (v) => Number.isInteger(Number(v)) && Number(v) > 0;
-const isString      = (v, min = 1) => typeof v === "string" && v.trim().length >= min;
+const isString      = (v, min = 1, max = 20000) =>
+  typeof v === "string" && v.trim().length >= min && v.trim().length <= max;
+const isValidLat    = (v) => v == null || (typeof v === "number" && Number.isFinite(v) && v >= -90  && v <= 90);
+const isValidLng    = (v) => v == null || (typeof v === "number" && Number.isFinite(v) && v >= -180 && v <= 180);
+const isValidDate   = (v) => v == null || !Number.isNaN(new Date(v).getTime());
 
 /* ════════════════════════════════════════════
    POST /api/login
@@ -296,8 +304,20 @@ app.post("/api/rondas", requireAuth, requireRole("supervisor"), async (req, res)
   if (!["presencial","remota"].includes(tipo)) {
     return res.status(400).json({ ok: false, mensaje: "tipo debe ser 'presencial' o 'remota'." });
   }
-  if (tipo === "remota" && !isString(justificacion_fuera, 10)) {
+  if (tipo === "remota" && !isString(justificacion_fuera, 10, 2000)) {
     return res.status(400).json({ ok: false, mensaje: "Justificación obligatoria para ronda remota (mínimo 10 caracteres)." });
+  }
+  if (!isValidLat(lat)) {
+    return res.status(400).json({ ok: false, mensaje: "lat inválida (debe estar entre -90 y 90)." });
+  }
+  if (!isValidLng(lng)) {
+    return res.status(400).json({ ok: false, mensaje: "lng inválida (debe estar entre -180 y 180)." });
+  }
+  if (!isValidDate(hora_inicio)) {
+    return res.status(400).json({ ok: false, mensaje: "hora_inicio inválida." });
+  }
+  if (!isValidDate(hora_fin)) {
+    return res.status(400).json({ ok: false, mensaje: "hora_fin inválida." });
   }
   // PRD §5.2 — no se guarda un acta sin al menos una firma o una negativa registrada
   if (!vigiladores.some(v => v.firma_base64 || v.nego_firmar)) {
@@ -359,10 +379,10 @@ app.post("/api/rondas", requireAuth, requireRole("supervisor"), async (req, res)
         [
           rondaId,
           isPositiveInt(item.item_id) ? parseInt(item.item_id) : null,
-          item.pregunta   || null,
-          item.valoracion || "B",
-          item.observacion_pred  || null,
-          item.observacion_libre || null,
+          isString(item.pregunta, 1, 300) ? item.pregunta.trim() : null,
+          ["B","R","M"].includes(item.valoracion) ? item.valoracion : "B",
+          isString(item.observacion_pred, 1, 2000)  ? item.observacion_pred.trim()  : null,
+          isString(item.observacion_libre, 1, 2000) ? item.observacion_libre.trim() : null,
         ]
       );
     }
@@ -370,17 +390,18 @@ app.post("/api/rondas", requireAuth, requireRole("supervisor"), async (req, res)
     // 4. Evidencia fotográfica con marca de agua GPS (PRD §8 paso 5)
     for (const foto of evidencias) {
       if (!isString(foto.imagen_base64) || !foto.imagen_base64.startsWith("data:image/")) continue;
+      if (!isValidLat(foto.lat) || !isValidLng(foto.lng)) continue;
       await client.query(
         `INSERT INTO evidencias_fotos (ronda_id, imagen_base64, lat, lng)
          VALUES ($1,$2,$3,$4)`,
-        [rondaId, foto.imagen_base64, foto.lat || null, foto.lng || null]
+        [rondaId, foto.imagen_base64, foto.lat ?? null, foto.lng ?? null]
       );
     }
 
     // 5. Tickets — código generado desde el ID (sin race condition)
     const ticketsCreados = [];
     for (const inc of incidencias) {
-      if (!isString(inc.descripcion)) continue;
+      if (!isString(inc.descripcion, 1, 2000)) continue;
 
       const ticketResult = await client.query(
         `INSERT INTO tickets_incidencias
@@ -390,11 +411,11 @@ app.post("/api/rondas", requireAuth, requireRole("supervisor"), async (req, res)
          RETURNING id`,
         [
           rondaId,
-          inc.area_responsable || "Operaciones",
-          inc.categoria        || "General",
+          isString(inc.area_responsable, 1, 100) ? inc.area_responsable.trim() : "Operaciones",
+          isString(inc.categoria, 1, 100)         ? inc.categoria.trim()        : "General",
           inc.descripcion.trim(),
           isPositiveInt(inc.item_id)      ? parseInt(inc.item_id)      : null,
-          inc.item_titulo || null,
+          isString(inc.item_titulo, 1, 200) ? inc.item_titulo.trim() : null,
           ["R","M"].includes(inc.valoracion) ? inc.valoracion : null,
           isPositiveInt(inc.vigilador_id) ? parseInt(inc.vigilador_id) : null,
         ]
