@@ -123,6 +123,37 @@
       background-image: linear-gradient(135deg, rgba(37,99,235,.05) 25%, transparent 25%, transparent 50%, rgba(37,99,235,.05) 50%, rgba(37,99,235,.05) 75%, transparent 75%);
       background-size: 14px 14px;
     }
+
+    /* ═══════ Adaptación desktop/tablet — solo Admin y Dueño ═══════
+       PhoneFrame aplica los modificadores "--wide" únicamente cuando el
+       panel activo es admin/dueño (ver AppInner). Login y Supervisor
+       siguen renderizando .device-wrap/.device-shell sin el modificador,
+       así que estas reglas @media nunca los afectan, sin importar el
+       ancho del viewport — quedan fijos en el marco de teléfono. */
+    .device-wrap { width: 100%; max-width: 392px; }
+    @media (min-width: 768px) {
+      .device-wrap.device-wrap--wide { max-width: 720px; }
+    }
+    @media (min-width: 1024px) {
+      .device-wrap.device-wrap--wide { max-width: 1080px; }
+    }
+    .device-shell {
+      background: #eaf2fd; border-radius: 44px; overflow: hidden; height: 784px;
+      border: 9px solid #ffffff; position: relative; display: flex; flex-direction: column;
+      box-shadow: 22px 22px 55px rgba(37,99,235,.22), -16px -16px 44px rgba(255,255,255,.95), inset 0 1px 2px rgba(255,255,255,.9);
+    }
+    @media (min-width: 768px) {
+      /* El bezel de teléfono deja de tener sentido en un panel ancho de
+         escritorio: se cambia por la elevación estándar Clay (xl, 28px)
+         del propio sistema de diseño en vez de inventar una nueva. */
+      .device-shell.device-shell--wide {
+        border-radius: 28px; border: none; height: auto; min-height: calc(100vh - 108px);
+        box-shadow: 8px 8px 18px rgba(37,99,235,.10), -6px -6px 14px rgba(255,255,255,.95),
+          inset -1px -1px 2px rgba(191,219,254,.30), inset 1px 1px 2px rgba(255,255,255,.90);
+      }
+      .device-shell--wide .phone-chrome { display: none; }
+      .device-shell--wide .device-body { overflow: visible; }
+    }
   </style>
 </head>
 <body>
@@ -2837,47 +2868,56 @@ function AdminPanel() {
       <SyncToast />
 
       {/* Contadores */}
-      <div className="flex gap-2 px-4 pb-2.5 shrink-0">
+      <div className="flex gap-2 md:gap-3 px-4 md:px-6 pb-2.5 md:pb-4 shrink-0">
         {[["Críticas", stats.crit, "bad"], ["Activas", stats.act, "warn"], ["Cerradas", stats.cer, "good"]].map(([l, v, tone]) => (
-          <Clay key={l} className="flex-1 p-3 text-center">
-            <p className={cx("text-2xl font-black tnum leading-none",
+          <Clay key={l} className="flex-1 p-3 md:p-5 text-center">
+            <p className={cx("text-2xl md:text-3xl font-black tnum leading-none",
               tone === "bad" ? "text-bad" : tone === "warn" ? "text-warn" : "text-good")}>{v}</p>
-            <p className="text-[10px] font-bold text-ink-mute mt-1">{l}</p>
+            <p className="text-[10px] md:text-xs font-bold text-ink-mute mt-1">{l}</p>
           </Clay>
         ))}
       </div>
 
-      <div className="px-4 pb-2 shrink-0">
-        <Segmented tone="plum" value={filtro} onChange={setFiltro}
-          options={[["activo","Activas",stats.act],["cerrado","Cerradas",stats.cer],["todas","Todas",tickets.length]]} />
+      {/* En mobile el segmentado y el filtro por área van apilados; en
+          tablet/desktop pasan a la misma fila (side-by-side). */}
+      <div className="md:flex md:items-center md:gap-4 md:px-6 shrink-0">
+        <div className="px-4 md:px-0 pb-2 md:pb-2.5 shrink-0 md:w-72">
+          <Segmented tone="plum" value={filtro} onChange={setFiltro}
+            options={[["activo","Activas",stats.act],["cerrado","Cerradas",stats.cer],["todas","Todas",tickets.length]]} />
+        </div>
+
+        {/* Filtro por área */}
+        {Object.keys(areas).length > 0 && (
+          <div className="flex gap-2 overflow-x-auto px-4 md:px-0 pb-2.5 shrink-0 md:flex-1">
+            <button onClick={() => setArea("todas")}
+              className={cx("clay-btn shrink-0 px-3 py-2 rounded-full text-[10px] font-black",
+                area === "todas" ? "bg-plum text-white" : "bg-white text-ink-mute")}>Todas</button>
+            {Object.entries(areas).map(([a, n]) => (
+              <button key={a} onClick={() => setArea(a)}
+                className={cx("clay-btn shrink-0 px-3 py-2 rounded-full text-[10px] font-black whitespace-nowrap",
+                  area === a ? "bg-plum text-white" : "bg-white text-ink-mute")}>
+                {a} <span className="tnum opacity-70">{n}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Filtro por área */}
-      {Object.keys(areas).length > 0 && (
-        <div className="flex gap-2 overflow-x-auto px-4 pb-2.5 shrink-0">
-          <button onClick={() => setArea("todas")}
-            className={cx("clay-btn shrink-0 px-3 py-2 rounded-full text-[10px] font-black",
-              area === "todas" ? "bg-plum text-white" : "bg-white text-ink-mute")}>Todas</button>
-          {Object.entries(areas).map(([a, n]) => (
-            <button key={a} onClick={() => setArea(a)}
-              className={cx("clay-btn shrink-0 px-3 py-2 rounded-full text-[10px] font-black whitespace-nowrap",
-                area === a ? "bg-plum text-white" : "bg-white text-ink-mute")}>
-              {a} <span className="tnum opacity-70">{n}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      <div className="scroll-y flex-1 px-4 pb-5 flex flex-col gap-2.5">
+      {/* Lista de tickets: una columna en el teléfono, grilla tipo tabla
+          de 2 columnas en tablet y 3 en desktop — más incidencias visibles
+          de un vistazo sin dejar de ser tarjetas Clay. */}
+      <div className="scroll-y flex-1 px-4 md:px-6 pb-5 flex flex-col gap-2.5 md:grid md:grid-cols-2 md:items-start md:gap-3 lg:grid-cols-3">
         {cargando && [0,1,2].map(i => <Skeleton key={i} h={112} />)}
 
         {!cargando && lista.length === 0 && (
-          <Empty icon="check-circle" title="Sin incidencias acá" sub="No hay tickets que coincidan con este filtro." />
+          <div className="md:col-span-full">
+            <Empty icon="check-circle" title="Sin incidencias acá" sub="No hay tickets que coincidan con este filtro." />
+          </div>
         )}
 
         {!cargando && lista.map((t, i) => (
           <button key={t.id} onClick={() => { setSel(t); setResol(""); }}
-            className="clay clay-press w-full text-left p-4 a-up focus-ring" style={{ animationDelay:`${i * 45}ms` }}>
+            className="clay clay-press w-full text-left p-4 md:p-5 a-up focus-ring" style={{ animationDelay:`${i * 45}ms` }}>
             <div className="flex items-center justify-between gap-2 mb-2">
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-[10px] font-mono font-black text-ink-mute">{t.id}</span>
@@ -3008,10 +3048,10 @@ function OwnerPanel() {
       <ConnBar />
       <SyncToast />
 
-      <div className="scroll-y flex-1 px-4 pb-5 flex flex-col gap-3.5">
+      <div className="scroll-y flex-1 px-4 md:px-6 pb-5 flex flex-col gap-3.5">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-black text-ink capitalize leading-tight">
+            <h2 className="text-lg md:text-xl font-black text-ink capitalize leading-tight">
               {new Date().toLocaleDateString("es-AR", { month:"long", year:"numeric" })}
             </h2>
             <p className="text-[11px] text-ink-mute">Ciclo mensual de cumplimiento</p>
@@ -3022,144 +3062,154 @@ function OwnerPanel() {
           </div>
         </div>
 
-        {/* Cobertura de visitas */}
-        <Clay className="p-4">
-          <Label className="mb-3">Cobertura de visitas mensuales</Label>
-          <div className="flex items-center gap-4">
-            <Ring value={k.visitas} max={k.metaVisitas} color="#2563eb" size={118} label={`${k.visitas} de ${k.metaVisitas}`} />
-            <div className="flex-1 min-w-0">
-              <p className="text-[42px] font-black text-ink tnum leading-none">{pct}<span className="text-xl text-brand-500">%</span></p>
-              <p className="text-xs text-ink-mute mt-1 leading-snug">{k.visitas} visitas realizadas<br />sobre {k.metaVisitas} planificadas</p>
-              {k.rondas && (
-                <div className="flex gap-1.5 mt-2.5">
-                  <Badge tone="good">{k.rondas.presenciales} presenciales</Badge>
-                  <Badge tone="warn">{k.rondas.remotas} remotas</Badge>
+        {/* En el teléfono, todo baja en una sola columna en este mismo
+            orden. En tablet/desktop se reparte en dos columnas lado a
+            lado: cobertura/incidencias/tiempo de resolución a la
+            izquierda, cumplimiento/áreas/actividad a la derecha. */}
+        <div className="flex flex-col gap-3.5 md:grid md:grid-cols-2 md:gap-4 md:items-start">
+          <div className="flex flex-col gap-3.5">
+            {/* Cobertura de visitas */}
+            <Clay className="p-4 md:p-5">
+              <Label className="mb-3">Cobertura de visitas mensuales</Label>
+              <div className="flex items-center gap-4">
+                <Ring value={k.visitas} max={k.metaVisitas} color="#2563eb" size={118} label={`${k.visitas} de ${k.metaVisitas}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[42px] font-black text-ink tnum leading-none">{pct}<span className="text-xl text-brand-500">%</span></p>
+                  <p className="text-xs text-ink-mute mt-1 leading-snug">{k.visitas} visitas realizadas<br />sobre {k.metaVisitas} planificadas</p>
+                  {k.rondas && (
+                    <div className="flex gap-1.5 mt-2.5">
+                      <Badge tone="good">{k.rondas.presenciales} presenciales</Badge>
+                      <Badge tone="warn">{k.rondas.remotas} remotas</Badge>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Clay>
+
+            {/* Incidencias */}
+            <div className="flex gap-2.5">
+              <Clay className="flex-1 p-4" tint={k.criticas > 0 ? "linear-gradient(135deg,#fff1f2,#ffe4e6)" : "linear-gradient(135deg,#ecfdf5,#d1fae5)"}>
+                <Label className={k.criticas > 0 ? "text-bad-ink" : "text-good-ink"}>Críticas</Label>
+                <p className={cx("text-[40px] font-black tnum leading-none mt-1", k.criticas > 0 ? "text-bad" : "text-good")}>{k.criticas}</p>
+                <p className={cx("text-[10px] font-bold mt-1", k.criticas > 0 ? "text-bad-ink" : "text-good-ink")}>
+                  {k.criticas > 0 ? "requieren atención" : "todo en orden"}
+                </p>
+              </Clay>
+              <div className="flex-1 flex flex-col gap-2.5">
+                <Clay className="p-3.5">
+                  <p className="text-2xl font-black text-warn tnum leading-none">{k.activas}</p>
+                  <p className="text-[10px] font-bold text-ink-mute mt-1">Tickets activos</p>
+                </Clay>
+                <Clay className="p-3.5">
+                  <p className="text-2xl font-black text-good tnum leading-none">{k.cerradas}</p>
+                  <p className="text-[10px] font-bold text-ink-mute mt-1">Resueltos</p>
+                </Clay>
+              </div>
+            </div>
+
+            {k.diasProm > 0 && (
+              <Clay className="p-3.5 flex items-center gap-3">
+                <span className="w-10 h-10 rounded-[14px] bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+                  <Icon name="clock" size={19} />
+                </span>
+                <div>
+                  <p className="text-[13px] font-black text-ink tnum">{k.diasProm} días</p>
+                  <p className="text-[10px] text-ink-mute">Tiempo promedio de resolución</p>
+                </div>
+              </Clay>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-3.5">
+            {/* Cumplimiento */}
+            <Clay className="p-4 md:p-5">
+              <div className="flex items-center justify-between mb-3">
+                <Label>Cumplimiento</Label>
+                <div className="clay-inset flex gap-1 p-1">
+                  {[["tipo","Por tipo"],["obj","Por objetivo"]].map(([kk, l]) => (
+                    <button key={kk} onClick={() => setTab(kk)}
+                      className={cx("px-2.5 py-1 rounded-[10px] text-[10px] font-black transition-all",
+                        tab === kk ? "bg-brand-600 text-white" : "text-ink-mute")}>{l}</button>
+                  ))}
+                </div>
+              </div>
+
+              {tab === "tipo" ? (
+                <div className="flex flex-col gap-3.5">
+                  {Object.entries(k.porTipo || {}).map(([tipo, d]) => {
+                    const p = d.total ? Math.round(d.completadas / d.total * 100) : 0;
+                    return (
+                      <div key={tipo}>
+                        <div className="flex justify-between items-center mb-1.5">
+                          <span className="text-[12px] font-bold text-ink-soft">{tipo}</span>
+                          <span className="text-[11px] text-ink-mute tnum">
+                            {d.completadas}/{d.total} · <span className="font-black text-ink">{p}%</span>
+                          </span>
+                        </div>
+                        <Bar value={d.completadas} max={d.total || 1} color={TIPO_COLOR[tipo] || "#3b82f6"} height={9} />
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {(k.porObjetivo || []).map(o => {
+                    const meta = o.visitas_meta_mes || 0;
+                    const p = meta ? Math.round(o.realizadas / meta * 100) : 0;
+                    return (
+                      <div key={o.id}>
+                        <div className="flex justify-between items-center gap-2 mb-1.5">
+                          <span className="text-[11px] font-bold text-ink-soft truncate flex-1">{o.nombre}</span>
+                          <span className="text-[10px] text-ink-mute tnum shrink-0">{o.realizadas}/{meta}</span>
+                        </div>
+                        <Bar value={o.realizadas} max={meta || 1} color={p >= 100 ? "#10b981" : p >= 60 ? "#3b82f6" : "#f59e0b"} height={7} />
+                      </div>
+                    );
+                  })}
                 </div>
               )}
-            </div>
-          </div>
-        </Clay>
-
-        {/* Incidencias */}
-        <div className="flex gap-2.5">
-          <Clay className="flex-1 p-4" tint={k.criticas > 0 ? "linear-gradient(135deg,#fff1f2,#ffe4e6)" : "linear-gradient(135deg,#ecfdf5,#d1fae5)"}>
-            <Label className={k.criticas > 0 ? "text-bad-ink" : "text-good-ink"}>Críticas</Label>
-            <p className={cx("text-[40px] font-black tnum leading-none mt-1", k.criticas > 0 ? "text-bad" : "text-good")}>{k.criticas}</p>
-            <p className={cx("text-[10px] font-bold mt-1", k.criticas > 0 ? "text-bad-ink" : "text-good-ink")}>
-              {k.criticas > 0 ? "requieren atención" : "todo en orden"}
-            </p>
-          </Clay>
-          <div className="flex-1 flex flex-col gap-2.5">
-            <Clay className="p-3.5">
-              <p className="text-2xl font-black text-warn tnum leading-none">{k.activas}</p>
-              <p className="text-[10px] font-bold text-ink-mute mt-1">Tickets activos</p>
             </Clay>
-            <Clay className="p-3.5">
-              <p className="text-2xl font-black text-good tnum leading-none">{k.cerradas}</p>
-              <p className="text-[10px] font-bold text-ink-mute mt-1">Resueltos</p>
+
+            {/* Tickets por área */}
+            {k.porArea?.length > 0 && (
+              <Clay className="p-4">
+                <Label className="mb-3">Tickets abiertos por área</Label>
+                <div className="flex flex-col gap-2">
+                  {k.porArea.map(a => (
+                    <div key={a.area_responsable} className="flex items-center gap-2.5">
+                      <Badge tone={AREA_THEME[a.area_responsable]?.tone || "gray"}>{a.area_responsable}</Badge>
+                      <div className="flex-1"><Bar value={parseInt(a.cantidad)} max={Math.max(...k.porArea.map(x => parseInt(x.cantidad)))} color="#8b5cf6" height={7} /></div>
+                      <span className="text-[11px] font-black text-ink tnum w-4 text-right">{a.cantidad}</span>
+                    </div>
+                  ))}
+                </div>
+              </Clay>
+            )}
+
+            {/* Feed en vivo */}
+            <Clay className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <Label>Actividad en tiempo real</Label>
+                <div className="flex items-center gap-1.5"><Dot tone="good" pulse /><span className="text-[10px] font-black text-good-ink">Live</span></div>
+              </div>
+              {feed.length === 0
+                ? <Empty icon="activity" title="Sin actividad" sub="Las rondas aparecerán acá al guardarse." />
+                : feed.map((a, i) => (
+                  <div key={i} className={cx("flex items-center gap-2.5 py-2.5", i < feed.length - 1 && "border-b border-slate-100")}>
+                    <span className="text-[10px] text-ink-faint font-mono w-9 shrink-0 tnum">{a.hora}</span>
+                    <Dot tone={a.tipo === "Presencial" ? "good" : "warn"} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-bold text-ink truncate">
+                        {a.isNew && <span className="text-brand-600">● </span>}{a.sup} → {a.obj}
+                      </p>
+                      <p className="text-[10px] text-ink-faint">{a.isNew ? "Recién · " : ""}{a.tipo}{!a.ok ? " · con incidencia" : ""}</p>
+                    </div>
+                    <Icon name={a.ok ? "check-circle" : "alert"} size={15} className={a.ok ? "text-good" : "text-warn"} />
+                  </div>
+                ))}
             </Clay>
           </div>
         </div>
-
-        {k.diasProm > 0 && (
-          <Clay className="p-3.5 flex items-center gap-3">
-            <span className="w-10 h-10 rounded-[14px] bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
-              <Icon name="clock" size={19} />
-            </span>
-            <div>
-              <p className="text-[13px] font-black text-ink tnum">{k.diasProm} días</p>
-              <p className="text-[10px] text-ink-mute">Tiempo promedio de resolución</p>
-            </div>
-          </Clay>
-        )}
-
-        {/* Cumplimiento */}
-        <Clay className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <Label>Cumplimiento</Label>
-            <div className="clay-inset flex gap-1 p-1">
-              {[["tipo","Por tipo"],["obj","Por objetivo"]].map(([kk, l]) => (
-                <button key={kk} onClick={() => setTab(kk)}
-                  className={cx("px-2.5 py-1 rounded-[10px] text-[10px] font-black transition-all",
-                    tab === kk ? "bg-brand-600 text-white" : "text-ink-mute")}>{l}</button>
-              ))}
-            </div>
-          </div>
-
-          {tab === "tipo" ? (
-            <div className="flex flex-col gap-3.5">
-              {Object.entries(k.porTipo || {}).map(([tipo, d]) => {
-                const p = d.total ? Math.round(d.completadas / d.total * 100) : 0;
-                return (
-                  <div key={tipo}>
-                    <div className="flex justify-between items-center mb-1.5">
-                      <span className="text-[12px] font-bold text-ink-soft">{tipo}</span>
-                      <span className="text-[11px] text-ink-mute tnum">
-                        {d.completadas}/{d.total} · <span className="font-black text-ink">{p}%</span>
-                      </span>
-                    </div>
-                    <Bar value={d.completadas} max={d.total || 1} color={TIPO_COLOR[tipo] || "#3b82f6"} height={9} />
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {(k.porObjetivo || []).map(o => {
-                const meta = o.visitas_meta_mes || 0;
-                const p = meta ? Math.round(o.realizadas / meta * 100) : 0;
-                return (
-                  <div key={o.id}>
-                    <div className="flex justify-between items-center gap-2 mb-1.5">
-                      <span className="text-[11px] font-bold text-ink-soft truncate flex-1">{o.nombre}</span>
-                      <span className="text-[10px] text-ink-mute tnum shrink-0">{o.realizadas}/{meta}</span>
-                    </div>
-                    <Bar value={o.realizadas} max={meta || 1} color={p >= 100 ? "#10b981" : p >= 60 ? "#3b82f6" : "#f59e0b"} height={7} />
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </Clay>
-
-        {/* Tickets por área */}
-        {k.porArea?.length > 0 && (
-          <Clay className="p-4">
-            <Label className="mb-3">Tickets abiertos por área</Label>
-            <div className="flex flex-col gap-2">
-              {k.porArea.map(a => (
-                <div key={a.area_responsable} className="flex items-center gap-2.5">
-                  <Badge tone={AREA_THEME[a.area_responsable]?.tone || "gray"}>{a.area_responsable}</Badge>
-                  <div className="flex-1"><Bar value={parseInt(a.cantidad)} max={Math.max(...k.porArea.map(x => parseInt(x.cantidad)))} color="#8b5cf6" height={7} /></div>
-                  <span className="text-[11px] font-black text-ink tnum w-4 text-right">{a.cantidad}</span>
-                </div>
-              ))}
-            </div>
-          </Clay>
-        )}
-
-        {/* Feed en vivo */}
-        <Clay className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <Label>Actividad en tiempo real</Label>
-            <div className="flex items-center gap-1.5"><Dot tone="good" pulse /><span className="text-[10px] font-black text-good-ink">Live</span></div>
-          </div>
-          {feed.length === 0
-            ? <Empty icon="activity" title="Sin actividad" sub="Las rondas aparecerán acá al guardarse." />
-            : feed.map((a, i) => (
-              <div key={i} className={cx("flex items-center gap-2.5 py-2.5", i < feed.length - 1 && "border-b border-slate-100")}>
-                <span className="text-[10px] text-ink-faint font-mono w-9 shrink-0 tnum">{a.hora}</span>
-                <Dot tone={a.tipo === "Presencial" ? "good" : "warn"} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-bold text-ink truncate">
-                    {a.isNew && <span className="text-brand-600">● </span>}{a.sup} → {a.obj}
-                  </p>
-                  <p className="text-[10px] text-ink-faint">{a.isNew ? "Recién · " : ""}{a.tipo}{!a.ok ? " · con incidencia" : ""}</p>
-                </div>
-                <Icon name={a.ok ? "check-circle" : "alert"} size={15} className={a.ok ? "text-good" : "text-warn"} />
-              </div>
-            ))}
-        </Clay>
 
         <p className="text-center text-[10px] text-ink-faint pb-1">ASI · Sistema de Supervisión v3.0</p>
       </div>
@@ -3173,7 +3223,7 @@ function OwnerPanel() {
 const isNativeApp = typeof window !== "undefined" &&
   !!window.Capacitor && (window.Capacitor.isNativePlatform ? window.Capacitor.isNativePlatform() : true);
 
-function PhoneFrame({ children }) {
+function PhoneFrame({ children, wide = false }) {
   const { offline } = useApp();
   const [t, setT] = useState(new Date());
   useEffect(() => { const i = setInterval(() => setT(new Date()), 20000); return () => clearInterval(i); }, []);
@@ -3193,15 +3243,10 @@ function PhoneFrame({ children }) {
     <div className="min-h-screen flex flex-col items-center justify-center p-4 pt-3"
       style={{ background:"radial-gradient(120% 80% at 50% 0%, #f0f7ff 0%, #dbe9fa 45%, #cddef5 100%)" }}>
       <ApiConfigBar />
-      <div className="w-full" style={{ maxWidth:"392px" }}>
-        <div style={{
-          background:"#eaf2fd", borderRadius:"44px", overflow:"hidden", height:"784px",
-          border:"9px solid #ffffff", position:"relative",
-          display:"flex", flexDirection:"column",
-          boxShadow:"22px 22px 55px rgba(37,99,235,.22), -16px -16px 44px rgba(255,255,255,.95), inset 0 1px 2px rgba(255,255,255,.9)",
-        }}>
-          {/* Barra de estado */}
-          <div className="flex justify-between items-center px-6 pt-3 pb-1.5 shrink-0 relative">
+      <div className={cx("device-wrap", wide && "device-wrap--wide")}>
+        <div className={cx("device-shell", wide && "device-shell--wide")}>
+          {/* Barra de estado — solo marco de teléfono; se oculta en desktop cuando wide */}
+          <div className="phone-chrome flex justify-between items-center px-6 pt-3 pb-1.5 shrink-0 relative">
             <span className="text-[12px] font-black text-ink tnum">{fmtHora(t)}</span>
             <div className="absolute left-1/2 -translate-x-1/2 top-2.5 w-[86px] h-[26px] rounded-full bg-ink" />
             <div className="flex items-center gap-1.5 text-ink-soft">
@@ -3214,9 +3259,9 @@ function PhoneFrame({ children }) {
             </div>
           </div>
 
-          <div className="flex-1 overflow-hidden flex flex-col">{children}</div>
+          <div className="device-body flex-1 overflow-hidden flex flex-col">{children}</div>
 
-          <div className="flex justify-center py-2.5 shrink-0">
+          <div className="phone-chrome flex justify-center py-2.5 shrink-0">
             <div className="w-32 h-1.5 rounded-full bg-ink/25" />
           </div>
         </div>
@@ -3231,8 +3276,13 @@ function PhoneFrame({ children }) {
 ═══════════════════════════════════════════════════════════ */
 function AppInner() {
   const { currentUser } = useApp();
+  // Admin y Dueño trabajan "mixto" (celular para un vistazo, pantalla grande
+  // para el análisis serio — ver PRODUCT.md § Users): ganan el layout ancho
+  // de escritorio/tablet. Supervisor y Login son mobile-first por diseño y
+  // se quedan siempre en el marco de teléfono, sin importar el viewport.
+  const wide = currentUser?.rol === "admin" || currentUser?.rol === "dueno";
   return (
-    <PhoneFrame>
+    <PhoneFrame wide={wide}>
       {!currentUser                     && <LoginScreen />}
       {currentUser?.rol === "supervisor"&& <SupervisorPanel />}
       {currentUser?.rol === "admin"     && <AdminPanel />}

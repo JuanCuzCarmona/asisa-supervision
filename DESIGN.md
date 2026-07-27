@@ -212,6 +212,18 @@ Paleta de un solo acento dominante sobre neutros fríos, con colores semánticos
 
 Contenedor de ancho fijo tipo teléfono (max-width 392px en la preview de escritorio; en el build nativo Android ocupa el ancho real del dispositivo edge-to-edge, ver Do's and Don'ts). Ritmo vertical denso: bloques de contenido separados por `gap-3`/`gap-4` (12–16px), tarjetas con padding interno de 16–20px. Los flujos multi-paso (wizard de ronda del supervisor) usan una sola columna, sin grillas — cada pantalla resuelve una tarea a la vez.
 
+### Breakpoints desktop/tablet — solo Admin y Dueño
+
+Login y Supervisor (el wizard de 5 pasos) son **mobile-first únicamente**: se diseñan para el pulgar sucio, a una mano, en movimiento (ver PRODUCT.md, Product Principles #4) y se quedan fijos en el marco de teléfono (392px, `PhoneFrame`) sin importar el ancho del viewport — no tienen ningún breakpoint y no deben ganarlo.
+
+Admin y Dueño trabajan en un patrón confirmado "mixto" (PRODUCT.md § Users): vistazo rápido desde el celular, análisis serio desde una pantalla más grande. Estos dos paneles —y solo ellos— ganan layout responsivo mobile-first con dos breakpoints estándar de Tailwind:
+
+- **Base (< 768px):** idéntico al comportamiento mobile de siempre — una sola columna, marco de teléfono completo (bezel, barra de estado, home indicator).
+- **`md:` (≥ 768px, tablet):** `PhoneFrame` deja de imponer el bezel falso — el contenedor (`.device-wrap`/`.device-shell`) crece a max-width 720px, pierde el borde/barra de estado/home indicator (clases `.phone-chrome`, ocultas vía CSS) y pasa a la elevación estándar `Clay xl` (28px, ver Shapes/Elevation) en vez del bezel de 44px. Adentro: los contadores de `AdminPanel` ganan más padding, el segmentado y el filtro por área pasan a la misma fila, la lista de tickets se convierte en grilla de 2 columnas; `OwnerPanel` reparte sus tarjetas en 2 columnas lado a lado (cobertura/incidencias/tiempo de resolución a la izquierda, cumplimiento/áreas/actividad a la derecha) en vez de apilarlas.
+- **`lg:` (≥ 1024px, desktop):** el contenedor crece a max-width 1080px; la grilla de tickets de `AdminPanel` pasa a 3 columnas.
+
+Implementación: `AppInner` calcula `wide = rol === "admin" || rol === "dueno"` y se lo pasa a `PhoneFrame` como prop; `PhoneFrame` solo aplica los modificadores CSS `.device-wrap--wide`/`.device-shell--wide` cuando `wide` es true, así que las reglas `@media` nunca alcanzan a Login/Supervisor aunque el navegador esté en un viewport ancho. `AdminPanel` y `OwnerPanel` en sí mismos usan clases `md:`/`lg:` de Tailwind directamente en su propio JSX (no son componentes compartidos con Supervisor, así que es seguro). Los componentes compartidos por los tres roles (`PanelHeader`, `ConnBar`, `SyncToast`, `Sheet`) se dejaron sin cambios a propósito — cualquier clase responsiva ahí filtraría también a Supervisor.
+
 ## Elevation & Depth
 
 Sistema **acolchado (claymorphism)**, no plano y no basado en capas tonales Material. La profundidad es ambiental — casi todas las superficies llevan sombra doble en reposo (una sombra azulada hacia abajo-derecha + un highlight blanco hacia arriba-izquierda), no solo en hover. La interacción invierte la sombra hacia adentro (`inset`) en vez de solo oscurecer el color — el botón físicamente se hunde al tocarlo.
