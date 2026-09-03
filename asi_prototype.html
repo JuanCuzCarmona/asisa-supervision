@@ -199,7 +199,13 @@ function useDeviceGeolocation() {
         setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
         setError(null);
       },
-      (err) => setError(err.code === 1 ? "denied" : err.code === 2 ? "unavailable" : "timeout"),
+      (err) => {
+        // Se descarta la última posición conocida: si el GPS falla ahora, esas
+        // coordenadas ya no acreditan dónde está el supervisor y no pueden
+        // terminar firmando el acta como si fueran actuales.
+        setCoords(null);
+        setError(err.code === 1 ? "denied" : err.code === 2 ? "unavailable" : "timeout");
+      },
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
     );
     return () => navigator.geolocation.clearWatch(id);
@@ -220,7 +226,7 @@ const SEED_OBJETIVOS = [
   { id:5, nombre:"Local Comercial Av. Corrientes", tipo:"Locales",    subtipo:"local_comercial",    modalidad:"unipersonal", direccion:"Av. Corrientes 2450, CABA",     lat:-34.6037, lng:-58.3968, radio_geocerca_m:120, visitas_meta_mes:12, visitas_mes:9 },
   { id:6, nombre:"Shopping Norte",                 tipo:"Locales",    subtipo:"local_comercial",    modalidad:"multipuesto", direccion:"Av. Cabildo 3100, CABA",        lat:-34.5567, lng:-58.4614, radio_geocerca_m:200, visitas_meta_mes:8,  visitas_mes:6 },
   { id:7, nombre:"Corporativo Torre Madero",       tipo:"Locales",    subtipo:"empresa_oficinas",   modalidad:"unipersonal", direccion:"Juana Manso 1150, Pto. Madero", lat:-34.6098, lng:-58.3627, radio_geocerca_m:150, visitas_meta_mes:6,  visitas_mes:3 },
-  { id:8, nombre:"Barrio Demo Cercano",             tipo:"Barrios",    subtipo:"barrio_unipersonal",  modalidad:"unipersonal", direccion:"Mendoza, Argentina (ubicación de prueba)", lat:-32.93945, lng:-68.85075, radio_geocerca_m:500, visitas_meta_mes:4,  visitas_mes:0 },
+  { id:8, nombre:"Barrio Demo Cercano",             tipo:"Barrios",    subtipo:"barrio_unipersonal",  modalidad:"unipersonal", direccion:"Mendoza, Argentina (ubicación de prueba)", lat:-33.0065563773082, lng:-68.87021036414507, radio_geocerca_m:500, visitas_meta_mes:4,  visitas_mes:0 },
 ];
 
 const SEED_VIGILADORES = [
@@ -240,6 +246,14 @@ const SEED_VIGILADORES = [
     credencial_numero:"NQ-5104-B", credencial_venc:"2027-01-30", es_chofer:false, licencia_cat:null, licencia_venc:null, armado:false,
     telefono:"11-3388-9921", domicilio:"Mitre 733, Campana", fecha_nacimiento:"1988-07-30", nacionalidad:"Argentina", convenio:"UPSRA", tiene_radio:false,
     objetivo_asignado:"Local Comercial Av. Corrientes" },
+  { id:5, legajo:1276, nombre:"Marcelo Ariel Funes", dni:"27.845.112", puesto:"Vigilador Diurno A", estado:"activo",
+    credencial_numero:"FN-2210-A", credencial_venc:"2026-11-05", es_chofer:true,  licencia_cat:"B1", licencia_venc:"2027-05-18", armado:false,
+    telefono:"261-455-7823", domicilio:"Godoy Cruz 1450, Mendoza", fecha_nacimiento:"1990-06-14", nacionalidad:"Argentina", convenio:"UPSRA", tiene_radio:true,
+    objetivo_asignado:"Barrio Demo Cercano" },
+  { id:6, legajo:1319, nombre:"Yamila Soledad Paredes", dni:"34.117.890", puesto:"Vigiladora Nocturna B", estado:"activo",
+    credencial_numero:"YP-3387-B", credencial_venc:"2026-09-22", es_chofer:false, licencia_cat:null, licencia_venc:null, armado:false,
+    telefono:"261-398-2246", domicilio:"Las Heras 620, Mendoza", fecha_nacimiento:"1994-02-27", nacionalidad:"Argentina", convenio:"UPSRA", tiene_radio:true,
+    objetivo_asignado:"Barrio Demo Cercano" },
 ];
 
 const SEED_HISTORIAL = {
@@ -1082,8 +1096,9 @@ function AppProvider({ children }) {
     const body = {
       objetivo_id: objId,
       tipo: rd.tipo || "presencial",
-      en_geocerca: rd.gpsStatus === "inside",
+      // El servidor recalcula el geocerco con estos datos; no le mandamos nuestro veredicto
       lat: rd.deviceCoords?.lat ?? null, lng: rd.deviceCoords?.lng ?? null,
+      precision_gps_m: rd.deviceCoords?.accuracy ?? null,
       justificacion_fuera: rd.justificacion || null,
       sincronizado_offline: Boolean(rd._offline),
       hora_inicio: rd.horaInicio ? new Date(rd.horaInicio).toISOString() : null,
@@ -1468,6 +1483,7 @@ function Step1({ rd, setRD, onNext }) {
   const [busca,setBusca]= useState("");
   const [tick, setTick] = useState(new Date());
   const obj = rd.objetivo;
+  const remotoRef = useRef(null);
 
   useEffect(() => { const t = setInterval(() => setTick(new Date()), 1000); return () => clearInterval(t); }, []);
 
@@ -1475,9 +1491,16 @@ function Step1({ rd, setRD, onNext }) {
   const distancia = (coords && obj?.lat != null) ? distanciaMetros(coords.lat, coords.lng, obj.lat, obj.lng) : null;
   const gps = gpsErr ? "error" : !coords ? "searching" : !obj ? "searching" : (distancia <= obj.radio_geocerca_m ? "inside" : "outside");
 
+  // Espeja el GPS en el acta. Si se pierde la señal, `coords` queda en null y hay que
+  // borrar también la posición del acta — un acta remota no puede viajar con las
+  // coordenadas de un fix anterior como si el dispositivo las hubiera confirmado.
   useEffect(() => {
-    if (!coords) return;
-    setRD(p => ({ ...p, deviceCoords: coords, gpsStatus: gps, distanciaGeocerca: distancia != null ? Math.round(distancia) : null }));
+    setRD(p => ({
+      ...p,
+      deviceCoords: coords || null,
+      gpsStatus: gps,
+      distanciaGeocerca: distancia != null ? Math.round(distancia) : null,
+    }));
   }, [coords, gps, distancia]);
 
   const lista = useMemo(() => {
@@ -1536,13 +1559,7 @@ function Step1({ rd, setRD, onNext }) {
           <Dot tone={GPS_UI.tone} pulse={gps === "searching"} />
           <span className={cx("text-xs font-bold",
             gps === "inside" ? "text-good-ink" : (gps === "outside" || gps === "error") ? "text-bad-ink" : "text-warn-ink")}>{GPS_UI.txt}</span>
-          {obj && distancia != null && <span className="text-[10px] text-ink-faint ml-auto tnum">{Math.round(distancia)} m · radio {obj.radio_geocerca_m} m</span>}
         </div>
-        {coords && (
-          <p className="text-[10px] text-ink-faint mt-2 font-mono tnum">
-            {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)} · precisión ±{Math.round(coords.accuracy)} m
-          </p>
-        )}
         {gps === "error" && (
           <button onClick={reintentar} className="clay-btn w-full mt-3 py-2.5 rounded-[14px] text-xs font-black flex items-center justify-center gap-1.5 bg-white text-ink-mute">
             <Icon name="refresh" size={14} /> Reintentar ubicación
@@ -1589,9 +1606,35 @@ function Step1({ rd, setRD, onNext }) {
                             {SUBTIPO_LABEL[o.subtipo] || o.tipo}{o.direccion ? ` · ${o.direccion}` : ""}
                           </p>
                         </div>
-                        {sel
-                          ? <span className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center shrink-0"><Icon name="check" size={14} strokeWidth={3} /></span>
-                          : <span className={cx("text-[10px] font-black tnum px-2 py-1 rounded-full shrink-0", cumple ? "bg-good-soft text-good-ink" : "bg-brand-50 text-brand-700")}>{hechas}/{meta}</span>}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {/* Un solo botón fusiona el estado del geocerco con la acción de continuar —
+                              antes eran dos círculos chicos (estado + "seleccionado"), difíciles de tocar
+                              y que no se leían como accionables. Solo se revela al elegir el objetivo:
+                              mostrarlo en todas las tarjetas de entrada generaba alertas rojas sin sentido.
+                              Con muchos objetivos en la lista, tocarlo evita scrollear hasta el botón del
+                              fondo para arrancar la ronda. */}
+                          {sel && gps === "inside" && (
+                            <span role="button" tabIndex={0}
+                              onClick={e => { e.stopPropagation(); arrancar("presencial"); }}
+                              onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); e.preventDefault(); arrancar("presencial"); } }}
+                              className="clay-press w-[46px] h-[46px] rounded-full flex items-center justify-center shrink-0 bg-good text-white shadow-md focus-ring"
+                              title="Iniciar checklist presencial" aria-label="Iniciar checklist presencial">
+                              <Icon name="check" size={20} strokeWidth={3} />
+                            </span>
+                          )}
+                          {sel && (gps === "outside" || gps === "error") && (
+                            <span role="button" tabIndex={0}
+                              onClick={e => { e.stopPropagation(); remotoRef.current?.scrollIntoView({ behavior:"smooth", block:"center" }); }}
+                              onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); e.preventDefault(); remotoRef.current?.scrollIntoView({ behavior:"smooth", block:"center" }); } }}
+                              className="clay-press w-[46px] h-[46px] rounded-full flex items-center justify-center shrink-0 bg-bad text-white shadow-md focus-ring"
+                              title="Fuera del geocerco — ir a justificar supervisión remota" aria-label="Fuera del geocerco — ir a justificar supervisión remota">
+                              <Icon name="alert" size={20} strokeWidth={3} />
+                            </span>
+                          )}
+                          {sel && gps !== "inside" && gps !== "outside" && gps !== "error"
+                            ? <span className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center shrink-0"><Icon name="check" size={14} strokeWidth={3} /></span>
+                            : !sel && <span className={cx("text-[10px] font-black tnum px-2 py-1 rounded-full shrink-0 min-w-[38px] text-center", cumple ? "bg-good-soft text-good-ink" : "bg-brand-50 text-brand-700")}>{hechas}/{meta}</span>}
+                        </div>
                       </div>
                       {/* Cumplimiento mensual del objetivo (PRD §7) */}
                       <div className="mt-2.5">
@@ -1628,7 +1671,7 @@ function Step1({ rd, setRD, onNext }) {
       )}
 
       {(gps === "outside" || gps === "error") && (
-        <div className="flex flex-col gap-3 a-up">
+        <div ref={remotoRef} className="flex flex-col gap-3 a-up">
           <Clay className="p-4" tint="linear-gradient(135deg,#fff1f2,#ffe4e6)">
             <div className="flex items-start gap-2.5">
               <Icon name="alert" size={18} className="text-bad-ink mt-px" />
@@ -1800,7 +1843,36 @@ function Step2({ rd, setRD, onNext, onBack }) {
   const [error,  setError]  = useState(null);
   const [busy,   setBusy]   = useState(false);
   const [perfil, setPerfil] = useState(null);
+  const [autoCargando, setAutoCargando] = useState(false);
+  const [autoCargados, setAutoCargados] = useState(false);
   const sel = rd.vigiladores || [];
+
+  // Trae directo a los vigiladores asignados al objetivo elegido en el Paso 1 (vigiladores.objetivo_asignado_id)
+  // para no obligar a tipear cada legajo a mano — el legajo manual queda como refuerzo/reemplazo.
+  useEffect(() => {
+    if ((rd.vigiladores || []).length > 0 || !rd.objetivo) return;
+    const asignados = vigiladores.filter(v => v.objetivo_asignado === rd.objetivo.nombre && v.estado === "activo");
+    if (asignados.length === 0) return;
+
+    let cancelado = false;
+    (async () => {
+      setAutoCargando(true);
+      const enriquecidos = await Promise.all(asignados.map(async v => {
+        if (apiStatus !== "connected") return v;
+        try {
+          const res  = await apiFetch(`/api/vigilador/${v.legajo}`);
+          const data = await res.json();
+          if (data.ok) return { ...data.vigilador, _historial: data.historial, _sanciones: data.sanciones, _incidencias: data.incidencias };
+        } catch { /* cae al catálogo local */ }
+        return v;
+      }));
+      if (cancelado) return;
+      setRD(p => (p.vigiladores || []).length > 0 ? p : { ...p, vigiladores: enriquecidos });
+      setAutoCargados(true);
+      setAutoCargando(false);
+    })();
+    return () => { cancelado = true; };
+  }, []);
 
   const agregar = async () => {
     setError(null);
@@ -1840,7 +1912,16 @@ function Step2({ rd, setRD, onNext, onBack }) {
 
   return (
     <div className="flex flex-col gap-4 px-4 py-4 a-fade">
-      <SH title="Vigiladores" sub={`Cargá el legajo de cada persona a inspeccionar en ${cortar(rd.objetivo?.nombre || "el objetivo", 26)}`} />
+      <SH title="Vigiladores" sub={autoCargados
+        ? `Estos son los vigiladores asignados a ${cortar(rd.objetivo?.nombre || "el objetivo", 26)}. Sumá o quitá si hace falta.`
+        : `Cargá el legajo de cada persona a inspeccionar en ${cortar(rd.objetivo?.nombre || "el objetivo", 26)}`} />
+
+      {autoCargando && (
+        <div className="bg-brand-50 rounded-[16px] px-4 py-3 flex items-center gap-2 a-up">
+          <Icon name="refresh" size={15} className="text-brand-600 a-spin" />
+          <p className="text-xs font-bold text-brand-700">Buscando vigiladores asignados a este objetivo…</p>
+        </div>
+      )}
 
       <Clay className="p-4">
         <Label className="mb-2">Número de legajo</Label>

@@ -202,6 +202,12 @@ CREATE TABLE IF NOT EXISTS rondas_actas (
 ALTER TABLE rondas_actas ADD COLUMN IF NOT EXISTS hora_inicio TIMESTAMP;
 ALTER TABLE rondas_actas ADD COLUMN IF NOT EXISTS hora_fin    TIMESTAMP;
 
+-- Evidencia del geocerco: `en_geocerca` lo calcula el servidor (no el dispositivo),
+-- y estas dos columnas guardan el margen con el que se tomó esa decisión para que
+-- el acta sea auditable — "confirmado a 47 m con ±12 m de precisión", no un booleano.
+ALTER TABLE rondas_actas ADD COLUMN IF NOT EXISTS distancia_geocerca_m INTEGER;
+ALTER TABLE rondas_actas ADD COLUMN IF NOT EXISTS precision_gps_m      DOUBLE PRECISION;
+
 DO $$ BEGIN
   ALTER TABLE rondas_actas ADD CONSTRAINT rondas_actas_codigo_key UNIQUE (codigo_acta);
 EXCEPTION WHEN duplicate_table OR duplicate_object OR unique_violation THEN NULL;
@@ -326,7 +332,7 @@ INSERT INTO objetivos (nombre, tipo, subtipo, modalidad, direccion, lat, lng, ra
   ('Local Comercial Av. Corrientes', 'Locales',    'local_comercial',     'unipersonal', 'Av. Corrientes 2450, CABA',      -34.6037, -58.3968, 120, 12),
   ('Shopping Norte',                 'Locales',    'local_comercial',     'multipuesto', 'Av. Cabildo 3100, CABA',         -34.5567, -58.4614, 200, 8),
   ('Corporativo Torre Madero',       'Locales',    'empresa_oficinas',    'unipersonal', 'Juana Manso 1150, Pto. Madero',  -34.6098, -58.3627, 150, 6),
-  ('Barrio Demo Cercano',            'Barrios',    'barrio_unipersonal',  'unipersonal', 'Mendoza, Argentina (ubicación de prueba)', -32.93945, -68.85075, 500, 4)
+  ('Barrio Demo Cercano',            'Barrios',    'barrio_unipersonal',  'unipersonal', 'Mendoza, Argentina (ubicación de prueba)', -33.0065563773082, -68.87021036414507, 500, 4)
 ON CONFLICT (nombre) DO UPDATE SET
   subtipo          = EXCLUDED.subtipo,
   modalidad        = EXCLUDED.modalidad,
@@ -552,7 +558,17 @@ VALUES
   (1201, 'Néstor Fabián Quiroga', '33.901.556', 'Vigilador Nocturno C', 'NQ-5104-B', '2027-01-30',
    FALSE, NULL, NULL, FALSE, 'suspendido',
    '11-3388-9921', 'Mitre 733, Campana', '1988-07-30', 'Argentina', 'UPSRA', FALSE,
-   (SELECT id FROM objetivos WHERE nombre='Local Comercial Av. Corrientes'))
+   (SELECT id FROM objetivos WHERE nombre='Local Comercial Av. Corrientes')),
+
+  (1276, 'Marcelo Ariel Funes', '27.845.112', 'Vigilador Diurno A', 'FN-2210-A', '2026-11-05',
+   TRUE, 'B1', '2027-05-18', FALSE, 'activo',
+   '261-455-7823', 'Godoy Cruz 1450, Mendoza', '1990-06-14', 'Argentina', 'UPSRA', TRUE,
+   (SELECT id FROM objetivos WHERE nombre='Barrio Demo Cercano')),
+
+  (1319, 'Yamila Soledad Paredes', '34.117.890', 'Vigiladora Nocturna B', 'YP-3387-B', '2026-09-22',
+   FALSE, NULL, NULL, FALSE, 'activo',
+   '261-398-2246', 'Las Heras 620, Mendoza', '1994-02-27', 'Argentina', 'UPSRA', TRUE,
+   (SELECT id FROM objetivos WHERE nombre='Barrio Demo Cercano'))
 
 ON CONFLICT (legajo) DO UPDATE SET
   nombre               = EXCLUDED.nombre,

@@ -133,6 +133,22 @@ const isValidLat    = (v) => v == null || (typeof v === "number" && Number.isFin
 const isValidLng    = (v) => v == null || (typeof v === "number" && Number.isFinite(v) && v >= -180 && v <= 180);
 const isValidDate   = (v) => v == null || !Number.isNaN(new Date(v).getTime());
 
+/* Distancia Haversine en metros — misma fórmula que el cliente (asi_prototype.html),
+   pero acá es la que vale: el geocerco se recalcula en el servidor y no se confía
+   en el `en_geocerca` que declara el dispositivo. */
+function distanciaMetros(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const toRad = (d) => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Precisión del GPS reportada por el dispositivo, en metros. Se tolera hasta 1 km:
+// más que eso es un fix de torre de celular, no sirve para validar presencia.
+const isValidPrecision = (v) =>
+  v == null || (typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= 1000);
+
 /* ════════════════════════════════════════════
    POST /api/login
    Pública — rate limit estricto
@@ -256,8 +272,10 @@ app.get("/api/inicializar", requireAuth, async (req, res) => {
    POST /api/rondas
    Requiere: rol supervisor
    Guarda el acta completa en una transacción atómica.
+   `en_geocerca` NO se acepta del body: se calcula acá con lat/lng contra las
+   coordenadas del objetivo. Una ronda presencial fuera del radio se rechaza.
    Body: {
-     objetivo_id, tipo, en_geocerca, lat, lng,
+     objetivo_id, tipo, lat, lng, precision_gps_m,
      justificacion_fuera, sincronizado_offline, hora_inicio, hora_fin,
      vigiladores:  [{ id, firma_base64, nego_firmar }],
      checklist:    [{ item_id, pregunta, valoracion, observacion_pred, observacion_libre }],
@@ -270,9 +288,9 @@ app.post("/api/rondas", requireAuth, requireRole("supervisor"), async (req, res)
   const {
     objetivo_id,
     tipo                 = "presencial",
-    en_geocerca,
     lat,
     lng,
+    precision_gps_m,
     justificacion_fuera,
     sincronizado_offline = false,
     hora_inicio,
@@ -313,6 +331,9 @@ app.post("/api/rondas", requireAuth, requireRole("supervisor"), async (req, res)
   if (!isValidLng(lng)) {
     return res.status(400).json({ ok: false, mensaje: "lng inválida (debe estar entre -180 y 180)." });
   }
+  if (!isValidPrecision(precision_gps_m)) {
+    return res.status(400).json({ ok: false, mensaje: "precision_gps_m inválida (debe estar entre 0 y 1000 metros)." });
+  }
   if (!isValidDate(hora_inicio)) {
     return res.status(400).json({ ok: false, mensaje: "hora_inicio inválida." });
   }
@@ -330,6 +351,50 @@ app.post("/api/rondas", requireAuth, requireRole("supervisor"), async (req, res)
   }
 
   const supervisor_id = req.user.id; // viene del JWT, no del body — no se puede falsificar
+
+  /* ── Geocerco: se recalcula acá, no se acepta el que declara el dispositivo ──
+     El diferenciador del producto es que el acta sea defendible ante un reclamo
+     del cliente; un booleano enviado por el teléfono no prueba presencia, así que
+     la distancia se calcula contra las coordenadas del objetivo en la base.
+     La precisión del GPS se descuenta del radio: en interiores o entre galpones
+     un fix puede tener ±50 m y no queremos rebotar a un supervisor que sí está
+     adentro. Se guardan distancia y precisión para poder auditar el margen. */
+  const objRes = await pool.query(
+    "SELECT lat, lng, radio_geocerca_m FROM objetivos WHERE id = $1 AND activo = TRUE",
+    [objetivo_id]
+  );
+  if (objRes.rowCount === 0) {
+    return res.status(400).json({ ok: false, mensaje: "El objetivo no existe o está inactivo." });
+  }
+  const objetivo = objRes.rows[0];
+
+  let distanciaM = null;
+  let enGeocerca = false;
+  if (lat != null && lng != null && objetivo.lat != null && objetivo.lng != null) {
+    distanciaM = distanciaMetros(lat, lng, objetivo.lat, objetivo.lng);
+    const margen = precision_gps_m != null ? precision_gps_m : 0;
+    enGeocerca = (distanciaM - margen) <= (objetivo.radio_geocerca_m || 0);
+  }
+
+  // Una ronda presencial sin ubicación verificable no se guarda: es exactamente
+  // el caso que la supervisión remota (con justificación obligatoria) cubre.
+  if (tipo === "presencial") {
+    if (distanciaM == null) {
+      return res.status(400).json({
+        ok: false,
+        mensaje: "Una ronda presencial requiere coordenadas GPS del dispositivo. Registrala como supervisión remota si no hay señal.",
+      });
+    }
+    if (!enGeocerca) {
+      return res.status(400).json({
+        ok: false,
+        mensaje: `Fuera del geocerco: ${Math.round(distanciaM)} m del objetivo (radio permitido ${objetivo.radio_geocerca_m} m). Registrala como supervisión remota justificando el motivo.`,
+        distancia_m: Math.round(distanciaM),
+        radio_m: objetivo.radio_geocerca_m,
+      });
+    }
+  }
+
   const client = await pool.connect();
 
   try {
@@ -339,14 +404,17 @@ app.post("/api/rondas", requireAuth, requireRole("supervisor"), async (req, res)
     const actaResult = await client.query(
       `INSERT INTO rondas_actas
          (supervisor_id, objetivo_id, tipo, en_geocerca, lat, lng,
+          distancia_geocerca_m, precision_gps_m,
           justificacion_fuera, sincronizado_offline, hora_inicio, hora_fin)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
        RETURNING id`,
       [
         supervisor_id, objetivo_id, tipo,
-        Boolean(en_geocerca),
-        lat  || null,
-        lng  || null,
+        enGeocerca,                                            // calculado acá, no el del body
+        lat ?? null,                                            // ?? y no || — la coordenada 0 es válida
+        lng ?? null,
+        distanciaM != null ? Math.round(distanciaM) : null,
+        precision_gps_m ?? null,
         justificacion_fuera || null,
         Boolean(sincronizado_offline),
         hora_inicio || null,
