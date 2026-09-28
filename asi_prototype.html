@@ -1,0 +1,3289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1C2A4E" />
+  <title>ASISA · Libro de novedades</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&display=swap" rel="stylesheet" />
+  <script>
+    /* ═══════════════════════════════════════════════════════════
+       ASISA — Libro de novedades
+       Mundo visual y justificación de cada token: DESIGN.md
+       Contrato de dirección: .impeccable/surfaces/app.md
+       Los nombres de token heredados (brand/aqua/plum/tang) se
+       conservan a propósito: reapuntan al mundo nuevo sin tocar
+       las dos mil líneas de marcado que ya los usan.
+    ═══════════════════════════════════════════════════════════ */
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            /* Tinta — el secundario se tiñe del navy, nunca de gris neutro */
+            ink:    { DEFAULT:"#141E33", soft:"#32405E", mute:"#546282", faint:"#8894AE" },
+            /* Tapa: tela navy ASISA. #2D4175 es el color del logo */
+            navy:   { 900:"#101A33", 800:"#1C2A4E", 700:"#2D4175", 600:"#3C5490", 500:"#5470AC", 400:"#8296C4", 200:"#C3CEE2", 100:"#DEE5F0", 50:"#EFF2F7" },
+            brand:  { 50:"#EFF2F7", 100:"#DEE5F0", 200:"#C3CEE2", 300:"#8296C4", 400:"#5470AC", 500:"#3C5490", 600:"#2D4175", 700:"#1C2A4E", 800:"#101A33" },
+            /* Hoja: papel rayado frío. El crema y el marfil están prohibidos */
+            paper:  { DEFAULT:"#ECEEF0", hi:"#F5F6F7", bed:"#DDE0E4", rule:"#C2CBD6" },
+            aqua:   { 50:"#F5F6F7", 100:"#ECEEF0", 200:"#DDE0E4", 300:"#C2CBD6", 400:"#8894AE", 500:"#546282" },
+            /* Marcas */
+            rubric: { DEFAULT:"#A6272E", soft:"#F1DFDF", ink:"#7A1B21" },
+            stamp:  { DEFAULT:"#4B3A7A", soft:"#E3DEF0", ink:"#372A5C" },
+            foil:   { DEFAULT:"#C8A03C", hi:"#E3C46A", dim:"#9C7B26" },
+            /* Semánticos — siempre acompañados de forma, nunca solos */
+            good:   { DEFAULT:"#1F6B4A", soft:"#DCE9E1", ink:"#164F37" },
+            warn:   { DEFAULT:"#8A5A12", soft:"#EFE6D4", ink:"#65410C" },
+            bad:    { DEFAULT:"#A6272E", soft:"#F1DFDF", ink:"#7A1B21" },
+            plum:   { DEFAULT:"#4B3A7A", soft:"#E3DEF0", ink:"#372A5C" },
+            tang:   { DEFAULT:"#9C7B26", soft:"#F0E7CF", ink:"#6E561A" },
+          },
+          fontFamily: { sans: ["Archivo","system-ui","sans-serif"] },
+          /* Regla cero: el libro no tiene esquinas redondeadas */
+          borderRadius: { clay:"0px", clay2:"0px", clay3:"0px" },
+        }
+      }
+    }
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ═══════ REGLA CERO ═══════
+       Radio cero en todo el sistema. Se aplica de raíz en vez de editar
+       cada utilitario heredado: es una regla del mundo, no una excepción. */
+    *, *::before, *::after { border-radius: 0 !important; }
+
+    html, body {
+      height: 100%;
+      font-family: "Archivo", system-ui, sans-serif;
+      font-variation-settings: "wdth" 100;
+      background: #101A33;
+      color: #141E33;
+      font-size: 17px;
+      -webkit-font-smoothing: antialiased;
+      text-underline-offset: 3px;
+    }
+    #root { min-height: 100vh; }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
+    input, textarea, select { font-family: inherit; font-size: 17px; }
+    .tnum, input, .dato { font-variant-numeric: tabular-nums; }
+    svg { display: block; }
+
+    /* ═══════ SUPERFICIES DEL NAVEGADOR ═══════
+       Ninguna queda en default: son la señal más barata de que la
+       página fue dibujada y no ensamblada. */
+    ::selection { background: rgba(75,58,122,.20); color: #141E33; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #C3CEE2; }
+    .sobre-tapa ::-webkit-scrollbar-thumb { background: #9C7B26; }
+    input, textarea { caret-color: #A6272E; }
+    :focus-visible, .clay-btn:focus-visible, .focus-ring:focus-visible {
+      outline: 2px solid #A6272E; outline-offset: 2px;
+    }
+
+    /* ═══════ EL LECHO REGLADO ═══════
+       El reglado es real: 28px de renglón, hairline a 1 device pixel.
+       El contenido se apoya en él en vez de flotar sobre un fondo. */
+    .lecho {
+      background-color: #DDE0E4;
+      background-image: repeating-linear-gradient(to bottom, #C2CBD6 0 1px, transparent 1px 28px);
+      background-position: 0 -1px;
+    }
+    .reglado {
+      background-image: repeating-linear-gradient(to bottom, rgba(194,203,214,.85) 0 1px, transparent 1px 28px);
+      background-position: 0 27px;
+    }
+
+    /* ═══════ LA HOJA ═══════
+       Profundidad = papel. Offset real más blur suave; nada se infla,
+       nada lleva halo de color sin offset.
+       Los nombres .clay* se conservan para que el marcado existente
+       herede el mundo nuevo sin reescribirse. */
+    .clay, .hoja {
+      background: #ECEEF0;
+      box-shadow:
+        0 1px 0 rgba(0,0,0,.05),
+        0 10px 22px -10px rgba(0,0,0,.26);
+      border-top: 1px solid rgba(255,255,255,.75);
+    }
+    .clay-sm, .hoja-sm {
+      background: #ECEEF0;
+      box-shadow: 0 1px 0 rgba(0,0,0,.05), 0 5px 12px -6px rgba(0,0,0,.22);
+      border-top: 1px solid rgba(255,255,255,.7);
+    }
+    /* Campo de entrada: una casilla hundida en la hoja, con su regla al pie */
+    .clay-inset, .casilla {
+      background: #F5F6F7;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,.10);
+      border: 1px solid #C2CBD6;
+      border-bottom: 2px solid #32405E;
+    }
+    .clay-tint { box-shadow: 0 1px 0 rgba(0,0,0,.05), 0 8px 18px -10px rgba(0,0,0,.24); }
+
+    /* ═══════ EL FILETE DE MARGEN ═══════
+       El único rojo de la aplicación, y por eso el que manda. */
+    .filete { box-shadow: inset 2px 0 0 #A6272E; }
+    .canaleta {
+      border-right: 1px solid #C2CBD6;
+      color: #8894AE;
+      font-variant-numeric: tabular-nums;
+      font-size: 11px;
+      font-variation-settings: "wdth" 92;
+      letter-spacing: .06em;
+    }
+
+    /* ═══════ RÓTULO DE APPARATUS ═══════ */
+    .rotulo {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .14em; font-variation-settings: "wdth" 92;
+      color: #546282;
+    }
+    .display {
+      font-weight: 800; text-transform: uppercase; letter-spacing: -.02em;
+      font-variation-settings: "wdth" 112; line-height: 1.02;
+    }
+    .folio {
+      font-weight: 700; font-variant-numeric: tabular-nums;
+      font-variation-settings: "wdth" 118; letter-spacing: .01em;
+    }
+
+    /* ═══════ BOTONES ═══════
+       La acción primaria es la lámina dorada del lomo sobre la tela navy.
+       Se hunde un pixel al presionarse: una tecla de máquina, no una burbuja. */
+    .clay-btn {
+      transition: background-color .16s linear, color .16s linear, box-shadow .16s linear, transform .12s linear;
+      box-shadow: 0 1px 0 rgba(0,0,0,.16);
+    }
+    .clay-btn:active:not(:disabled) { transform: translateY(1px); box-shadow: none; }
+    .clay-btn:disabled { cursor: not-allowed; box-shadow: none; }
+    .clay-press { transition: transform .12s linear; }
+    .clay-press:active { transform: translateY(1px); }
+
+    /* ═══════ EL SELLO ═══════
+       El único momento autorado de toda la aplicación: el asentado.
+       Cae una vez, rota, resuelve el desenfoque y se queda. */
+    @keyframes asentar {
+      0%   { opacity: 0; transform: scale(1.22) rotate(-11deg); filter: blur(3px); }
+      55%  { opacity: .95; filter: blur(0); }
+      100% { opacity: .82; transform: scale(1) rotate(-4.5deg); filter: blur(0); }
+    }
+    .sello {
+      color: #4B3A7A;
+      border: 3px solid currentColor;
+      animation: asentar .52s cubic-bezier(.2,.9,.3,1) both;
+      mix-blend-mode: multiply;
+    }
+
+    /* ═══════ MOVIMIENTO ═══════
+       Un solo eje, amortiguado, sin rebote. */
+    @keyframes fadeIn   { from { opacity:0 } to { opacity:1 } }
+    @keyframes slideUp  { from { opacity:0; transform: translateY(10px) } to { opacity:1; transform:none } }
+    @keyframes slideDn  { from { opacity:0; transform: translateY(-8px) } to { opacity:1; transform:none } }
+    @keyframes sheetUp  { from { transform: translateY(100%) } to { transform: translateY(0) } }
+    @keyframes popIn    { from { opacity:0; transform: translateY(6px) } to { opacity:1; transform:none } }
+    @keyframes spin     { to { transform: rotate(360deg) } }
+    @keyframes breathe  { 0%,100% { opacity:1 } 50% { opacity:.4 } }
+    @keyframes shimmer  { 0% { background-position: -420px 0 } 100% { background-position: 420px 0 } }
+    .a-fade  { animation: fadeIn .2s linear both }
+    .a-up    { animation: slideUp .18s cubic-bezier(.2,.9,.3,1) both }
+    .a-dn    { animation: slideDn .16s cubic-bezier(.2,.9,.3,1) both }
+    .a-sheet { animation: sheetUp .22s cubic-bezier(.2,.9,.3,1) both }
+    .a-pop   { animation: popIn .18s cubic-bezier(.2,.9,.3,1) both }
+    .a-spin  { animation: spin .9s linear infinite; display:inline-block }
+    .a-pulse { animation: breathe 1.9s ease-in-out infinite }
+    .skeleton {
+      background: linear-gradient(90deg, #DDE0E4 25%, #ECEEF0 50%, #DDE0E4 75%);
+      background-size: 840px 100%;
+      animation: shimmer 1.5s infinite linear;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+      .sello { opacity: .82; transform: rotate(-4.5deg); }
+    }
+
+    /* ═══════ UTILIDADES ═══════ */
+    .scroll-y { height: 100%; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+    .sig-canvas { cursor: crosshair; display: block; touch-action: none; }
+    .no-select { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    /* Tela: el grano del buckram de la tapa */
+    .tela {
+      background-color: #1C2A4E;
+      background-image:
+        repeating-linear-gradient(0deg, rgba(255,255,255,.028) 0 1px, transparent 1px 3px),
+        repeating-linear-gradient(90deg, rgba(0,0,0,.05) 0 1px, transparent 1px 3px);
+    }
+    /* Casillero fijo: las cifras nunca reflowan ni empujan lo que tienen al lado */
+    .casillero { font-variant-numeric: tabular-nums; display: inline-block; text-align: right; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useMemo, useCallback, useContext, createContext } = React;
+
+/* ═══════════════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════════════ */
+const cx = (...a) => a.filter(Boolean).join(" ");
+
+const fmtFecha = (d) => new Date(d).toLocaleDateString("es-AR", { day:"2-digit", month:"2-digit", year:"numeric" });
+const fmtHora  = (d) => new Date(d).toLocaleTimeString("es-AR", { hour:"2-digit", minute:"2-digit" });
+const fmtLargo = (d) => new Date(d).toLocaleDateString("es-AR", { weekday:"long", day:"numeric", month:"long", year:"numeric" });
+
+const diasHasta = (fecha) => fecha ? Math.ceil((new Date(fecha) - new Date()) / 86400000) : null;
+
+const iniciales = (nombre = "") => nombre.trim().split(/\s+/).slice(0, 2).map(w => w[0] || "").join("").toUpperCase();
+
+const cortar = (t = "", n = 24) => t.length > n ? t.slice(0, n - 1) + "…" : t;
+
+/* Distancia Haversine en metros — usada para validar el geocerco contra la posición real del dispositivo */
+function distanciaMetros(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const toRad = (d) => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/* Hook: posición real del dispositivo vía navigator.geolocation (PRD §2 — validación de geocerco) */
+function useDeviceGeolocation() {
+  const [coords, setCoords] = useState(null);
+  const [error, setError]   = useState(null);
+  const [seq, setSeq]       = useState(0); // fuerza reintento
+
+  useEffect(() => {
+    if (!navigator.geolocation) { setError("unsupported"); return; }
+    setError(null);
+    const id = navigator.geolocation.watchPosition(
+      (pos) => {
+        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+        setError(null);
+      },
+      (err) => setError(err.code === 1 ? "denied" : err.code === 2 ? "unavailable" : "timeout"),
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+    );
+    return () => navigator.geolocation.clearWatch(id);
+  }, [seq]);
+
+  return { coords, error, reintentar: () => setSeq((s) => s + 1) };
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DATOS SEMILLA — funcionan sin backend (modo demo)
+   Reflejan el mismo shape que devuelve GET /api/inicializar
+═══════════════════════════════════════════════════════════ */
+const SEED_OBJETIVOS = [
+  { id:1, nombre:"Barrio Privado La Alameda",      tipo:"Barrios",    subtipo:"barrio_multipuesto", modalidad:"multipuesto", direccion:"Ruta 8 km 42, Pilar",           lat:-34.4589, lng:-58.9142, radio_geocerca_m:400, visitas_meta_mes:8,  visitas_mes:5 },
+  { id:2, nombre:"Barrio Privado Los Pinos",       tipo:"Barrios",    subtipo:"barrio_unipersonal", modalidad:"unipersonal", direccion:"Av. Los Pinos 1200, Escobar",   lat:-34.3487, lng:-58.7934, radio_geocerca_m:250, visitas_meta_mes:6,  visitas_mes:4 },
+  { id:3, nombre:"Industria Metalúrgica Del Sur",  tipo:"Industrias", subtipo:"industria",          modalidad:"multipuesto", direccion:"Parque Ind. Norte, Malvinas",   lat:-34.5012, lng:-58.7021, radio_geocerca_m:500, visitas_meta_mes:10, visitas_mes:7 },
+  { id:4, nombre:"Industria Agroexport SA",        tipo:"Industrias", subtipo:"industria",          modalidad:"multipuesto", direccion:"Ruta 9 km 61, Campana",         lat:-34.1634, lng:-58.9591, radio_geocerca_m:500, visitas_meta_mes:6,  visitas_mes:2 },
+  { id:5, nombre:"Local Comercial Av. Corrientes", tipo:"Locales",    subtipo:"local_comercial",    modalidad:"unipersonal", direccion:"Av. Corrientes 2450, CABA",     lat:-34.6037, lng:-58.3968, radio_geocerca_m:120, visitas_meta_mes:12, visitas_mes:9 },
+  { id:6, nombre:"Shopping Norte",                 tipo:"Locales",    subtipo:"local_comercial",    modalidad:"multipuesto", direccion:"Av. Cabildo 3100, CABA",        lat:-34.5567, lng:-58.4614, radio_geocerca_m:200, visitas_meta_mes:8,  visitas_mes:6 },
+  { id:7, nombre:"Corporativo Torre Madero",       tipo:"Locales",    subtipo:"empresa_oficinas",   modalidad:"unipersonal", direccion:"Juana Manso 1150, Pto. Madero", lat:-34.6098, lng:-58.3627, radio_geocerca_m:150, visitas_meta_mes:6,  visitas_mes:3 },
+  { id:8, nombre:"Barrio Demo Cercano",             tipo:"Barrios",    subtipo:"barrio_unipersonal",  modalidad:"unipersonal", direccion:"Mendoza, Argentina (ubicación de prueba)", lat:-32.93945, lng:-68.85075, radio_geocerca_m:500, visitas_meta_mes:4,  visitas_mes:0 },
+];
+
+const SEED_VIGILADORES = [
+  { id:1, legajo:1024, nombre:"Carlos Alberto Rodríguez", dni:"28.541.730", puesto:"Vigilador Nocturno B", estado:"activo",
+    credencial_numero:"CR-4521-B", credencial_venc:"2026-08-15", es_chofer:true,  licencia_cat:"B2", licencia_venc:"2027-03-10", armado:false,
+    telefono:"11-5423-9087", domicilio:"Av. Rivadavia 8842, CABA", fecha_nacimiento:"1981-04-22", nacionalidad:"Argentina", convenio:"UPSRA", tiene_radio:true,
+    objetivo_asignado:"Barrio Privado La Alameda" },
+  { id:2, legajo:1087, nombre:"Miguel Ángel Sosa", dni:"31.208.446", puesto:"Vigilador Diurno A", estado:"activo",
+    credencial_numero:"MS-4890-A", credencial_venc:"2026-09-02", es_chofer:false, licencia_cat:null, licencia_venc:null, armado:false,
+    telefono:"11-6012-3345", domicilio:"Belgrano 455, Pilar", fecha_nacimiento:"1985-11-08", nacionalidad:"Argentina", convenio:"UPSRA", tiene_radio:true,
+    objetivo_asignado:"Barrio Privado La Alameda" },
+  { id:3, legajo:1153, nombre:"Jorge Luis Benítez", dni:"26.774.219", puesto:"Jefe de Puesto", estado:"activo",
+    credencial_numero:"JB-3312-C", credencial_venc:"2026-08-04", es_chofer:true,  licencia_cat:"D1", licencia_venc:"2026-08-20", armado:true,
+    telefono:"11-4477-2210", domicilio:"San Martín 1290, Escobar", fecha_nacimiento:"1978-02-14", nacionalidad:"Argentina", convenio:"UPSRA", tiene_radio:true,
+    objetivo_asignado:"Industria Metalúrgica Del Sur" },
+  { id:4, legajo:1201, nombre:"Néstor Fabián Quiroga", dni:"33.901.556", puesto:"Vigilador Nocturno C", estado:"suspendido",
+    credencial_numero:"NQ-5104-B", credencial_venc:"2027-01-30", es_chofer:false, licencia_cat:null, licencia_venc:null, armado:false,
+    telefono:"11-3388-9921", domicilio:"Mitre 733, Campana", fecha_nacimiento:"1988-07-30", nacionalidad:"Argentina", convenio:"UPSRA", tiene_radio:false,
+    objetivo_asignado:"Local Comercial Av. Corrientes" },
+];
+
+const SEED_HISTORIAL = {
+  1024: [
+    { tipo:"Acta",    descripcion:"Demora de 22 min en inicio de turno",          fecha:"2026-05-12" },
+    { tipo:"Sanción", descripcion:"Uniforme incompleto — sin chaleco reflectivo", fecha:"2026-03-08" },
+    { tipo:"Acta",    descripcion:"Ausencia sin aviso previo",                    fecha:"2025-11-20" },
+  ],
+  1153: [{ tipo:"Acta", descripcion:"Observación por libro de guardia incompleto", fecha:"2026-06-02" }],
+  1201: [{ tipo:"Sanción", descripcion:"Abandono de puesto durante el turno noche", fecha:"2026-06-28" }],
+};
+
+const SEED_SANCIONES = {
+  1024: [{ descripcion:"Apercibimiento escrito por uniforme incompleto", estado:"cumplida", fecha:"2026-03-10" }],
+  1153: [{ descripcion:"Llamado de atención por libro de guardia",       estado:"apelada",  fecha:"2026-06-05" }],
+  1201: [{ descripcion:"Suspensión 3 días por abandono de puesto",       estado:"activa",   fecha:"2026-06-30" }],
+};
+
+/* ── Secciones del checklist (PRD §3.3) ── */
+const SEED_SECCIONES = [
+  { id:1, clave:"seguridad",   nombre:"Elementos de seguridad",      color:"azul",    orden:1 },
+  { id:2, clave:"habilidades", nombre:"Comprobación de habilidades", color:"verde",   orden:2 },
+  { id:3, clave:"logistica",   nombre:"Logística / Infraestructura", color:"naranja", orden:3 },
+  { id:4, clave:"rrhh",        nombre:"RRHH / Personal",             color:"rojo",    orden:4 },
+];
+
+const TODOS_TIPOS = ["barrio_multipuesto","barrio_unipersonal","local_comercial","industria","empresa_oficinas"];
+
+const SEED_CHECKLIST = [
+  { id:1,  seccion_clave:"seguridad",   titulo_corto:"Uniforme completo",             area_responsable:"Supervisión",   tipos_objetivo:TODOS_TIPOS, orden:1,
+    criterio_completo:"Verificar camisa con identificación de la empresa, pantalón reglamentario, chaleco reflectante y calzado de seguridad en buen estado." },
+  { id:2,  seccion_clave:"seguridad",   titulo_corto:"Credencial visible y vigente",  area_responsable:"RRHH",          tipos_objetivo:TODOS_TIPOS, orden:2,
+    criterio_completo:"La credencial habilitante debe estar a la vista, en buen estado y con fecha de vencimiento posterior al día de la inspección." },
+  { id:3,  seccion_clave:"seguridad",   titulo_corto:"Elementos reglamentarios",      area_responsable:"Logística",     tipos_objetivo:["barrio_multipuesto","barrio_unipersonal","industria"], orden:3,
+    criterio_completo:"Linterna con carga suficiente, radio operativa con batería, bastón retráctil y silbato según corresponda al puesto." },
+  { id:4,  seccion_clave:"seguridad",   titulo_corto:"Elementos de protección personal", area_responsable:"Logística",  tipos_objetivo:["industria"], orden:4,
+    criterio_completo:"EPP acorde al riesgo del objetivo: guantes, calzado con puntera, casco o chaleco antibalas si el contrato lo requiere." },
+
+  { id:5,  seccion_clave:"habilidades", titulo_corto:"Protocolo de emergencia",       area_responsable:"Operaciones",   tipos_objetivo:TODOS_TIPOS, orden:1,
+    criterio_completo:"El vigilador debe describir correctamente los pasos ante incendio, robo o emergencia médica, y los teléfonos de contacto." },
+  { id:6,  seccion_clave:"habilidades", titulo_corto:"Manejo de radio",               area_responsable:"Operaciones",   tipos_objetivo:["barrio_multipuesto","barrio_unipersonal","industria"], orden:2,
+    criterio_completo:"Verificar que sabe encender, cambiar de canal, emitir y responder comunicaciones usando el código operativo de la empresa." },
+  { id:7,  seccion_clave:"habilidades", titulo_corto:"Procedimiento ante intrusión",  area_responsable:"Operaciones",   tipos_objetivo:TODOS_TIPOS, orden:3,
+    criterio_completo:"Debe explicar la secuencia: no confrontar, dar aviso por radio, registrar características y esperar refuerzos policiales." },
+  { id:8,  seccion_clave:"habilidades", titulo_corto:"Identificación de zonas de riesgo", area_responsable:"Operaciones", tipos_objetivo:["barrio_multipuesto","industria","empresa_oficinas"], orden:4,
+    criterio_completo:"Reconoce los puntos ciegos, accesos vulnerables y sectores restringidos del objetivo donde presta servicio." },
+  { id:9,  seccion_clave:"habilidades", titulo_corto:"Protocolo de control de acceso", area_responsable:"Operaciones",  tipos_objetivo:["local_comercial","empresa_oficinas"], orden:5,
+    criterio_completo:"Verificar que aplica correctamente el registro de visitas, identificación de proveedores y autorización previa de ingresos." },
+
+  { id:10, seccion_clave:"logistica",   titulo_corto:"Estado del móvil",              area_responsable:"Logística",     tipos_objetivo:["barrio_multipuesto","industria"], orden:1,
+    criterio_completo:"Kilometraje registrado, nivel de combustible, luces, cubiertas y ausencia de daños nuevos en la carrocería." },
+  { id:11, seccion_clave:"logistica",   titulo_corto:"Cámaras activas",               area_responsable:"Mantenimiento", tipos_objetivo:TODOS_TIPOS, orden:2,
+    criterio_completo:"Todas las cámaras del objetivo deben mostrar imagen en vivo, sin pérdida de señal ni lentes obstruidos." },
+  { id:12, seccion_clave:"logistica",   titulo_corto:"DVR / NVR operativo",           area_responsable:"Mantenimiento", tipos_objetivo:TODOS_TIPOS, orden:3,
+    criterio_completo:"El grabador debe estar encendido, con espacio de almacenamiento disponible y grabando las últimas 24 horas." },
+  { id:13, seccion_clave:"logistica",   titulo_corto:"Botón de pánico",               area_responsable:"Mantenimiento", tipos_objetivo:["barrio_multipuesto","barrio_unipersonal","local_comercial","industria"], orden:4,
+    criterio_completo:"Probar el disparo del botón de pánico y confirmar recepción de la alarma en la central de monitoreo." },
+  { id:14, seccion_clave:"logistica",   titulo_corto:"Garitas y portones",            area_responsable:"Mantenimiento", tipos_objetivo:["barrio_multipuesto","barrio_unipersonal","industria"], orden:5,
+    criterio_completo:"Estructura de la garita en condiciones, iluminación perimetral funcionando y portones automáticos operativos." },
+
+  { id:15, seccion_clave:"rrhh",        titulo_corto:"Puntualidad",                   area_responsable:"RRHH",          tipos_objetivo:TODOS_TIPOS, orden:1,
+    criterio_completo:"Verificar que el vigilador ingresó en el horario pactado y que el relevo del turno anterior se realizó sin demoras." },
+  { id:16, seccion_clave:"rrhh",        titulo_corto:"Presentación personal",         area_responsable:"RRHH",          tipos_objetivo:TODOS_TIPOS, orden:2,
+    criterio_completo:"Higiene, afeitado, cabello prolijo y uniforme limpio y planchado acorde a la imagen institucional." },
+  { id:17, seccion_clave:"rrhh",        titulo_corto:"Estado de alerta",              area_responsable:"Supervisión",   tipos_objetivo:TODOS_TIPOS, orden:3,
+    criterio_completo:"El vigilador debe estar despierto, atento al entorno y sin usar el celular con fines personales durante la guardia." },
+  { id:18, seccion_clave:"rrhh",        titulo_corto:"Conducta y trato",              area_responsable:"RRHH",          tipos_objetivo:TODOS_TIPOS, orden:4,
+    criterio_completo:"Trato cordial y profesional con residentes, clientes y proveedores. Sin conflictos reportados en el turno." },
+  { id:19, seccion_clave:"rrhh",        titulo_corto:"Comunicación con supervisión",  area_responsable:"Supervisión",   tipos_objetivo:TODOS_TIPOS, orden:5,
+    criterio_completo:"Reportó novedades del turno, respondió a las comunicaciones y completó el libro de guardia correctamente." },
+];
+
+/* ── Ítems exclusivos de un objetivo: fuera de toda plantilla (tipos_objetivo vacío) ── */
+SEED_CHECKLIST.push(
+  { id:20, seccion_clave:"habilidades", titulo_corto:"Registro de visitas y proveedores", area_responsable:"Operaciones",   tipos_objetivo:[], orden:6,
+    criterio_completo:"El libro digital de visitas debe estar completo: nombre, DNI, empresa, piso de destino y horario de ingreso y egreso." },
+  { id:21, seccion_clave:"logistica",   titulo_corto:"Control de acceso a cocheras",      area_responsable:"Mantenimiento", tipos_objetivo:[], orden:6,
+    criterio_completo:"Verificar que la barrera vehicular responde al control remoto y que se registra la patente de cada vehículo que ingresa." },
+  { id:22, seccion_clave:"logistica",   titulo_corto:"Balanza y control de carga",        area_responsable:"Logística",     tipos_objetivo:[], orden:7,
+    criterio_completo:"La balanza de camiones debe estar calibrada y operativa, con registro de pesaje de cada salida de mercadería." },
+);
+
+/* ── Ajustes por objetivo: solo las diferencias contra la plantilla del tipo ── */
+const SEED_AJUSTES = [
+  { objetivo_id:6, item_id:10, incluido:true,  nota:"El objetivo tiene móvil de ronda asignado" },
+  { objetivo_id:6, item_id:14, incluido:true,  nota:"Accesos vehiculares en subsuelo" },
+  { objetivo_id:6, item_id:21, incluido:true,  nota:"Cochera de 400 lugares" },
+  { objetivo_id:7, item_id:20, incluido:true,  nota:"Exigido por el contrato" },
+  { objetivo_id:7, item_id:21, incluido:true,  nota:"Barrera vehicular en Juana Manso" },
+  { objetivo_id:4, item_id:22, incluido:true,  nota:"Salida de mercadería a granel" },
+  { objetivo_id:5, item_id:13, incluido:false, nota:"Depende del sistema del edificio, no del puesto" },
+  { objetivo_id:2, item_id:12, incluido:false, nota:"El monitoreo es externo, no hay grabador en el objetivo" },
+];
+
+/* ───────────────────────────────────────────────
+   Checklist efectivo de un objetivo.
+   Plantilla por tipo de servicio + las diferencias
+   propias del objetivo (quitar o sumar ítems).
+─────────────────────────────────────────────── */
+function resolverChecklist(objetivo, defs, ajustes) {
+  if (!objetivo) return [];
+  const sub    = objetivo.subtipo || "barrio_unipersonal";
+  const propios = new Map(
+    (ajustes || [])
+      .filter(a => String(a.objetivo_id) === String(objetivo.id))
+      .map(a => [String(a.item_id), a])
+  );
+
+  return defs.filter(d => {
+    const ajuste = propios.get(String(d.id));
+    if (ajuste) return ajuste.incluido;              // el objetivo decide explícitamente
+    return (d.tipos_objetivo || []).includes(sub);   // si no, manda la plantilla del tipo
+  });
+}
+
+/* ── Catálogo de observaciones predefinidas (PRD §4.1) ── */
+const SEED_OBSERVACIONES = [
+  { area:"Logística",     texto:"Sin elementos de protección personal" },
+  { area:"Logística",     texto:"Móvil sin combustible" },
+  { area:"Logística",     texto:"Cámara sin señal" },
+  { area:"Logística",     texto:"DVR apagado" },
+  { area:"Logística",     texto:"Linterna sin carga" },
+  { area:"Logística",     texto:"Radio sin batería" },
+  { area:"Supervisión",   texto:"Ausencia en puesto" },
+  { area:"Supervisión",   texto:"Abandono de guardia" },
+  { area:"Supervisión",   texto:"Uso de celular en horario" },
+  { area:"Supervisión",   texto:"Uniforme incompleto" },
+  { area:"Supervisión",   texto:"Falta de presentación" },
+  { area:"Operaciones",   texto:"No conoce protocolo de emergencia" },
+  { area:"Operaciones",   texto:"No sabe operar la radio" },
+  { area:"Operaciones",   texto:"Desconoce procedimiento de intrusión" },
+  { area:"Operaciones",   texto:"No identifica zona de riesgo" },
+  { area:"RRHH",          texto:"Trato inadecuado" },
+  { area:"RRHH",          texto:"Actitud negligente" },
+  { area:"RRHH",          texto:"Falta de comunicación" },
+  { area:"RRHH",          texto:"Reincidencia en falta ya sancionada" },
+  { area:"RRHH",          texto:"Negativa a firmar el acta de supervisión" },
+  { area:"Mantenimiento", texto:"Portón automático sin funcionar" },
+  { area:"Mantenimiento", texto:"Garita en mal estado" },
+  { area:"Mantenimiento", texto:"Iluminación perimetral apagada" },
+  { area:"Mantenimiento", texto:"Cerradura forzada" },
+];
+
+const SEED_TICKETS = [
+  { id:"INC-202607-0041", obj:"Barrio Privado La Alameda",      sup:"María González", val:"M", area:"RRHH",          estado:"Activo",  desc:"Uniforme incompleto en turno nocturno",   item:"Uniforme completo",       vig:"Carlos A. Rodríguez", fecha:"13/07 · 02:15", isNew:false },
+  { id:"INC-202607-0039", obj:"Industria Metalúrgica Del Sur",  sup:"Jorge Pérez",    val:"R", area:"Mantenimiento", estado:"Activo",  desc:"Cámara sin señal en acceso norte",        item:"Cámaras activas",         vig:"Jorge L. Benítez",    fecha:"12/07 · 23:45", isNew:false },
+  { id:"INC-202607-0038", obj:"Local Comercial Av. Corrientes", sup:"Ana Suárez",     val:"R", area:"Operaciones",   estado:"Activo",  desc:"Demora en protocolo de cierre",           item:"Protocolo de emergencia", vig:"Néstor F. Quiroga",   fecha:"12/07 · 21:30", isNew:false },
+  { id:"INC-202607-0035", obj:"Barrio Privado Los Pinos",       sup:"Carlos Méndez",  val:"M", area:"Logística",     estado:"Activo",  desc:"Vehículo de ronda con falla mecánica",    item:"Estado del móvil",        vig:"Miguel Á. Sosa",      fecha:"11/07 · 18:00", isNew:false },
+  { id:"INC-202607-0031", obj:"Industria Agroexport SA",        sup:"Roberto Silva",  val:"R", area:"Operaciones",   estado:"Cerrado", desc:"Punto de control sin confirmar en ronda", item:"Manejo de radio",         vig:"Jorge L. Benítez",    fecha:"10/07 · 14:22", isNew:false, resolucion:"Se reforzó la capacitación del puesto." },
+];
+
+const SEED_RONDAS = [
+  { id:"ACTA-20260713-000042", supervisor:"Jorge Pérez",  objetivo:"Industria Metalúrgica Del Sur",  tipo:"presencial", gpsStatus:"inside",  fecha:new Date(Date.now()-7200000),  tickets:[] },
+  { id:"ACTA-20260713-000041", supervisor:"Ana Suárez",   objetivo:"Local Comercial Av. Corrientes", tipo:"remota",     gpsStatus:"outside", fecha:new Date(Date.now()-18000000), tickets:["INC-202607-0038"] },
+];
+
+const SEED_FEED = [
+  { hora:"17:42", sup:"M. González", obj:"B.P. La Alameda",  tipo:"Presencial", ok:true,  isNew:false },
+  { hora:"17:15", sup:"J. Pérez",    obj:"Ind. Metalúrgica", tipo:"Remota",     ok:false, isNew:false },
+  { hora:"16:58", sup:"A. Suárez",   obj:"Local Corrientes", tipo:"Presencial", ok:true,  isNew:false },
+  { hora:"16:30", sup:"C. Méndez",   obj:"B.P. Los Pinos",   tipo:"Presencial", ok:true,  isNew:false },
+  { hora:"15:55", sup:"R. Silva",    obj:"Agroexport SA",    tipo:"Remota",     ok:false, isNew:false },
+];
+
+const BASE_VISITAS = 36; // rondas previas del mes (seed) para que el KPI arranque con historia
+
+/* ── Paletas por sección / área / severidad ── */
+const SECCION_THEME = {
+  azul:    { ink:"#1C2A4E", soft:"#DEE5F0", chip:"bg-brand-100 text-brand-700", bar:"#2D4175" },
+  verde:   { ink:"#164F37", soft:"#DCE9E1", chip:"bg-good-soft text-good-ink",  bar:"#1F6B4A" },
+  naranja: { ink:"#6E561A", soft:"#F0E7CF", chip:"bg-tang-soft text-tang-ink",  bar:"#9C7B26" },
+  rojo:    { ink:"#7A1B21", soft:"#F1DFDF", chip:"bg-bad-soft text-bad-ink",    bar:"#A6272E" },
+};
+
+const AREA_THEME = {
+  "Logística":     { tone:"tang", label:"Logística" },
+  "Supervisión":   { tone:"brand",label:"Supervisión" },
+  "Operaciones":   { tone:"good", label:"Operaciones" },
+  "RRHH":          { tone:"plum", label:"RRHH" },
+  "Mantenimiento": { tone:"warn", label:"Mantenimiento" },
+};
+
+const VALOR = {
+  B: { label:"Bueno",   tone:"good", icon:"check",    desc:"Todo en orden" },
+  R: { label:"Regular", tone:"warn", icon:"alert",    desc:"Requiere observación" },
+  M: { label:"Malo",    tone:"bad",  icon:"x-circle", desc:"Incumplimiento detectado" },
+};
+
+const SUBTIPO_LABEL = {
+  barrio_multipuesto: "Barrio · Multipuesto",
+  barrio_unipersonal: "Barrio · Unipersonal",
+  local_comercial:    "Local comercial",
+  industria:          "Industria / Planta",
+  empresa_oficinas:   "Empresa / Oficinas",
+};
+
+/* ═══════════════════════════════════════════════════════════
+   ICONOS SVG (lucide-style, stroke 2, sin emojis)
+═══════════════════════════════════════════════════════════ */
+const ICON_PATHS = {
+  shield:      "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
+  "shield-ok": "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z|M9 12l2 2 4-4",
+  user:        "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2|M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
+  users:       "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2|M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z|M23 21v-2a4 4 0 0 0-3-3.87|M16 3.13a4 4 0 0 1 0 7.75",
+  "user-plus": "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2|M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z|M19 8v6|M22 11h-6",
+  clipboard:   "M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2|M9 2h6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z|M9 12h6|M9 16h4",
+  chart:       "M3 3v18h18|M7 15l4-5 3 3 5-7",
+  search:      "M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z|M21 21l-4.35-4.35",
+  wifi:        "M5 12.55a11 11 0 0 1 14 0|M8.5 16.1a6 6 0 0 1 7 0|M2 8.82a15 15 0 0 1 20 0|M12 20h.01",
+  "wifi-off":  "M1 1l22 22|M16.72 11.06A10.9 10.9 0 0 1 19 12.55|M5 12.55a10.9 10.9 0 0 1 5.17-2.39|M10.71 5.05A16 16 0 0 1 22 8.82|M1.42 9a15.9 15.9 0 0 1 4.7-2.88|M8.53 16.11a6 6 0 0 1 6.95 0|M12 20h.01",
+  pin:         "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z|M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
+  camera:      "M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z|M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
+  pen:         "M12 19l7-7 3 3-7 7-3-3z|M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z|M2 2l7.586 7.586|M11 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
+  check:       "M20 6L9 17l-5-5",
+  "check-circle":"M22 11.08V12a10 10 0 1 1-5.93-9.14|M22 4L12 14.01l-3-3",
+  x:           "M18 6L6 18|M6 6l12 12",
+  "x-circle":  "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z|M15 9l-6 6|M9 9l6 6",
+  alert:       "M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z|M12 9v4|M12 17h.01",
+  info:        "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z|M12 16v-4|M12 8h.01",
+  chevron:     "M6 9l6 6 6-6",
+  "chevron-r": "M9 18l6-6-6-6",
+  "arrow-r":   "M5 12h14|M12 5l7 7-7 7",
+  "arrow-l":   "M19 12H5|M12 19l-7-7 7-7",
+  logout:      "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4|M16 17l5-5-5-5|M21 12H9",
+  plus:        "M12 5v14|M5 12h14",
+  trash:       "M3 6h18|M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2|M10 11v6|M14 11v6",
+  refresh:     "M23 4v6h-6|M1 20v-6h6|M3.51 9a9 9 0 0 1 14.85-3.36L23 10|M1 14l4.64 4.36A9 9 0 0 0 20.49 15",
+  clock:       "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z|M12 6v6l4 2",
+  calendar:    "M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z|M16 2v4|M8 2v4|M3 10h18",
+  phone:       "M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z",
+  home:        "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z|M9 22V12h6v10",
+  badge:       "M12 15a7 7 0 1 0 0-14 7 7 0 0 0 0 14z|M8.21 13.89L7 23l5-3 5 3-1.21-9.12",
+  file:        "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z|M14 2v6h6|M16 13H8|M16 17H8|M10 9H8",
+  image:       "M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z|M8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z|M21 15l-5-5L5 21",
+  lock:        "M19 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2z|M7 11V7a5 5 0 0 1 10 0v4",
+  eye:         "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z|M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
+  "eye-off":   "M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94|M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19|M14.12 14.12a3 3 0 1 1-4.24-4.24|M1 1l22 22",
+  radio:       "M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z|M16.24 7.76a6 6 0 0 1 0 8.49|M7.76 16.24a6 6 0 0 1 0-8.49|M19.07 4.93a10 10 0 0 1 0 14.14|M4.93 19.07a10 10 0 0 1 0-14.14",
+  car:         "M5 17H3v-5l2-5h14l2 5v5h-2|M7 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4z|M17 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4z|M9 19h6|M5 12h14",
+  building:    "M3 21h18|M5 21V7l7-4 7 4v14|M9 9h.01|M15 9h.01|M9 13h.01|M15 13h.01|M10 21v-4h4v4",
+  store:       "M3 9l1-5h16l1 5|M3 9v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9|M3 9h18|M9 21v-6h6v6",
+  factory:     "M2 20h20V9l-6 4V9l-6 4V4H4l-2 16z|M8 20v-4|M14 20v-4",
+  filter:      "M22 3H2l8 9.46V19l4 2v-8.54z|",
+  trending:    "M23 6l-9.5 9.5-5-5L1 18|M17 6h6v6",
+  activity:    "M22 12h-4l-3 9L9 3l-3 9H2",
+  bolt:        "M13 2L3 14h9l-1 8 10-12h-9l1-8z",
+  gauge:       "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z|M12 12l4-4",
+  target:      "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z|M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12z|M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
+  cloud:       "M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z",
+  "cloud-off": "M22.61 16.95A5 5 0 0 0 18 10h-1.26a8 8 0 0 0-7.05-6M5 5a8 8 0 0 0 4 15h9a5 5 0 0 0 1.7-.3|M1 1l22 22",
+  layers:      "M12 2L2 7l10 5 10-5-10-5z|M2 17l10 5 10-5|M2 12l10 5 10-5",
+  settings:    "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z|M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z",
+  link:        "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71|M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71",
+  ticket:      "M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 6v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-6z|M13 5v2|M13 11v2|M13 17v2",
+  inbox:       "M22 12h-6l-2 3h-4l-2-3H2|M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z",
+  send:        "M22 2L11 13|M22 2l-7 20-4-9-9-4 20-7z",
+  save:        "M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z|M17 21v-8H7v8|M7 3v5h8",
+  stamp:       "M5 22h14|M5 18h14v-2a4 4 0 0 0-4-4h-1l.5-3a3 3 0 0 0-5 0l.5 3H9a4 4 0 0 0-4 4z",
+  minus:       "M5 12h14",
+};
+
+function Icon({ name, size = 20, className = "", strokeWidth = 2, fill = "none" }) {
+  const d = ICON_PATHS[name];
+  if (!d) return null;
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor"
+      strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"
+      className={cx("shrink-0", className)} aria-hidden="true" focusable="false">
+      {d.split("|").filter(Boolean).map((p, i) => <path key={i} d={p} />)}
+    </svg>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PRIMITIVAS CLAY
+═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   MARCA — ASISA · Argentina Seguridad Integral Sociedad Anónima
+   Trazados extraídos del SVG original del cliente, sin pérdida.
+   Se tiñen con currentColor: lámina dorada sobre tapa, navy sobre hoja.
+   Copias sueltas en assets/ para uso fuera de la app.
+═══════════════════════════════════════════════════════════ */
+const ASI_ISOTIPO_D = "M524.855 29.7811C536.945 20.5404 547.071 9.02533 559.329 0C558.323 14.4836 556.48 29.0151 553.176 43.1396C546.904 50.3934 537.998 55.2771 533.426 64.0152C507.93 111.44 484.277 159.846 458.781 207.295C456.651 210.551 456.938 214.549 458.446 217.996C469.698 245.934 476.88 275.236 485.019 304.156C486.982 310.452 488.036 320.172 479.753 322.183C454.017 326.324 427.3 329.221 401.493 323.691C398.213 344.088 395.053 364.939 385.956 383.708C382.772 390.435 377.625 395.917 373.962 402.357C373.579 406.283 375.614 409.922 376.668 413.585C382.772 430.151 387.56 447.149 392.157 464.17C396.753 459.023 400.464 453.181 405.228 448.226C409.154 443.629 415.881 446.047 421.1 445.832C428.09 460.363 423.949 476.619 420.238 491.413C444.824 488.876 470.033 485.859 494.428 491.772C511.186 494.214 526.579 501.372 542.044 507.884C537.4 491.509 538.764 473.363 547.311 458.52C549.274 454.761 554.014 455.719 557.485 454.857C558.539 464.888 558.778 477.265 568.45 483.202C580.97 486.123 594.377 480.377 602.684 470.921C609.866 463.619 617.574 454.283 628.898 454.905C648.433 453.038 666.124 464.72 677.975 479.324C691.213 494.765 698.994 515.09 697.557 535.558C698.994 553.442 690.328 571.803 675.437 581.858C665.239 588.561 652.479 587.747 640.868 586.933C627.102 585.665 616.042 576.304 602.827 573.144C603.234 583.271 607.424 592.679 608.645 602.662C610.177 619.42 610.129 637.159 602.301 652.505C597.441 664.187 587.099 674.936 589.684 688.51C592.749 696.554 601.918 699.116 609.195 701.988C619.681 706.01 632.321 706.824 640.15 715.826C646.135 721.858 647.643 730.668 647.116 738.856C646.182 755.662 647.14 772.515 645.632 789.297C650.061 813.093 652.981 837.129 655.83 861.164C656.644 866.072 654.035 870.98 650.037 873.757C640.94 876.462 633.973 868.035 625.666 865.881C626.36 872.105 628.06 878.353 627.222 884.649C625.403 890.85 621.524 896.117 617.742 901.288C597.01 895.829 575.584 894.13 554.493 890.587C557.964 880.747 562.369 871.171 567.875 862.338C573.022 855.754 582.694 859.177 589.134 854.988C594.688 851.612 600.505 848.548 605.628 844.526C611.182 828.415 611.087 810.939 611.158 794.061C610.943 785.084 611.877 775.556 607.687 767.296C602.277 756.619 589.134 748.144 577.236 753.818C558.419 762.125 539.842 771.031 521.001 779.314C513.675 782.69 505.464 785.658 500.58 792.505C495.313 799.136 495.242 807.946 493.494 815.87C489.52 818.791 485.354 821.712 483.224 826.332C474.629 841.941 459.763 852.331 446.38 863.487C437.068 850.2 428.952 834.783 429.479 818.145C432.136 796.192 449.66 780.439 465.508 766.889C482.913 756.787 502.208 750.251 519.493 739.861C513.604 730.979 504.77 724.875 496.774 718.052C478.843 701.94 458.662 688.127 443.101 669.55C427.133 674.865 411.428 681.616 394.455 683.004C371.88 687.098 348.849 684.393 326.107 685.087C316.842 692.676 306.308 698.732 297.355 706.585C296.277 714.652 298.743 722.601 300.898 730.285C307.17 752.166 315.07 773.616 324.886 794.181C328.405 802.416 336.377 807.707 339.752 815.966C341.332 823.627 341.021 831.623 340.087 839.355C336.784 847.375 328.381 845.053 321.845 843.449C321.079 857.047 322.683 870.908 318.996 884.219C310.258 884.147 301.496 884.123 292.758 884.242C292.28 878.018 290.819 871.961 290.101 865.809C292.495 858.675 297.858 852.355 297.068 844.359C296.445 832.58 305.279 821.975 301.664 810.173C293.764 816.78 294.051 827.481 290.58 836.363C287.013 847.591 278.083 855.586 269.848 863.463C262.379 869.136 264.222 882.758 253.976 884.649C255.58 875.241 257.878 865.378 264.581 858.196C273.798 848.021 284.427 837.823 287.372 823.818C290.532 809.502 284.308 795.641 279.615 782.45C274.756 769.164 268.795 756.332 261.756 744.075C255.173 732.416 253.736 718.555 246.507 707.183C235.781 688.941 219.095 675.535 206.12 659.088C201.093 653.079 195.993 647.094 190.894 641.157C182.683 648.818 174.208 658.777 162.047 658.968C138.538 660.405 119.266 644.581 100.066 633.401C84.0028 624.04 68.4658 610.155 48.7394 610.73C48.3085 618.175 47.7579 625.692 48.5958 633.137C49.8167 638.596 54.2934 642.689 55.5862 648.124C55.8735 652.409 55.6101 656.718 55.5383 661.027C59.7039 662.631 63.8933 664.187 68.0828 665.743C67.1491 687.265 65.6649 708.835 62.5048 730.142C57.262 728.035 52.4261 725.042 48.3324 721.164C40.1211 713.503 30.5212 707.159 23.6265 698.206C18.8864 690.856 14.8406 683.076 9.8132 675.918C5.69554 669.454 -0.00214377 663.182 0.0457359 655.09C-0.935798 637.83 14.1702 625.62 17.5697 609.437C20.0834 598.472 22.4295 584.755 34.2079 579.943C43.4248 576.041 51.8037 569.721 61.7627 567.829C80.0049 567.039 94.3927 583.319 112.707 582.265C115.316 574.269 114.191 565.603 116.705 557.607C126.209 535.08 128.004 509.177 121.971 485.524C116.729 489.355 110.744 492.61 106.817 497.949C107.081 502.761 108.014 507.549 108.398 512.385C102.173 512.744 95.6855 514.084 89.6047 512.169C84.9843 508.889 81.2497 504.556 77.0602 500.75C76.0548 509.225 79.9809 519.208 74.0678 526.485C65.4734 530.34 56.472 525.073 48.5239 521.985C37.4159 517.795 33.1067 505.586 30.4494 495.028C24.4883 469.652 19.2694 444.084 12.7099 418.828C8.56832 402.477 5.02523 384.761 11.2496 368.41C14.3378 358.044 24.3686 352.107 28.8214 342.508C36.2907 327.234 39.1395 310.237 45.7709 294.604C48.2367 294.508 50.7264 294.436 53.1922 294.364C53.4556 304.299 52.9049 314.234 53.0965 324.193C58.5547 323.451 64.8509 324.337 69.3995 320.579C74.2832 316.7 78.6403 312.2 83.2128 308.01C89.7962 301.929 92.9563 292.306 101.599 288.547C111.366 283.256 122.761 284.884 133.415 284.956C143.757 285.435 154.194 283.855 164.513 285.411C173.275 287.805 177.656 297.046 185.843 300.661C202.744 309.423 215.648 323.81 227.81 338.079C237.242 349.211 244.136 362.234 253.449 373.414C259.697 373.749 268.268 374.85 272.745 369.871C276.838 346.529 276.886 320.866 291.394 300.9C299.39 289.122 313.155 283.975 324.024 275.524C326.059 267.097 320.529 259.676 317.967 252.063C321.223 253.14 324.479 254.241 327.711 255.342C330.32 263.147 332.403 271.741 338.507 277.654C342.553 281.557 348.49 281.628 353.661 282.754C350.908 277.63 347.269 272.914 345.426 267.36C345.57 263.051 347.365 259.077 348.586 255.031C346.168 251.081 343.87 247.059 341.787 242.942C347.628 240.38 353.613 238.226 359.598 236.047C353.661 231.858 346.838 229.368 339.848 227.596C332.977 236.478 325.053 244.977 314.927 250.148C313.658 236.43 314.855 222.234 319.667 209.306C325.652 202.028 336.066 202.028 344.468 199.682C354.787 197.456 369.318 198.509 373.388 210.168C375.303 219.552 374.657 229.224 374.465 238.728C374.465 249.956 365.296 258.957 366.278 270.281C376.835 273.226 388.278 269.419 399.195 270.855C406.64 257.21 415.953 244.665 423.398 231.067C424.978 223.814 422.871 216.225 424.428 208.947C430.317 202.316 441.999 203.154 445.734 194.248C448.056 188.263 442.239 183.882 438.72 179.98C427.468 170.045 414.54 160.325 399.267 158.386C387.776 156.495 376.356 164.874 365.152 159.846C356.414 156.16 348.49 145.937 338.172 150.653C319.427 154.316 302.31 163.916 283.398 166.478C288.258 157.093 296.684 150.462 304.441 143.591C311.599 136.361 322.875 139.282 331.206 134.422C353.111 123.147 374.537 111.033 396.25 99.4222C408.316 93.0303 421.746 89.6308 435.105 87.1411C458.35 84.7471 482.506 88.9844 505.057 81.3715C512.047 75.7217 514.681 66.5767 519.158 59.0596C524.52 50.2737 524.855 39.7641 524.855 29.7811ZM428.019 104.114C401.182 112.733 376.691 129.969 360.843 153.431C376.356 152.76 391.774 147.685 404.246 138.348C413.726 131.142 419.927 120.441 429.766 113.642C438.049 107.969 447.889 105.096 455.908 99.0152C446.309 98.3928 437.02 101.194 428.019 104.114ZM426.223 162.264C429.216 165.52 432.304 168.728 435.416 171.936C441.329 163.509 446.189 154.316 452.844 146.416C460.601 136.577 469.841 128.102 477.861 118.502C456.627 127.575 441.712 145.937 426.223 162.264ZM429.886 211.676C436.589 219.648 445.279 225.849 451.001 234.682C455.095 240.691 459.212 246.7 463.138 252.829C458.159 238.489 456.052 221.18 443.364 211.197C439.534 207.008 434.219 210.599 429.886 211.676ZM329.53 216.991C323.473 222.138 321.007 231.45 325.891 238.225C328.74 233.557 330.2 227.836 334.246 223.981C340.351 220.295 347.892 219.098 352.919 213.663C345.211 213.089 335.611 210.671 329.53 216.991ZM431.059 251.632C424.715 259.867 418.993 268.581 413.894 277.654C427.731 284.477 441.832 290.821 456.315 296.16C448.439 281.652 439.773 267.36 435.799 251.177C434.626 251.273 432.256 251.512 431.059 251.632ZM305.686 302.815C293.955 328.838 289.455 357.805 289.886 386.246C298.719 386.461 307.553 386.605 316.411 386.557C318.206 376.574 319.164 366.495 318.901 356.369C319.619 356.44 321.079 356.56 321.821 356.632C321.534 367.309 321.486 378.082 324 388.568C327.399 388.233 330.823 387.897 334.246 387.562C333.552 377.484 331.876 367.333 333.432 357.254C338.22 366.998 337.741 378.226 341.428 388.352C345.546 386.533 350.262 384.929 351.339 379.997C363.692 349.426 378.774 320.076 392.205 289.983C379.445 290.151 366.661 291.133 353.925 289.816C346.575 289.05 339.704 285.555 332.307 285.291C323.114 290.534 313.538 295.681 305.686 302.815ZM408.603 307.843C411.428 311.864 413.439 317.586 418.754 318.903C433.07 323.475 448.415 320.196 462.133 315.144C453.443 313.78 444.274 313.445 436.326 309.255C430.963 306.813 426.199 302.887 420.382 301.546C415.426 300.445 412.314 305.52 408.603 307.843ZM87.7374 332.094C77.2996 338.007 64.4679 339.419 55.275 347.391C54.9398 355.89 57.5971 364.987 62.7203 371.762C72.2005 374.132 82.4467 374.659 90.6581 380.62C81.8482 382.726 72.8708 380.524 63.9651 380.452C66.1437 395.75 73.7565 409.731 75.0493 425.196C75.7196 431.851 76.7251 438.458 77.7306 445.066C88.9344 439.632 92.7409 427.087 99.037 417.296C106.698 404.991 113.09 391.919 121.493 380.093C124.341 375.544 129.177 373.51 134.324 372.767C134.947 404.129 135.162 435.514 135.33 466.899C162.669 450.907 181.318 424.214 205.713 404.512C213.709 397.88 222.567 392.398 231.257 386.724C220.508 374.994 205.809 368.099 194.078 357.566C193.695 352.131 200.422 349.761 203.08 345.763C193.097 345.021 182.946 344.638 173.083 346.817C167.457 348.133 161.64 347.583 156.11 346.003C160.73 337.983 168.678 332.86 174.472 325.821C163.196 325.51 152.997 330.777 142.225 333.123C136.958 334.512 129.704 334.152 127.214 328.455C125.371 320.148 133.534 314.929 137.125 308.513C119.003 312.511 103.729 323.332 87.7374 332.094ZM389.978 329.843C384.496 352.083 372.813 372.432 368.624 395.031C379.109 386.15 382.246 372.337 385.837 359.72C388.135 349.929 391.175 340.018 389.978 329.843ZM15.6306 381.051C13.2605 395.438 16.66 409.994 20.2749 423.879C24.608 414.088 26.5472 403.123 32.987 394.385C35.4767 390.411 40.3844 390.435 44.4781 389.741C43.5445 404.536 33.9206 416.362 26.9541 428.763C24.8474 440.134 29.2284 451.266 31.3351 462.303C34.4473 476.212 34.95 490.863 40.552 504.125C47.1354 501.827 48.8591 493.879 54.3413 490.025C59.0575 485.572 67.197 482.795 67.8434 475.493C69.0404 465.558 71.5062 455.36 69.3995 445.401C58.5547 444.491 60.6375 456.533 59.7039 463.619C57.9802 459.382 56.5199 455.073 54.6286 450.931C48.6197 449.59 42.3953 450.5 36.3386 449.902C41.9884 447.939 47.8776 446.766 53.7189 445.449C53.5513 439.823 53.3359 434.197 53.3598 428.571C57.6929 433.048 59.9433 440.781 66.9098 441.571C67.7237 440.565 69.3277 438.578 70.1177 437.573C70.6922 425.148 65.7846 413.322 62.6006 401.519C59.5842 393.835 58.2675 384.689 51.6601 379.112C44.2387 377.531 36.8892 380.62 29.5396 381.338C34.4473 373.198 43.9514 373.39 52.3304 373.294C51.6361 364.939 49.1224 356.776 42.7784 350.958C32.3645 359.481 21.5677 368.746 15.6306 381.051ZM260.942 380.907C261.182 383.277 261.397 385.671 261.637 388.089C264.054 388.185 266.472 388.28 268.914 388.4C269.01 385.91 269.082 383.397 269.178 380.907C266.424 380.907 263.695 380.907 260.942 380.907ZM226.972 399.317C193.959 423.688 164.824 452.751 134.253 479.97C135.641 498.188 138.897 516.383 136.934 534.721C151.465 526.82 166.883 520.74 182.06 514.252C201.452 505.897 220.675 497.015 240.976 491.054C250.84 488.158 261.158 484.495 267.981 476.379C270.662 467.114 267.669 457.227 265.682 448.058C260.799 429.696 255.101 410.161 241.192 396.468C236.787 392.35 230.874 396.588 226.972 399.317ZM276.503 423.257C274.301 431.516 275.761 440.23 277.15 448.513C280.046 462.087 281.818 476.212 288.425 488.636C303.986 462.949 321.558 438.219 333.6 410.592C326.25 405.182 316.555 407.72 308.08 407.432C295.966 407.217 281.65 411.047 276.503 423.257ZM357.875 412.939C335.371 453.445 307.793 490.863 284.954 531.201C282.129 535.511 281.148 542.19 286.127 545.422C297.091 549.037 307.84 542.956 318.637 541.735C320.361 555.812 315.022 569.409 313.395 583.271C310.474 595.624 312.245 608.336 311.24 620.88C308.343 639.673 310.833 659.495 303.603 677.498C299.581 686.021 286.486 692.628 292.232 703.185C311.623 687.481 333.097 672.806 345.139 650.23C345.713 642.857 340.542 636.25 340.135 628.876C338.436 607.258 344.349 586.072 346.479 564.693C347.293 555.285 352.704 546.164 350.022 536.66C342.673 534.481 333.121 539.317 327.471 533.069C331.565 528.161 338.077 527.108 343.966 525.863C339.202 524.618 334.509 523.11 329.817 521.625C334.15 519.758 338.483 517.891 342.793 515.976C338.675 513.558 334.462 511.355 330.176 509.272C339.058 499.529 347.509 489.043 352.704 476.834C356.367 468.599 354.499 459.382 355.768 450.692C366.349 469.413 368.073 491.461 375.399 511.427C381.288 501.301 378.152 489.163 378.702 478.031C377.242 459.861 376.739 441.02 369.725 423.951C367.834 418.469 362.926 415.165 357.875 412.939ZM114.478 450.333C110.073 463.715 104.639 476.978 102.915 491.078C109.379 487.248 115.532 482.699 120.176 476.762C121.708 468.288 120.104 459.621 119.697 451.123C118.404 450.907 115.771 450.524 114.478 450.333ZM610.177 480.664C600.745 483.585 597.321 494.837 601.152 503.407C611.158 498.069 622.171 494.047 633.734 495.603C641.251 495.052 646.542 501.42 650.204 507.142C657.458 518.968 653.891 534.601 645.416 544.775C634.236 555.716 618.125 558.038 603.689 561.94C623.057 569.481 648.289 566.13 661.336 548.701C671.295 538 669.548 522.487 668.638 509.105C663.323 484.375 632.92 470.035 610.177 480.664ZM240.21 500.87C221.226 507.501 203.199 516.407 184.814 524.498C166.26 532.686 145.816 538 129.967 551.263C119.865 562.994 121.277 579.823 119.362 594.259C111.246 595.097 103.394 592.775 95.5658 591.051C94.9912 605.487 105.261 622.46 121.349 621.024C130.231 622.412 136.168 612.741 134.779 604.793C135.809 592.775 126.759 577.908 137.891 568.595C147.443 582.648 152.758 600.459 167.433 610.394C171.359 613.124 175.621 609.509 176.77 605.63C185.723 583.63 192.45 560.384 205.306 540.203C207.748 535.343 213.087 534.362 217.97 533.859C222.854 553.872 207.221 571.779 211.578 591.769C219.311 584.156 221.848 573.048 229.413 565.292C231.041 569.505 234.249 573.814 232.454 578.554C228.097 592.727 219.454 605.726 206.695 613.626C198.34 618.51 197.597 628.972 199.082 637.542C201.739 643.503 206.79 647.98 210.788 653.055C221.13 641.468 225.32 626.171 231.903 612.429C248.182 572.57 263.911 532.207 274.396 490.432C262.235 490.791 251.558 497.207 240.21 500.87ZM417.509 537.162C404.988 559.02 403.983 585.066 405.18 609.604C417.15 605.367 429.263 600.507 438.863 591.961C448.822 583.39 456.339 572.498 463.545 561.629C455.956 586.143 445.734 610.179 442.43 635.795C467.711 629.786 492.752 618.534 510.635 599.215C517.961 591.769 521.36 581.308 529.38 574.461C528.446 591.817 518.655 607.139 506.924 619.348C495.625 631.174 480.854 638.596 468.094 648.531C493.733 643.815 518.463 633.64 539.698 618.462C553.535 609.006 560.717 591.099 557.461 574.676C555.498 564.358 553.631 552.532 544.845 545.637C538.98 540.49 529.476 539.389 523.132 544.297C508.049 554.83 502.4 573.192 493.255 588.298C494.547 571.253 497.684 553.322 508.145 539.317C512.981 532.327 521.384 529.645 527.848 524.594C507.642 515.856 486.121 508.076 463.737 509.68C444.681 508.842 426.439 520.644 417.509 537.162ZM597.8 517.843C584.609 522.272 571.083 525.695 557.03 524.738C567.516 530.699 576.589 538.647 586.237 545.757C603.33 548.51 622.865 545.278 635.218 532.255C639.072 528.784 638.258 522.775 636.87 518.346C625.714 508.195 610.512 515.617 597.8 517.843ZM35.381 676.349C32.963 673.213 30.5451 670.101 28.0554 667.036C25.4938 672.303 20.9452 677.306 21.424 683.531C21.5198 691.072 28.4145 695.788 32.8673 700.983C39.0677 690.617 43.1135 677.187 54.9159 671.8C52.7374 678.862 49.8167 685.805 49.697 693.322C54.1738 689.157 59.0335 685.302 62.8639 680.514C64.8749 674.122 59.1293 671.537 54.0301 670.1C47.0636 665.863 41.2941 673.739 35.381 676.349ZM289.766 677.426C289.79 678.838 289.862 681.663 289.886 683.1C291.274 683.1 294.027 683.124 295.416 683.124C295.32 681.807 295.152 679.174 295.081 677.857C293.74 677.737 291.083 677.522 289.766 677.426ZM538.357 707.183C549.944 712.737 559.999 720.709 569.862 728.849C565.29 719.105 559.041 709.075 548.915 704.454C545.132 702.731 541.709 705.914 538.357 707.183ZM445.351 821.424C442.287 820.395 439.39 818.935 436.397 817.761C434.65 832.556 437.475 848.524 448.894 859.01C457.297 850.679 466.897 843.257 472.834 832.82C464.216 833.634 456.507 838.541 447.865 838.685C447.314 837.727 446.213 835.812 445.662 834.854C452.916 828.439 461.51 823.747 468.477 816.971C460.289 812.112 453.323 820.467 445.351 821.424Z";
+
+function Isotipo({ size = 28, className = "" }) {
+  return (
+    <svg viewBox="-1 0 701 902" width={size * 701 / 902} height={size} fill="none"
+      className={className} role="img" aria-label="Argentina Seguridad Integral">
+      <path fill="currentColor" d={ASI_ISOTIPO_D} />
+    </svg>
+  );
+}
+
+/* Lockup vertical: el jinete sobre el nombre, para la portada del login */
+function Marca({ size = 64, className = "" }) {
+  return (
+    <div className={cx("flex flex-col items-center", className)}>
+      <Isotipo size={size} />
+      <p className="display text-center mt-4" style={{ fontSize: size * .30, lineHeight: 1.12 }}>
+        Argentina<br />Seguridad<br />Integral
+      </p>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PRIMITIVAS DEL LIBRO
+   La hoja levanta del lecho reglado con sombra de offset real.
+   Nada se infla; nada lleva halo de color sin desplazamiento.
+   Los nombres .clay* se conservan: el marcado existente hereda
+   el mundo nuevo sin reescribirse.
+═══════════════════════════════════════════════════════════ */
+function Clay({ children, className = "", inset = false, tint, as: Tag = "div", ...rest }) {
+  return (
+    <Tag className={cx(inset ? "clay-inset" : tint ? "clay-tint" : "clay", className)}
+      style={tint ? { background: tint, ...(rest.style || {}) } : rest.style} {...rest}>
+      {children}
+    </Tag>
+  );
+}
+
+/* Cada variante es una tinta plana con su canto impreso al pie:
+   una tecla de máquina, no una burbuja. Sin degradados. */
+const BTN_VARIANTS = {
+  primary: "bg-foil text-ink border-b-[3px] border-foil-dim",
+  aqua:    "bg-navy-700 text-paper-hi border-b-[3px] border-navy-900",
+  success: "bg-good text-paper-hi border-b-[3px] border-good-ink",
+  danger:  "bg-rubric text-paper-hi border-b-[3px] border-rubric-ink",
+  warn:    "bg-warn text-paper-hi border-b-[3px] border-warn-ink",
+  white:   "bg-paper-hi text-ink border border-paper-rule border-b-[3px] border-b-ink-soft",
+  soft:    "bg-navy-100 text-navy-700 border-b-[3px] border-navy-200",
+  ghost:   "bg-transparent text-ink-mute shadow-none border-b-2 border-transparent hover:border-ink-faint",
+};
+
+function Btn({ children, variant = "primary", size = "md", icon, iconRight, full, className = "", disabled, loading, ...rest }) {
+  /* Alturas mínimas por PRODUCT.md: objetivo táctil ≥48px, una sola mano */
+  const sizes = {
+    sm: "px-4 min-h-[40px] text-[13px] gap-1.5",
+    md: "px-5 min-h-[48px] text-[15px] gap-2",
+    lg: "px-6 min-h-[56px] text-[17px] gap-2.5",
+    xl: "px-6 min-h-[60px] text-[18px] gap-3",
+  };
+  const dis = disabled || loading;
+  return (
+    <button disabled={dis}
+      className={cx(
+        "clay-btn inline-flex items-center justify-center font-bold no-select uppercase",
+        sizes[size], full && "w-full",
+        dis ? "bg-paper-bed text-ink-faint border-b-[3px] border-paper-rule" : BTN_VARIANTS[variant],
+        variant === "ghost" && "shadow-none",
+        className
+      )}
+      style={{ letterSpacing: ".07em", fontVariationSettings: '"wdth" 96' }} {...rest}>
+      {loading ? <Icon name="refresh" size={17} className="a-spin" /> : icon ? <Icon name={icon} size={17} /> : null}
+      {children}
+      {iconRight && !loading && <Icon name={iconRight} size={17} />}
+    </button>
+  );
+}
+
+/* Chapa de rótulo: cuadrada, con su filete del mismo tono */
+const TONE_CHIP = {
+  good:  "bg-good-soft   text-good-ink   border-good",
+  warn:  "bg-warn-soft   text-warn-ink   border-warn",
+  bad:   "bg-bad-soft    text-bad-ink    border-bad",
+  brand: "bg-navy-100    text-navy-700   border-navy-200",
+  aqua:  "bg-paper-bed   text-ink-soft   border-paper-rule",
+  plum:  "bg-stamp-soft  text-stamp-ink  border-stamp",
+  tang:  "bg-tang-soft   text-tang-ink   border-tang",
+  gray:  "bg-paper-bed   text-ink-soft   border-paper-rule",
+};
+
+function Badge({ tone = "gray", children, icon, className = "" }) {
+  return (
+    <span className={cx("inline-flex items-center gap-1 border px-2 py-[3px] text-[11px] font-bold uppercase whitespace-nowrap", TONE_CHIP[tone] || TONE_CHIP.gray, className)}
+      style={{ letterSpacing: ".08em", fontVariationSettings: '"wdth" 92' }}>
+      {icon && <Icon name={icon} size={12} strokeWidth={2.6} />}
+      {children}
+    </span>
+  );
+}
+
+function Dot({ tone = "good", pulse }) {
+  const c = { good:"bg-good", warn:"bg-warn", bad:"bg-bad", brand:"bg-navy-700", gray:"bg-ink-faint" };
+  return <span className={cx("w-2 h-2 shrink-0", c[tone], pulse && "a-pulse")} />;
+}
+
+/* ── Encabezado de sección: regla fuerte arriba, como el corte de un asiento ── */
+function SH({ title, sub, right }) {
+  return (
+    <div className="flex items-end justify-between gap-3 mb-1 border-t-2 border-ink pt-2.5">
+      <div>
+        <h2 className="display text-[20px] text-ink">{title}</h2>
+        {sub && <p className="text-[14px] text-ink-mute mt-1.5 leading-snug">{sub}</p>}
+      </div>
+      {right}
+    </div>
+  );
+}
+
+/* ── Rótulo de apparatus ── */
+function Label({ children, className = "" }) {
+  return <p className={cx("rotulo", className)}>{children}</p>;
+}
+
+/* ── Casilla de entrada: hundida en la hoja, con su regla al pie ── */
+function Input({ label, icon, error, className = "", ...rest }) {
+  return (
+    <label className="block">
+      {label && <Label className="mb-1.5">{label}</Label>}
+      <div className={cx("clay-inset flex items-center gap-2.5 px-3 min-h-[48px]", error && "border-b-2 border-b-rubric")}>
+        {icon && <Icon name={icon} size={18} className="text-ink-mute" />}
+        <input className={cx("flex-1 bg-transparent outline-none text-[17px] font-medium text-ink placeholder:text-ink-faint min-w-0 py-2.5", className)} {...rest} />
+      </div>
+      {error && <p className="text-[13px] text-rubric-ink font-semibold mt-1.5 flex items-center gap-1"><Icon name="alert" size={13} />{error}</p>}
+    </label>
+  );
+}
+
+function Textarea({ label, hint, className = "", ...rest }) {
+  return (
+    <label className="block">
+      {label && <Label className="mb-1.5">{label}</Label>}
+      <div className="clay-inset px-3 py-2.5">
+        <textarea className={cx("w-full bg-transparent outline-none text-[16px] font-medium text-ink placeholder:text-ink-faint resize-none leading-relaxed", className)} {...rest} />
+      </div>
+      {hint}
+    </label>
+  );
+}
+
+/* ── Cuadrante de progreso: trazo a tope, sin halo de color ── */
+function Ring({ value, max, color = "#2D4175", size = 116, label }) {
+  const r = 43, c = 2 * Math.PI * r;
+  const pct = max > 0 ? Math.min(value / max, 1) : 0;
+  return (
+    <svg width={size} height={size} viewBox="0 0 110 110" className="shrink-0">
+      <circle cx="55" cy="55" r={r} fill="none" stroke="#DDE0E4" strokeWidth="10" />
+      <circle cx="55" cy="55" r={r} fill="none" stroke={color} strokeWidth="10" strokeLinecap="butt"
+        strokeDasharray={c} strokeDashoffset={c - pct * c} transform="rotate(-90 55 55)"
+        style={{ transition: "stroke-dashoffset .9s cubic-bezier(.2,.9,.3,1)" }} />
+      <text x="55" y="53" textAnchor="middle" fill="#141E33" fontSize="25" fontWeight="800"
+        fontFamily="Archivo" style={{ fontVariantNumeric:"tabular-nums" }}>{Math.round(pct * 100)}%</text>
+      <text x="55" y="70" textAnchor="middle" fill="#546282" fontSize="11" fontWeight="700"
+        fontFamily="Archivo" letterSpacing="1" style={{ fontVariantNumeric:"tabular-nums" }}>{label || `${value}/${max}`}</text>
+    </svg>
+  );
+}
+
+/* ── Barra: tinta plana sobre el lecho, sin brillo ── */
+function Bar({ value, max, color = "#2D4175", height = 10 }) {
+  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
+  return (
+    <div className="w-full overflow-hidden border border-paper-rule bg-paper-bed" style={{ height }}>
+      <div className="h-full transition-[width] duration-700 ease-out" style={{ width: `${pct}%`, background: color }} />
+    </div>
+  );
+}
+
+/* ── Chapa identificatoria ── */
+function Avatar({ nombre, size = 48, tone = "brand", src }) {
+  const bg = { brand:"#2D4175", aqua:"#32405E", plum:"#4B3A7A", warn:"#8A5A12" }[tone];
+  return (
+    <div className="shrink-0 flex items-center justify-center font-bold text-paper-hi overflow-hidden border border-navy-900"
+      style={{ width:size, height:size, background:bg, fontSize:size*.34,
+               fontVariationSettings:'"wdth" 92', letterSpacing:".02em",
+               boxShadow:"0 1px 0 rgba(20,30,51,.22)" }}>
+      {src ? <img src={src} alt="" className="w-full h-full object-cover" /> : iniciales(nombre)}
+    </div>
+  );
+}
+
+/* ── Fases del asiento ────────────────────────────────────────
+   No son puntitos: cada fase es una casilla numerada de ancho fijo,
+   siempre rotulada. La cursada va en tinta plena, las asentadas
+   llevan su marca, las pendientes quedan en hairline. */
+function Stepper({ steps, current }) {
+  return (
+    <div className="flex items-stretch shrink-0 border-b border-paper-rule bg-paper" role="list">
+      {steps.map((s, i) => {
+        const hecho = i < current, activo = i === current;
+        return (
+          <div key={s} role="listitem" aria-current={activo ? "step" : undefined}
+            className={cx("flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-2 px-1 border-r border-paper-rule last:border-r-0",
+              activo ? "bg-navy-700 text-paper-hi" : hecho ? "bg-navy-100 text-navy-700" : "bg-paper text-ink-faint")}>
+            <span className="folio text-[13px] leading-none flex items-center gap-1">
+              {hecho ? <Icon name="check" size={12} strokeWidth={3} /> : String(i + 1).padStart(2, "0")}
+            </span>
+            <span className="text-[10px] font-bold uppercase truncate max-w-full leading-tight"
+              style={{ letterSpacing:".06em", fontVariationSettings:'"wdth" 88' }}>{s}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── Pestañas: comparten el lecho, la activa va en tinta plena ── */
+function Segmented({ options, value, onChange, tone = "brand" }) {
+  const activeBg = { brand:"bg-navy-700", plum:"bg-stamp", aqua:"bg-ink-soft" }[tone];
+  return (
+    <div className="flex border border-paper-rule bg-paper-bed">
+      {options.map(([k, label, count]) => (
+        <button key={k} onClick={() => onChange(k)}
+          className={cx("flex-1 min-h-[44px] px-2 text-[13px] font-bold uppercase transition-colors duration-150 border-r border-paper-rule last:border-r-0",
+            value === k ? cx(activeBg, "text-paper-hi") : "text-ink-mute hover:text-ink")}
+          style={{ letterSpacing:".07em", fontVariationSettings:'"wdth" 92' }}>
+          {label}{count != null && <span className="ml-1 opacity-80 tnum">{count}</span>}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ── Hoja suelta que entra desde el pie ── */
+function Sheet({ open, onClose, title, sub, children, maxH = "86%" }) {
+  useEffect(() => {
+    if (!open) return;
+    const h = e => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [open, onClose]);
+
+  if (!open) return null;
+  return (
+    <div className="absolute inset-0 z-50 flex items-end a-fade" style={{ background:"rgba(16,26,51,.52)" }}
+      onClick={e => e.target === e.currentTarget && onClose()} role="dialog" aria-modal="true">
+      <div className="w-full bg-paper a-sheet flex flex-col border-t-2 border-ink"
+        style={{ maxHeight:maxH, boxShadow:"0 -8px 28px rgba(16,26,51,.34)" }}>
+        <div className="flex items-start justify-between gap-3 px-5 pt-4 pb-3 shrink-0 border-b border-paper-rule">
+          <div className="min-w-0">
+            <h3 className="display text-[18px] text-ink">{title}</h3>
+            {sub && <p className="text-[14px] text-ink-mute mt-1 leading-snug">{sub}</p>}
+          </div>
+          <button onClick={onClose} aria-label="Cerrar"
+            className="w-11 h-11 flex items-center justify-center text-ink-soft border border-paper-rule bg-paper-hi clay-press shrink-0 focus-ring">
+            <Icon name="x" size={19} />
+          </button>
+        </div>
+        <div className="scroll-y px-5 pb-6 pt-4 flex-1">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Renglón en blanco: el asiento que todavía no se hizo ── */
+function Empty({ icon = "inbox", title, sub }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-12 px-6 text-center gap-3">
+      <div className="w-16 h-16 flex items-center justify-center text-ink-faint border border-paper-rule bg-paper-bed">
+        <Icon name={icon} size={30} strokeWidth={1.8} />
+      </div>
+      <div>
+        <p className="display text-[15px] text-ink">{title}</p>
+        {sub && <p className="text-[14px] text-ink-mute mt-1.5 leading-relaxed max-w-[260px]">{sub}</p>}
+      </div>
+    </div>
+  );
+}
+
+function Skeleton({ h = 78, className = "" }) {
+  return <div className={cx("skeleton", className)} style={{ height: h }} />;
+}
+
+/* ── Renglón clave/valor: se apoya en el reglado ── */
+function Row({ k, v, tone, last }) {
+  return (
+    <div className={cx("flex justify-between items-center gap-3 py-3", !last && "border-b border-paper-rule")}>
+      <span className="text-[14px] text-ink-mute font-medium shrink-0">{k}</span>
+      {tone
+        ? <Badge tone={tone}>{v}</Badge>
+        : <span className="text-[15px] font-bold text-ink text-right leading-snug tnum">{v}</span>}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MARCA DE AGUA SOBRE FOTO (PRD §8 paso 5 · §10)
+   Estampa fecha, hora, coordenadas y supervisor en el canvas.
+═══════════════════════════════════════════════════════════ */
+function estamparFoto(dataUrl, meta) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const maxW  = 1080;
+      const scale = Math.min(1, maxW / img.width);
+      const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+      const cv = document.createElement("canvas");
+      cv.width = w; cv.height = h;
+      const ctx = cv.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+
+      const barH = Math.max(70, Math.round(h * 0.16));
+      const g = ctx.createLinearGradient(0, h - barH, 0, h);
+      g.addColorStop(0, "rgba(2,6,23,0)");
+      g.addColorStop(.4, "rgba(2,6,23,.72)");
+      g.addColorStop(1, "rgba(2,6,23,.93)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, h - barH, w, barH);
+
+      const pad = Math.round(w * .035);
+      const fs  = Math.max(14, Math.round(h * .028));
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "#F5F6F7";
+      ctx.font = `800 ${fs}px Inter, system-ui, sans-serif`;
+      ctx.fillText(meta.l1, pad, h - barH + fs * 1.7);
+      ctx.fillStyle = "#C3CEE2";
+      ctx.font = `600 ${Math.round(fs * .84)}px Inter, system-ui, sans-serif`;
+      ctx.fillText(meta.l2, pad, h - barH + fs * 3.0);
+      ctx.fillText(meta.l3, pad, h - barH + fs * 4.15);
+
+      resolve(cv.toDataURL("image/jpeg", .82));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CONTEXTO GLOBAL — única fuente de verdad de la app
+   Funciona con datos semilla y, si hay API conectada,
+   sustituye por los datos reales de PostgreSQL.
+═══════════════════════════════════════════════════════════ */
+const AppContext = createContext();
+
+function AppProvider({ children }) {
+  /* ── Estado operativo (modo demo / espejo local) ── */
+  const [rondasGuardadas, setRondasGuardadas] = useState(SEED_RONDAS);
+  const [ticketsActivos,  setTicketsActivos]  = useState(SEED_TICKETS);
+  const [liveFeed,        setLiveFeed]        = useState(SEED_FEED);
+  const [visitasPorObj,   setVisitasPorObj]   = useState(
+    () => Object.fromEntries(SEED_OBJETIVOS.map(o => [o.id, o.visitas_mes]))
+  );
+
+  /* ── Conectividad y cola offline (PRD §10) ── */
+  const [offline, setOffline] = useState(false);
+  const [queue,   setQueue]   = useState([]);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState(null);
+  const [ticketSeq, setTicketSeq] = useState(42);
+
+  /* ── Capa de API ── */
+  const [apiUrl,      setApiUrl]      = useState("");
+  const [apiStatus,   setApiStatus]   = useState("unconfigured"); // unconfigured|connecting|connected|error
+  const [apiError,    setApiError]    = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [apiToken,    setApiToken]    = useState(null);
+
+  /* ── Catálogos (semilla o API) ── */
+  const [objetivos,     setObjetivos]     = useState(SEED_OBJETIVOS);
+  const [vigiladores,   setVigiladores]   = useState(SEED_VIGILADORES);
+  const [secciones,     setSecciones]     = useState(SEED_SECCIONES);
+  const [checklistDefs, setChecklistDefs] = useState(SEED_CHECKLIST);
+  const [ajustes,       setAjustes]       = useState(SEED_AJUSTES);
+  const [observaciones, setObservaciones] = useState(SEED_OBSERVACIONES);
+
+  const online = apiStatus === "connected" && !offline;
+
+  const apiFetch = useCallback((path, opts = {}) => {
+    const base = apiUrl.replace(/\/$/, "");
+    return fetch(base + path, {
+      ...opts,
+      headers: {
+        "Content-Type": "application/json",
+        "bypass-tunnel-reminder": "true",
+        ...(apiToken ? { Authorization: `Bearer ${apiToken}` } : {}),
+        ...(opts.headers || {}),
+      },
+    });
+  }, [apiUrl, apiToken]);
+
+  /* ── Probar y fijar la URL del servidor ── */
+  const conectarApi = async (url) => {
+    const base = url.trim().replace(/\/$/, "");
+    if (!base) return;
+    setApiUrl(base); setApiStatus("connecting"); setApiError(null);
+    try {
+      const res  = await fetch(base + "/", { headers: { "bypass-tunnel-reminder":"true" } });
+      const data = await res.json();
+      if (data.ok) { setApiStatus("connected"); }
+      else { setApiStatus("error"); setApiError("El servidor respondió con un estado inesperado."); }
+    } catch (e) {
+      setApiStatus("error");
+      setApiError("No se pudo alcanzar el servidor. Verificá la URL.");
+    }
+  };
+
+  const desconectarApi = () => {
+    setApiStatus("unconfigured"); setApiUrl(""); setApiToken(null); setApiError(null);
+    setObjetivos(SEED_OBJETIVOS); setVigiladores(SEED_VIGILADORES);
+    setSecciones(SEED_SECCIONES); setChecklistDefs(SEED_CHECKLIST); setObservaciones(SEED_OBSERVACIONES);
+  };
+
+  /* ── Cargar catálogos reales tras el login ── */
+  const cargarCatalogos = useCallback(async () => {
+    try {
+      const res  = await apiFetch("/api/inicializar");
+      const data = await res.json();
+      if (!data.ok) return;
+      if (data.objetivos?.length)     { setObjetivos(data.objetivos); setVisitasPorObj(Object.fromEntries(data.objetivos.map(o => [o.id, o.visitas_mes || 0]))); }
+      if (data.vigiladores?.length)   setVigiladores(data.vigiladores);
+      if (data.secciones?.length)     setSecciones(data.secciones);
+      if (data.checklist?.length)     setChecklistDefs(data.checklist.map(i => ({ ...i, seccion_clave: i.seccion_clave })));
+      if (data.ajustes)               setAjustes(data.ajustes);
+      if (data.observaciones?.length) setObservaciones(data.observaciones);
+    } catch (e) { console.warn("[catalogos]", e.message); }
+  }, [apiFetch]);
+
+  // Los catálogos requieren token: se cargan recién cuando hay sesión iniciada
+  useEffect(() => {
+    if (apiStatus === "connected" && apiToken) cargarCatalogos();
+  }, [apiStatus, apiToken]);
+
+  /* ── KPIs calculados reactivamente sobre el estado local ── */
+  const kpis = useMemo(() => {
+    const metaTotal = objetivos.reduce((a, o) => a + (o.visitas_meta_mes || 0), 0);
+    const hechas    = objetivos.reduce((a, o) => a + (visitasPorObj[o.id] || 0), 0);
+    const porTipo = {};
+    for (const o of objetivos) {
+      const t = o.tipo || "Otros";
+      porTipo[t] = porTipo[t] || { completadas: 0, total: 0 };
+      porTipo[t].completadas += visitasPorObj[o.id] || 0;
+      porTipo[t].total       += o.visitas_meta_mes || 0;
+    }
+    return {
+      visitas:     hechas,
+      metaVisitas: metaTotal || 1,
+      criticas:    ticketsActivos.filter(t => t.val === "M" && t.estado === "Activo").length,
+      activas:     ticketsActivos.filter(t => t.estado === "Activo").length,
+      cerradas:    ticketsActivos.filter(t => t.estado === "Cerrado").length,
+      porTipo,
+      porObjetivo: objetivos.map(o => ({ ...o, realizadas: visitasPorObj[o.id] || 0 })),
+    };
+  }, [objetivos, visitasPorObj, ticketsActivos]);
+
+  /* ── Commit atómico al estado local ── */
+  const _commit = (payloads) => {
+    setRondasGuardadas(r => [...payloads.map(p => p.ronda), ...r]);
+    const tks = payloads.flatMap(p => p.tickets);
+    if (tks.length) setTicketsActivos(t => [...tks, ...t]);
+    setLiveFeed(f => [...payloads.map(p => p.feed), ...f].slice(0, 9));
+    setVisitasPorObj(v => {
+      const n = { ...v };
+      for (const p of payloads) if (p.objetivoId != null) n[p.objetivoId] = (n[p.objetivoId] || 0) + 1;
+      return n;
+    });
+  };
+
+  /* ── Construir el payload de una ronda terminada ── */
+  const construirActa = (rd, supervisorNombre) => {
+    const now   = new Date();
+    const stamp = fmtFecha(now) + " · " + fmtHora(now);
+    const seq   = String(Date.now()).slice(-6);
+
+    // Cada ítem R/M genera un ticket dirigido al área de la observación elegida
+    let n = ticketSeq;
+    const tickets = Object.entries(rd.respuestas || {})
+      .filter(([, r]) => r.estado === "R" || r.estado === "M")
+      .map(([itemId, r]) => {
+        const def   = checklistDefs.find(d => String(d.id) === String(itemId)) || {};
+        const obs   = r.obsPred?.[0] || r.obsLibre || def.titulo_corto || "Observación registrada";
+        const catal = observaciones.find(o => o.texto === r.obsPred?.[0]);
+        const area  = catal?.area || def.area_responsable || "Operaciones";
+        n += 1;
+        return {
+          id:     `INC-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,"0")}-${String(n).padStart(4,"0")}`,
+          _itemId: def.id, obj: rd.objetivo?.nombre || "—", sup: supervisorNombre,
+          val: r.estado, area, estado: "Activo", desc: obs, item: def.titulo_corto,
+          vig: rd.vigiladores?.[0]?.nombre || "—", fecha: stamp, isNew: true,
+        };
+      });
+
+    // La negativa a firmar genera su propio ticket a RRHH (PRD §5.2)
+    for (const v of rd.vigiladores || []) {
+      const f = rd.firmas?.[v.id];
+      if (f?.nego) {
+        n += 1;
+        tickets.push({
+          id: `INC-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,"0")}-${String(n).padStart(4,"0")}`,
+          obj: rd.objetivo?.nombre || "—", sup: supervisorNombre, val: "M", area: "RRHH", estado: "Activo",
+          desc: `Negativa a firmar el acta — ${v.nombre} (legajo ${v.legajo})`,
+          item: "Firma del acta", vig: v.nombre, fecha: stamp, isNew: true,
+        });
+      }
+    }
+    setTicketSeq(n);
+
+    const codigo = `ACTA-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,"0")}${String(now.getDate()).padStart(2,"0")}-${seq}`;
+    const ronda = {
+      id: codigo, supervisor: supervisorNombre, objetivo: rd.objetivo?.nombre || "—",
+      tipo: rd.tipo || "presencial", gpsStatus: rd.gpsStatus, fecha: now,
+      tickets: tickets.map(t => t.id),
+    };
+    const partes = supervisorNombre.split(" ");
+    const feed = {
+      hora: fmtHora(now),
+      sup:  (partes[0][0] || "") + ". " + partes[partes.length - 1],
+      obj:  cortar(rd.objetivo?.nombre || "Objetivo", 20),
+      tipo: rd.tipo === "remota" ? "Remota" : "Presencial",
+      ok:   tickets.length === 0, isNew: true,
+    };
+
+    return { ronda, tickets, feed, codigo, objetivoId: rd.objetivo?.id, generadaEn: now };
+  };
+
+  /* ── Enviar el acta al backend real ── */
+  const enviarActaApi = useCallback(async (rd, acta) => {
+    const objId = rd.objetivo?.id;
+    if (!objId) return;
+    const body = {
+      objetivo_id: objId,
+      tipo: rd.tipo || "presencial",
+      en_geocerca: rd.gpsStatus === "inside",
+      lat: rd.deviceCoords?.lat ?? null, lng: rd.deviceCoords?.lng ?? null,
+      justificacion_fuera: rd.justificacion || null,
+      sincronizado_offline: Boolean(rd._offline),
+      hora_inicio: rd.horaInicio ? new Date(rd.horaInicio).toISOString() : null,
+      hora_fin:    new Date().toISOString(),
+      vigiladores: (rd.vigiladores || []).map(v => ({
+        id: v.id,
+        firma_base64: rd.firmas?.[v.id]?.dataUrl || null,
+        nego_firmar:  Boolean(rd.firmas?.[v.id]?.nego),
+      })),
+      checklist: Object.entries(rd.respuestas || {}).map(([itemId, r]) => {
+        const def = checklistDefs.find(d => String(d.id) === String(itemId)) || {};
+        return {
+          item_id: def.id, pregunta: def.titulo_corto, valoracion: r.estado,
+          observacion_pred: (r.obsPred || []).join(" · ") || null,
+          observacion_libre: r.obsLibre || null,
+        };
+      }),
+      incidencias: acta.tickets.map(t => ({
+        item_id: t._itemId, item_titulo: t.item, valoracion: t.val,
+        area_responsable: t.area, categoria: t.area, descripcion: t.desc,
+        vigilador_id: (rd.vigiladores || [])[0]?.id,
+      })),
+      evidencias: (rd.fotos || []).map(f => ({ imagen_base64: f.dataUrl, lat: f.lat, lng: f.lng })),
+    };
+    const res  = await apiFetch("/api/rondas", { method:"POST", body: JSON.stringify(body) });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.mensaje || "El servidor rechazó el acta.");
+    return data;
+  }, [apiFetch, checklistDefs]);
+
+  /* ── Guardar ronda: commit inmediato o cola FIFO offline ── */
+  const guardarRonda = async (rd, supervisorNombre) => {
+    const acta = construirActa(rd, supervisorNombre);
+
+    if (offline) {
+      setQueue(q => [...q, { acta, rd: { ...rd, _offline: true } }]);
+      return { estado: "encolada", acta };
+    }
+
+    _commit([acta]);
+
+    if (apiStatus === "connected" && currentUser?.rol === "supervisor") {
+      try {
+        const r = await enviarActaApi(rd, acta);
+        return { estado: "guardada", acta: { ...acta, codigo: r.codigo_acta || acta.codigo }, servidor: true };
+      } catch (e) {
+        return { estado: "guardada", acta, servidor: false, aviso: e.message };
+      }
+    }
+    return { estado: "guardada", acta, servidor: false };
+  };
+
+  /* ── Sincronizar la cola pendiente ── */
+  const queueRef = useRef(queue);
+  useEffect(() => { queueRef.current = queue; }, [queue]);
+
+  const sincronizar = useCallback(async () => {
+    const pend = queueRef.current;
+    if (!pend.length || syncing) return;
+    setSyncing(true); setSyncMsg(null);
+
+    await new Promise(r => setTimeout(r, 1400)); // latencia simulada de red
+    _commit(pend.map(p => p.acta));
+
+    if (apiStatus === "connected" && currentUser?.rol === "supervisor") {
+      for (const p of pend) { try { await enviarActaApi(p.rd, p.acta); } catch (e) { console.warn("[sync]", e.message); } }
+    }
+
+    setQueue([]); setSyncing(false);
+    const n = pend.length;
+    setSyncMsg({ tone:"good", text:`${n} acta${n > 1 ? "s" : ""} sincronizada${n > 1 ? "s" : ""} con el servidor.` });
+    setTimeout(() => setSyncMsg(null), 5200);
+  }, [apiStatus, currentUser, enviarActaApi, syncing]);
+
+  /* Reintento automático cada 60s mientras haya cola y conexión (PRD §10) */
+  useEffect(() => {
+    if (offline || queue.length === 0) return;
+    const t = setInterval(() => { sincronizar(); }, 60000);
+    return () => clearInterval(t);
+  }, [offline, queue.length, sincronizar]);
+
+  const alternarConexion = () => {
+    if (offline) { setOffline(false); setTimeout(() => sincronizar(), 300); }
+    else { setOffline(true); setSyncMsg(null); }
+  };
+
+  /* ── Cerrar ticket (Admin) ── */
+  const cerrarTicket = (id, resolucion) => {
+    setTicketsActivos(t => t.map(tk => tk.id === id ? { ...tk, estado:"Cerrado", resolucion, isNew:false } : tk));
+  };
+
+  const cerrarSesion = () => { setCurrentUser(null); setApiToken(null); };
+
+  return (
+    <AppContext.Provider value={{
+      rondasGuardadas, ticketsActivos, liveFeed, kpis, visitasPorObj,
+      offline, queue, syncing, syncMsg, online,
+      guardarRonda, alternarConexion, sincronizar, cerrarTicket, cerrarSesion,
+      apiUrl, apiStatus, apiError, apiFetch, conectarApi, desconectarApi, cargarCatalogos,
+      currentUser, setCurrentUser, apiToken, setApiToken,
+      objetivos, vigiladores, secciones, checklistDefs, ajustes, observaciones,
+    }}>
+      {children}
+    </AppContext.Provider>
+  );
+}
+
+const useApp = () => useContext(AppContext);
+
+/* ═══════════════════════════════════════════════════════════
+   SHELL — cabecera, barra de conexión, aviso de sincronización
+═══════════════════════════════════════════════════════════ */
+function PanelHeader({ icon, rol, nombre, tone = "brand" }) {
+  const { cerrarSesion } = useApp();
+  /* El encabezado es el lomo del libro: tela navy con el isotipo en lámina */
+  const chapa = { brand:"#2D4175", plum:"#4B3A7A", warn:"#8A5A12" }[tone];
+  return (
+    <div className="tela flex items-center justify-between gap-3 px-4 py-2.5 shrink-0 border-b-2 border-navy-900">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="w-11 h-11 flex items-center justify-center text-paper-hi shrink-0 border border-navy-900"
+          style={{ background:chapa, boxShadow:"0 1px 0 rgba(16,26,51,.6)" }}>
+          <Icon name={icon} size={21} />
+        </div>
+        <div className="min-w-0">
+          <p className="rotulo text-foil truncate">{rol}</p>
+          <p className="text-[15px] font-semibold text-paper-hi truncate leading-tight mt-0.5">{nombre}</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2.5 shrink-0">
+        <span className="text-foil" title="ASISA"><Isotipo size={26} /></span>
+        <button onClick={cerrarSesion}
+          className="clay-press w-11 h-11 flex items-center justify-center text-navy-100 border border-navy-500 focus-ring"
+          aria-label="Cerrar sesión" title="Cerrar sesión">
+          <Icon name="logout" size={18} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ConnBar() {
+  const { offline, alternarConexion, syncing, queue, apiStatus } = useApp();
+  return (
+    <div className="flex items-center justify-between gap-2 px-4 py-2 shrink-0">
+      <div className="flex items-center gap-2 min-w-0">
+        {syncing ? (
+          <><Icon name="refresh" size={14} className="a-spin text-brand-600" />
+            <span className="text-[11px] font-bold text-brand-700">Sincronizando…</span></>
+        ) : offline ? (
+          <><Icon name="wifi-off" size={14} className="text-bad" />
+            <span className="text-[11px] font-bold text-bad-ink">Sin conexión · {queue.length} en cola</span></>
+        ) : (
+          <><Dot tone="good" pulse />
+            <span className="text-[11px] font-bold text-ink-mute">
+              {apiStatus === "connected" ? "Conectado · PostgreSQL" : "Online · Modo demo"}
+            </span></>
+        )}
+      </div>
+      <button onClick={alternarConexion} disabled={syncing}
+        className={cx("clay-btn px-3 py-1.5 rounded-full text-[10px] font-black tracking-wide uppercase transition-colors",
+          offline ? "bg-bad text-paper-hi" : "bg-paper-hi text-ink-mute")}>
+        {offline ? "Reconectar" : "Simular corte"}
+      </button>
+    </div>
+  );
+}
+
+function SyncToast() {
+  const { syncMsg, syncing, offline, queue } = useApp();
+  let text = null, tone = "brand", icon = "cloud";
+
+  if (syncing)            { text = `Procesando ${queue.length} acta${queue.length !== 1 ? "s" : ""} en cola…`; tone = "brand"; icon = "refresh"; }
+  else if (syncMsg)       { text = syncMsg.text; tone = syncMsg.tone; icon = "check-circle"; }
+  else if (offline && queue.length) { text = `${queue.length} acta${queue.length > 1 ? "s" : ""} en cola local · se enviará al recuperar señal`; tone = "warn"; icon = "cloud-off"; }
+
+  if (!text) return null;
+  const bg = { brand:"bg-brand-100 text-brand-800", good:"bg-good-soft text-good-ink", warn:"bg-warn-soft text-warn-ink" }[tone];
+  return (
+    <div className={cx("mx-4 mb-1 rounded-[16px] px-3.5 py-2.5 flex items-center gap-2 a-dn shrink-0", bg)}>
+      <Icon name={icon} size={15} className={syncing ? "a-spin" : ""} />
+      <span className="text-[11px] font-bold leading-snug">{text}</span>
+    </div>
+  );
+}
+
+/* ── Panel de conexión al servidor (colapsable) ── */
+function ApiConfigBar() {
+  const { apiStatus, apiError, apiUrl, conectarApi, desconectarApi } = useApp();
+  const [open,  setOpen]  = useState(false);
+  const [input, setInput] = useState("http://localhost:3000");
+
+  const S = {
+    unconfigured: { tone:"gray",  label:"Modo demo",   detail:"Datos locales de ejemplo" },
+    connecting:   { tone:"warn",  label:"Conectando…", detail:"Probando el servidor" },
+    connected:    { tone:"good",  label:"Conectado",   detail:apiUrl },
+    error:        { tone:"bad",   label:"Sin conexión",detail:apiError || "Revisá la URL" },
+  }[apiStatus];
+
+  return (
+    <div className="w-full max-w-[404px] mx-auto mb-2.5">
+      <button onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center gap-2.5 px-4 min-h-[40px] clay-press focus-ring bg-navy-900 border border-navy-500">
+        <Dot tone={S.tone} pulse={apiStatus === "connecting"} />
+        <span className="rotulo text-foil">{S.label}</span>
+        <span className="text-[13px] text-navy-200 truncate flex-1 text-left">{S.detail}</span>
+        <Icon name="chevron" size={16} className={cx("text-navy-200 transition-transform", open && "rotate-180")} />
+      </button>
+
+      {open && (
+        <Clay className="mt-2 p-4 a-dn">
+          <Label className="mb-2">Servidor ASISA — URL de la API</Label>
+          <div className="flex gap-2">
+            <div className="clay-inset flex-1 flex items-center gap-2 px-3 py-2.5 min-w-0">
+              <Icon name="link" size={15} className="text-ink-faint" />
+              <input value={input} onChange={e => setInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && conectarApi(input)}
+                placeholder="http://localhost:3000" spellCheck="false"
+                className="flex-1 bg-transparent outline-none text-[15px] font-semibold text-ink min-w-0 tnum" />
+            </div>
+            {apiStatus === "connected"
+              ? <Btn size="sm" variant="white" onClick={desconectarApi}>Salir</Btn>
+              : <Btn size="sm" onClick={() => conectarApi(input)} loading={apiStatus === "connecting"}>Conectar</Btn>}
+          </div>
+          <p className="text-[14px] text-ink-mute mt-3 leading-relaxed">
+            Sin conexión la app funciona con datos de ejemplo. Al conectar, los objetivos, vigiladores y el
+            checklist se leen de PostgreSQL.
+          </p>
+        </Clay>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LOGIN — usuario y contraseña (PRD §1)
+═══════════════════════════════════════════════════════════ */
+const DEMO_CRED = {
+  supervisor: { username:"supervisor", password:"supervisor123", nombre:"María González",  rol:"supervisor" },
+  admin:      { username:"admin",      password:"admin123",      nombre:"Roberto Valente", rol:"admin" },
+  dueno:      { username:"dueno",      password:"dueno123",      nombre:"Gerencia General",rol:"dueno" },
+};
+
+function LoginScreen() {
+  const { apiStatus, apiFetch, setCurrentUser, setApiToken } = useApp();
+  const [user, setUser]   = useState("");
+  const [pass, setPass]   = useState("");
+  const [ver,  setVer]    = useState(false);
+  const [load, setLoad]   = useState(false);
+  const [err,  setErr]    = useState(null);
+
+  const entrar = async () => {
+    setErr(null);
+    if (!user.trim() || !pass) { setErr("Ingresá usuario y contraseña."); return; }
+    setLoad(true);
+
+    if (apiStatus === "connected") {
+      try {
+        const res  = await apiFetch("/api/login", { method:"POST", body: JSON.stringify({ username:user.trim(), password:pass }) });
+        const data = await res.json();
+        if (data.ok) { setApiToken(data.token); setCurrentUser(data.usuario); }
+        else setErr(data.mensaje || "Credenciales incorrectas.");
+      } catch { setErr("No se pudo contactar al servidor."); }
+      finally { setLoad(false); }
+      return;
+    }
+
+    // Modo demo: valida contra las credenciales locales
+    await new Promise(r => setTimeout(r, 480));
+    const match = Object.values(DEMO_CRED).find(c => c.username === user.trim().toLowerCase() && c.password === pass);
+    if (match) setCurrentUser({ id: 0, nombre: match.nombre, rol: match.rol });
+    else setErr("Usuario o contraseña incorrectos.");
+    setLoad(false);
+  };
+
+  return (
+    <div className="scroll-y a-fade lecho">
+      {/* ── La tapa: tela navy estampada en lámina dorada ── */}
+      <div className="tela px-6 pt-9 pb-8 border-b-2 border-navy-900 relative">
+        <div className="text-foil a-pop"><Isotipo size={62} /></div>
+        <h1 className="display text-[27px] text-paper-hi mt-5 leading-[1.06]">
+          Argentina<br />Seguridad<br />Integral
+        </h1>
+        <p className="rotulo text-foil mt-3">Sociedad Anónima · ASISA</p>
+        {/* Estampado al pie de la tapa, como el rótulo del lomo */}
+        <p className="rotulo text-navy-400 absolute bottom-3 right-6">Libro de novedades</p>
+      </div>
+
+      {/* ── El primer folio ── */}
+      <div className="px-5 pt-6 pb-7">
+      <Clay className="p-5 a-up filete">
+        <SH title="Iniciar sesión" sub="Acceso individual por supervisor" />
+        <div className="flex flex-col gap-3.5 mt-4">
+          <Input label="Usuario" icon="user" value={user} autoCapitalize="none" spellCheck="false"
+            onChange={e => setUser(e.target.value)} placeholder="tu.usuario" />
+          <div>
+            <Label className="mb-1.5">Contraseña</Label>
+            <div className="clay-inset flex items-center gap-2.5 px-3 min-h-[48px]">
+              <Icon name="lock" size={18} className="text-ink-mute" />
+              <input type={ver ? "text" : "password"} value={pass} onChange={e => setPass(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && entrar()} placeholder="••••••••"
+                className="flex-1 bg-transparent outline-none text-[17px] font-medium text-ink placeholder:text-ink-faint min-w-0 py-2.5" />
+              <button onClick={() => setVer(v => !v)} className="text-ink-mute p-2 focus-ring"
+                aria-label={ver ? "Ocultar contraseña" : "Mostrar contraseña"}>
+                <Icon name={ver ? "eye-off" : "eye"} size={18} />
+              </button>
+            </div>
+          </div>
+
+          {err && (
+            <div className="bg-bad-soft filete px-3.5 py-2.5 flex items-start gap-2 a-dn">
+              <Icon name="alert" size={16} className="text-bad-ink mt-px shrink-0" />
+              <p className="text-[14px] font-bold text-bad-ink leading-snug">{err}</p>
+            </div>
+          )}
+
+          <Btn full size="lg" onClick={entrar} loading={load} iconRight={load ? null : "arrow-r"}>
+            {load ? "Verificando…" : "Ingresar"}
+          </Btn>
+
+          <div className="flex items-center gap-3 my-0.5">
+            <span className="h-px bg-paper-rule flex-1" />
+            <span className="rotulo">o</span>
+            <span className="h-px bg-paper-rule flex-1" />
+          </div>
+
+          <Btn full size="md" variant="white" disabled icon="cloud"
+            title="Disponible en la versión corporativa">
+            OneDrive corporativo
+          </Btn>
+        </div>
+      </Clay>
+
+      {/* Accesos de prueba */}
+      <Clay className="p-4 mt-4 a-up" style={{ animationDelay:"90ms" }}>
+        <Label className="mb-2.5">Accesos de prueba</Label>
+        <div className="flex flex-col gap-2">
+          {Object.entries(DEMO_CRED).map(([k, c]) => (
+            <button key={k} onClick={() => { setUser(c.username); setPass(c.password); setErr(null); }}
+              className="clay-inset clay-press flex items-center gap-3 px-3 min-h-[52px] py-2 text-left focus-ring w-full">
+              <Icon name={k === "supervisor" ? "shield" : k === "admin" ? "clipboard" : "chart"} size={18} className="text-navy-700 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[15px] font-bold text-ink leading-tight">{c.nombre}</p>
+                <p className="text-[13px] text-ink-mute tnum leading-tight mt-0.5">{c.username} · {c.password}</p>
+              </div>
+              <Icon name="chevron-r" size={16} className="text-ink-mute shrink-0" />
+            </button>
+          ))}
+        </div>
+      </Clay>
+
+      <p className="rotulo text-center mt-6">ASISA · Panel de Supervisión v3.0</p>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PASO 1 — Inicio de ronda: objetivo + geocerca (PRD §2)
+═══════════════════════════════════════════════════════════ */
+const TIPO_ICON = { Barrios:"home", Industrias:"factory", Locales:"store" };
+
+function Step1({ rd, setRD, onNext }) {
+  const { objetivos, visitasPorObj } = useApp();
+  const { coords, error: gpsErr, reintentar } = useDeviceGeolocation();
+  const [just, setJust] = useState(rd.justificacion || "");
+  const [busca,setBusca]= useState("");
+  const [tick, setTick] = useState(new Date());
+  const obj = rd.objetivo;
+
+  useEffect(() => { const t = setInterval(() => setTick(new Date()), 1000); return () => clearInterval(t); }, []);
+
+  // Distancia real al objetivo — deriva el estado del geocerco a partir del GPS del dispositivo, no de un valor simulado
+  const distancia = (coords && obj?.lat != null) ? distanciaMetros(coords.lat, coords.lng, obj.lat, obj.lng) : null;
+  const gps = gpsErr ? "error" : !coords ? "searching" : !obj ? "searching" : (distancia <= obj.radio_geocerca_m ? "inside" : "outside");
+
+  useEffect(() => {
+    if (!coords) return;
+    setRD(p => ({ ...p, deviceCoords: coords, gpsStatus: gps, distanciaGeocerca: distancia != null ? Math.round(distancia) : null }));
+  }, [coords, gps, distancia]);
+
+  const lista = useMemo(() => {
+    const q = busca.trim().toLowerCase();
+    return objetivos.filter(o => !q || o.nombre.toLowerCase().includes(q) || (o.direccion || "").toLowerCase().includes(q));
+  }, [objetivos, busca]);
+
+  const grupos = useMemo(() => {
+    const g = {};
+    for (const o of lista) (g[o.tipo] = g[o.tipo] || []).push(o);
+    return g;
+  }, [lista]);
+
+  const elegir = (o) => setRD(p => ({ ...p, objetivo: o }));
+
+  const puedePresencial = gps === "inside"  && obj;
+  const puedeRemota     = (gps === "outside" || gps === "error") && obj && just.trim().length >= 10;
+
+  const arrancar = (tipo) => {
+    setRD(p => ({ ...p, tipo, justificacion: tipo === "remota" ? just : null, horaInicio: new Date() }));
+    onNext();
+  };
+
+  const GPS_ERR_TXT = {
+    denied:      "Permiso de ubicación denegado",
+    unavailable: "Señal GPS no disponible",
+    timeout:     "Tiempo de espera agotado",
+    unsupported: "Este dispositivo no soporta GPS",
+  };
+
+  const GPS_UI = {
+    searching: { tone:"warn", txt:"Buscando señal GPS…",     icon:"pin" },
+    inside:    { tone:"good", txt:"Dentro del geocerco",     icon:"shield-ok" },
+    outside:   { tone:"bad",  txt:"Fuera del geocerco",      icon:"alert" },
+    error:     { tone:"bad",  txt: GPS_ERR_TXT[gpsErr] || "Error de GPS", icon:"alert" },
+  }[gps];
+
+  return (
+    <div className="flex flex-col gap-4 px-4 py-4 a-fade">
+      <SH title="Inicio de ronda" sub="Elegí el objetivo y validá tu presencia en el lugar" />
+
+      {/* Reloj + estado GPS */}
+      <Clay className="p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <Label>Hora del dispositivo</Label>
+            <p className="folio text-[38px] text-ink leading-none mt-1.5">{tick.toLocaleTimeString("es-AR")}</p>
+            <p className="text-[15px] text-ink-mute mt-1.5 first-letter:uppercase">{fmtLargo(tick)}</p>
+          </div>
+        </div>
+        <div className="clay-inset flex items-center gap-2.5 px-3.5 py-2.5 mt-3.5">
+          <Dot tone={GPS_UI.tone} pulse={gps === "searching"} />
+          <Icon name={GPS_UI.icon} size={17} className={cx("shrink-0",
+            gps === "inside" ? "text-good-ink" : (gps === "outside" || gps === "error") ? "text-bad-ink" : "text-warn-ink")} />
+          <span className={cx("text-[15px] font-bold",
+            gps === "inside" ? "text-good-ink" : (gps === "outside" || gps === "error") ? "text-bad-ink" : "text-warn-ink")}>{GPS_UI.txt}</span>
+          {obj && distancia != null && <span className="text-[14px] text-ink-mute ml-auto tnum shrink-0">{Math.round(distancia)} m · radio {obj.radio_geocerca_m} m</span>}
+        </div>
+        {coords && (
+          <p className="text-[14px] text-ink-mute mt-2 tnum">
+            {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)} · precisión ±{Math.round(coords.accuracy)} m
+          </p>
+        )}
+        {gps === "error" && (
+          <button onClick={reintentar} className="clay-btn w-full mt-3 min-h-[48px] text-[15px] font-bold uppercase flex items-center justify-center gap-2 bg-paper-hi text-ink border border-paper-rule border-b-[3px] border-b-ink-soft" style={{ letterSpacing:".07em" }}>
+            <Icon name="refresh" size={16} /> Reintentar ubicación
+          </button>
+        )}
+      </Clay>
+
+      {/* Selector de objetivo */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <Label>Objetivo de la ronda</Label>
+          {obj && <Badge tone="brand" icon="check">Seleccionado</Badge>}
+        </div>
+        <div className="clay-inset flex items-center gap-2.5 px-3.5 py-2.5 mb-2.5">
+          <Icon name="search" size={16} className="text-ink-faint" />
+          <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar objetivo o dirección…"
+            className="flex-1 bg-transparent outline-none text-[16px] font-medium text-ink placeholder:text-ink-faint min-w-0 py-2" />
+          {busca && <button onClick={() => setBusca("")} className="text-ink-faint p-0.5" aria-label="Limpiar"><Icon name="x" size={15} /></button>}
+        </div>
+
+        {lista.length === 0 && <Empty icon="search" title="Sin resultados" sub="Probá con otro nombre o dirección." />}
+
+        <div className="flex flex-col gap-3">
+          {Object.entries(grupos).map(([tipo, arr]) => (
+            <div key={tipo}>
+              <div className="flex items-center gap-1.5 mb-1.5 px-1">
+                <Icon name={TIPO_ICON[tipo] || "building"} size={13} className="text-ink-faint" />
+                <span className="rotulo">{tipo}</span>
+              </div>
+              <div className="flex flex-col gap-2">
+                {arr.map(o => {
+                  const hechas = visitasPorObj[o.id] ?? o.visitas_mes ?? 0;
+                  const meta   = o.visitas_meta_mes || 0;
+                  const sel    = obj?.id === o.id;
+                  const cumple = meta > 0 && hechas >= meta;
+                  return (
+                    <button key={o.id} onClick={() => elegir(o)}
+                      className={cx("clay-press text-left p-3.5 rounded-[20px] transition-all duration-200 focus-ring",
+                        sel ? "bg-gradient-to-br from-brand-500 to-brand-700 text-paper-hi shadow-lg" : "clay")}>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className={cx("text-sm font-black leading-tight", sel ? "text-paper-hi" : "text-ink")}>{o.nombre}</p>
+                          <p className={cx("text-[10px] mt-0.5 truncate", sel ? "text-brand-100" : "text-ink-faint")}>
+                            {SUBTIPO_LABEL[o.subtipo] || o.tipo}{o.direccion ? ` · ${o.direccion}` : ""}
+                          </p>
+                        </div>
+                        {sel
+                          ? <span className="w-6 h-6 rounded-full bg-paper-hi/25 flex items-center justify-center shrink-0"><Icon name="check" size={14} strokeWidth={3} /></span>
+                          : <span className={cx("text-[10px] font-black tnum px-2 py-1 rounded-full shrink-0", cumple ? "bg-good-soft text-good-ink" : "bg-brand-50 text-brand-700")}>{hechas}/{meta}</span>}
+                      </div>
+                      {/* Cumplimiento mensual del objetivo (PRD §7) */}
+                      <div className="mt-2.5">
+                        <div className={cx("w-full rounded-full overflow-hidden", sel ? "bg-paper-hi/25" : "bg-paper-bed")} style={{ height:6 }}>
+                          <div className="h-full rounded-full transition-all duration-700"
+                            style={{ width:`${meta ? Math.min(hechas / meta * 100, 100) : 0}%`,
+                                     background: sel ? "#F5F6F7" : cumple ? "#1F6B4A" : "#2D4175" }} />
+                        </div>
+                        <p className={cx("text-[10px] mt-1 font-semibold", sel ? "text-brand-100" : "text-ink-faint")}>
+                          {hechas} de {meta} visitas este mes
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {!obj && gps !== "searching" && (
+        <div className="bg-warn-soft rounded-[16px] px-4 py-3 flex items-center gap-2 a-up">
+          <Icon name="info" size={15} className="text-warn-ink" />
+          <p className="text-xs font-bold text-warn-ink">Seleccioná un objetivo para continuar.</p>
+        </div>
+      )}
+
+      {gps === "inside" && (
+        <Btn full size="xl" variant="success" icon="shield-ok" disabled={!puedePresencial}
+          onClick={() => arrancar("presencial")}>
+          Iniciar checklist presencial
+        </Btn>
+      )}
+
+      {(gps === "outside" || gps === "error") && (
+        <div className="flex flex-col gap-3 a-up">
+          <Clay className="p-4" tint="linear-gradient(135deg,#F1DFDF,#F1DFDF)">
+            <div className="flex items-start gap-2.5">
+              <Icon name="alert" size={18} className="text-bad-ink mt-px" />
+              <div>
+                <p className="text-sm font-black text-bad-ink">Modo presencial bloqueado</p>
+                <p className="text-xs text-bad-ink/80 mt-1 leading-relaxed">
+                  {gps === "error"
+                    ? "No se pudo obtener tu ubicación real. Podés registrar una supervisión remota justificando el motivo."
+                    : "Estás fuera del geocerco. Podés registrar una supervisión remota justificando el motivo."}
+                </p>
+              </div>
+            </div>
+          </Clay>
+          <Textarea label="Justificación obligatoria" value={just} onChange={e => setJust(e.target.value)}
+            rows={3} placeholder="Ej: Superviso por cámara desde la central a pedido del cliente…"
+            hint={<p className={cx("text-[11px] font-bold mt-1.5", just.trim().length >= 10 ? "text-good-ink" : "text-ink-faint")}>
+              {just.trim().length >= 10 ? `${just.trim().length} caracteres` : `Faltan ${10 - just.trim().length} caracteres`}
+            </p>} />
+          <Btn full size="xl" variant="warn" icon="radio" disabled={!puedeRemota} onClick={() => arrancar("remota")}>
+            Iniciar supervisión remota
+          </Btn>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PERFIL DEL VIGILADOR — 4 pestañas (PRD §9)
+═══════════════════════════════════════════════════════════ */
+const ESTADO_TONE = { activo:"good", suspendido:"bad", "baja temporal":"warn", baja:"warn" };
+
+function PerfilVigilador({ v, historial = [], sanciones = [], incidencias = [] }) {
+  const [tab, setTab] = useState("principal");
+  const dCred = diasHasta(v.credencial_venc);
+  const dLic  = diasHasta(v.licencia_venc);
+
+  const alertas = [];
+  if (dCred != null && dCred <= 30) alertas.push({ txt:`La credencial vence en ${dCred} días`, tone:"bad" });
+  if (v.es_chofer && dLic != null && dLic <= 30) alertas.push({ txt:`El carnet de conducir vence en ${dLic} días`, tone:"warn" });
+
+  return (
+    <div className="flex flex-col gap-3.5">
+      {/* Cabecera */}
+      <div className="flex items-center gap-3.5">
+        <Avatar nombre={v.nombre} size={60} src={v.foto_url} />
+        <div className="min-w-0 flex-1">
+          <p className="text-[15px] font-black text-ink leading-tight">{v.nombre}</p>
+          <p className="text-xs text-ink-mute mt-0.5">{v.puesto}</p>
+          <div className="flex gap-1.5 mt-1.5 flex-wrap">
+            <Badge tone="brand">Legajo {v.legajo}</Badge>
+            <Badge tone={ESTADO_TONE[v.estado] || "gray"} icon={v.estado === "activo" ? "check" : "alert"}>
+              {v.estado?.charAt(0).toUpperCase() + v.estado?.slice(1)}
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      {alertas.map((a, i) => (
+        <div key={i} className={cx("rounded-[15px] px-3.5 py-2.5 flex items-start gap-2",
+          a.tone === "bad" ? "bg-bad-soft" : "bg-warn-soft")}>
+          <Icon name="alert" size={15} className={a.tone === "bad" ? "text-bad-ink" : "text-warn-ink"} />
+          <p className={cx("text-[11px] font-bold leading-snug", a.tone === "bad" ? "text-bad-ink" : "text-warn-ink")}>
+            {a.txt} · se notifica a RRHH automáticamente
+          </p>
+        </div>
+      ))}
+
+      <Segmented value={tab} onChange={setTab} options={[
+        ["principal","Principales"], ["personal","Personales"], ["caract","Caract."], ["actas","Actas"],
+      ]} />
+
+      <Clay className="p-4 a-fade">
+        {tab === "principal" && (
+          <div>
+            <Row k="Nombre completo"   v={v.nombre} />
+            <Row k="Nº de legajo"      v={v.legajo} />
+            <Row k="DNI"               v={v.dni || "—"} />
+            <Row k="Estado"            v={v.estado} tone={ESTADO_TONE[v.estado] || "gray"} />
+            <Row k="Objetivo asignado" v={v.objetivo_asignado || "Sin asignar"} last />
+          </div>
+        )}
+
+        {tab === "personal" && (
+          <div>
+            <Row k="Teléfono"          v={v.telefono || "—"} />
+            <Row k="Domicilio"         v={v.domicilio || "—"} />
+            <Row k="Fecha de nac."     v={v.fecha_nacimiento ? fmtFecha(v.fecha_nacimiento) : "—"} />
+            <Row k="Nacionalidad"      v={v.nacionalidad || "—"} last />
+          </div>
+        )}
+
+        {tab === "caract" && (
+          <div>
+            <Row k="Nº credencial"     v={v.credencial_numero || "—"} />
+            <Row k="Venc. credencial"
+                 v={v.credencial_venc ? `${fmtFecha(v.credencial_venc)}${dCred != null ? ` · ${dCred}d` : ""}` : "—"}
+                 tone={dCred != null && dCred <= 30 ? "bad" : "good"} />
+            <Row k="Habilitado chofer" v={v.es_chofer ? "Sí" : "No"} tone={v.es_chofer ? "good" : "gray"} />
+            {v.es_chofer && <Row k="Categoría licencia" v={v.licencia_cat || "—"} tone="brand" />}
+            {v.es_chofer && <Row k="Venc. licencia"
+                 v={v.licencia_venc ? `${fmtFecha(v.licencia_venc)}${dLic != null ? ` · ${dLic}d` : ""}` : "—"}
+                 tone={dLic != null && dLic <= 30 ? "warn" : "good"} />}
+            <Row k="Portación de arma" v={v.armado ? "Sí" : "No"} tone={v.armado ? "tang" : "gray"} />
+            <Row k="Tiene radio"       v={v.tiene_radio ? "Sí" : "No"} tone={v.tiene_radio ? "good" : "gray"} />
+            <Row k="Convenio"          v={v.convenio || "UPSRA"} tone="plum" last />
+          </div>
+        )}
+
+        {tab === "actas" && (
+          <div className="flex flex-col gap-4">
+            <div>
+              <Label className="mb-2">Sanciones registradas</Label>
+              {sanciones.length === 0
+                ? <p className="text-xs text-ink-faint py-1">Sin sanciones registradas.</p>
+                : sanciones.map((s, i) => (
+                  <div key={i} className={cx("flex items-start gap-2.5 py-2.5", i < sanciones.length - 1 && "border-b border-paper-rule")}>
+                    <Badge tone={{ activa:"bad", cumplida:"good", apelada:"warn" }[s.estado] || "gray"}>{s.estado}</Badge>
+                    <div className="min-w-0">
+                      <p className="text-[12px] text-ink font-semibold leading-snug">{s.descripcion}</p>
+                      <p className="text-[10px] text-ink-faint mt-0.5">{fmtFecha(s.fecha)}</p>
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            <div>
+              <Label className="mb-2">Historial de actas</Label>
+              {historial.length === 0
+                ? <p className="text-xs text-ink-faint py-1">Sin actas previas.</p>
+                : historial.map((h, i) => (
+                  <div key={i} className={cx("flex items-start gap-2.5 py-2.5", i < historial.length - 1 && "border-b border-paper-rule")}>
+                    <Badge tone={h.tipo === "Sanción" ? "bad" : "warn"}>{h.tipo}</Badge>
+                    <div className="min-w-0">
+                      <p className="text-[12px] text-ink font-semibold leading-snug">{h.descripcion || h.desc}</p>
+                      <p className="text-[10px] text-ink-faint mt-0.5">{fmtFecha(h.fecha)}</p>
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            {incidencias.length > 0 && (
+              <div>
+                <Label className="mb-2">Incidencias asociadas</Label>
+                {incidencias.map((t, i) => (
+                  <div key={i} className={cx("py-2.5", i < incidencias.length - 1 && "border-b border-paper-rule")}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono font-bold text-ink-mute">{t.codigo_ticket}</span>
+                      <Badge tone={t.estado === "ABIERTO" ? "bad" : "good"}>{t.estado}</Badge>
+                    </div>
+                    <p className="text-[12px] text-ink font-semibold leading-snug mt-1">{t.descripcion}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </Clay>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PASO 2 — Vigiladores a inspeccionar (múltiples · PRD §2.1)
+═══════════════════════════════════════════════════════════ */
+function Step2({ rd, setRD, onNext, onBack }) {
+  const { vigiladores, apiStatus, apiFetch } = useApp();
+  const [legajo, setLegajo] = useState("");
+  const [error,  setError]  = useState(null);
+  const [busy,   setBusy]   = useState(false);
+  const [perfil, setPerfil] = useState(null);
+  const sel = rd.vigiladores || [];
+
+  const agregar = async () => {
+    setError(null);
+    const n = legajo.trim();
+    if (!n) return;
+    if (sel.some(v => String(v.legajo) === n)) { setError("Ese vigilador ya está en la lista."); setLegajo(""); return; }
+
+    setBusy(true);
+    let encontrado = vigiladores.find(v => String(v.legajo) === n);
+
+    // Con API conectada trae el perfil completo (sanciones, historial, incidencias)
+    if (apiStatus === "connected") {
+      try {
+        const res  = await apiFetch(`/api/vigilador/${n}`);
+        const data = await res.json();
+        if (data.ok) encontrado = { ...data.vigilador, _historial: data.historial, _sanciones: data.sanciones, _incidencias: data.incidencias };
+      } catch { /* cae al catálogo local */ }
+    }
+    setBusy(false);
+
+    if (!encontrado) { setError(`No se encontró el legajo ${n}.`); return; }
+    setRD(p => ({ ...p, vigiladores: [...(p.vigiladores || []), encontrado] }));
+    setLegajo("");
+  };
+
+  const quitar = (id) => setRD(p => ({
+    ...p,
+    vigiladores: (p.vigiladores || []).filter(v => v.id !== id),
+    firmas: Object.fromEntries(Object.entries(p.firmas || {}).filter(([k]) => String(k) !== String(id))),
+  }));
+
+  const datosPerfil = (v) => ({
+    historial:   v._historial   || SEED_HISTORIAL[v.legajo] || [],
+    sanciones:   v._sanciones   || SEED_SANCIONES[v.legajo] || [],
+    incidencias: v._incidencias || [],
+  });
+
+  return (
+    <div className="flex flex-col gap-4 px-4 py-4 a-fade">
+      <SH title="Vigiladores" sub={`Cargá el legajo de cada persona a inspeccionar en ${cortar(rd.objetivo?.nombre || "el objetivo", 26)}`} />
+
+      <Clay className="p-4">
+        <Label className="mb-2">Número de legajo</Label>
+        <div className="flex gap-2">
+          <div className="clay-inset flex items-center gap-2.5 px-3.5 py-3 flex-1 min-w-0">
+            <Icon name="badge" size={17} className="text-ink-faint" />
+            <input type="number" inputMode="numeric" value={legajo}
+              onChange={e => { setLegajo(e.target.value); setError(null); }}
+              onKeyDown={e => e.key === "Enter" && agregar()} placeholder="1024"
+              className="flex-1 bg-transparent outline-none text-xl font-black text-ink tnum placeholder:text-ink-faint placeholder:font-semibold min-w-0" />
+          </div>
+          <Btn onClick={agregar} loading={busy} icon="user-plus" className="px-4">Sumar</Btn>
+        </div>
+        {error && <p className="text-[11px] text-bad-ink font-bold mt-2 flex items-center gap-1"><Icon name="alert" size={12} />{error}</p>}
+        <p className="text-[10px] text-ink-faint mt-2">Podés inspeccionar varios vigiladores en la misma ronda.</p>
+      </Clay>
+
+      {sel.length === 0 ? (
+        <Empty icon="users" title="Todavía no cargaste vigiladores"
+          sub="Ingresá un número de legajo para traer sus datos desde el sistema." />
+      ) : (
+        <div className="flex flex-col gap-2.5">
+          <Label>{sel.length} vigilador{sel.length > 1 ? "es" : ""} en esta ronda</Label>
+          {sel.map((v, i) => {
+            const dCred = diasHasta(v.credencial_venc);
+            const alerta = (dCred != null && dCred <= 30) || v.estado !== "activo";
+            return (
+              <Clay key={v.id} className="p-3.5 a-up" style={{ animationDelay:`${i * 60}ms` }}>
+                <div className="flex items-center gap-3">
+                  <Avatar nombre={v.nombre} size={46} src={v.foto_url} tone={alerta ? "warn" : "brand"} />
+                  <button onClick={() => setPerfil(v)} className="flex-1 min-w-0 text-left focus-ring rounded-lg">
+                    <p className="text-[13px] font-black text-ink leading-tight truncate">{v.nombre}</p>
+                    <p className="text-[10px] text-ink-mute mt-0.5 truncate">{v.puesto} · Legajo {v.legajo}</p>
+                    <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                      <Badge tone={ESTADO_TONE[v.estado] || "gray"}>{v.estado}</Badge>
+                      {dCred != null && dCred <= 30 && <Badge tone="bad" icon="alert">Credencial {dCred}d</Badge>}
+                      {v.es_chofer && <Badge tone="brand" icon="car">Chofer</Badge>}
+                    </div>
+                  </button>
+                  <div className="flex flex-col gap-1.5 shrink-0">
+                    <button onClick={() => setPerfil(v)} aria-label={`Ver perfil de ${v.nombre}`}
+                      className="clay-sm clay-press w-9 h-9 rounded-[12px] flex items-center justify-center text-brand-600 focus-ring">
+                      <Icon name="eye" size={15} />
+                    </button>
+                    <button onClick={() => quitar(v.id)} aria-label={`Quitar a ${v.nombre}`}
+                      className="clay-sm clay-press w-9 h-9 rounded-[12px] flex items-center justify-center text-bad focus-ring">
+                      <Icon name="trash" size={15} />
+                    </button>
+                  </div>
+                </div>
+              </Clay>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="flex gap-2.5 mt-1">
+        <Btn variant="white" icon="arrow-l" onClick={onBack} className="px-4">Atrás</Btn>
+        <Btn full size="lg" disabled={sel.length === 0} onClick={onNext} iconRight="arrow-r">
+          Continuar al checklist
+        </Btn>
+      </div>
+
+      <Sheet open={!!perfil} onClose={() => setPerfil(null)} title="Perfil del vigilador" sub="Datos del legajo en el sistema">
+        {perfil && <PerfilVigilador v={perfil} {...datosPerfil(perfil)} />}
+      </Sheet>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PASO 3 — Checklist Likert por secciones (PRD §3 y §4)
+═══════════════════════════════════════════════════════════ */
+function ItemChecklist({ def, resp, onEstado, onAbrirObs }) {
+  const [criterio, setCriterio] = useState(false);
+  const timer = useRef(null);
+
+  // Long-press abre el criterio completo; el botón "i" hace lo mismo de forma accesible
+  const press   = () => { timer.current = setTimeout(() => setCriterio(true), 480); };
+  const release = () => { clearTimeout(timer.current); };
+  useEffect(() => () => clearTimeout(timer.current), []);
+
+  const estado = resp?.estado || null;
+  const obs    = [...(resp?.obsPred || []), ...(resp?.obsLibre ? [resp.obsLibre] : [])];
+
+  /* Cada ítem es un asiento del libro: se apoya en el renglón y, si sale
+     mal, toma el filete bermellón del margen. El estado lo lleva la marca
+     (✓ · △ · ✕), no el tono: nada depende sólo del color. */
+  const MARCA = { B:"check", R:"alert", M:"x" };
+
+  return (
+    <div className={cx("bg-paper border-b border-paper-rule transition-colors duration-150",
+      estado === "M" ? "bg-bad-soft filete" : estado === "R" ? "bg-warn-soft" : "")}>
+      <div className="px-3.5 py-3">
+        <div className="flex items-start gap-2 mb-3">
+          <p className="flex-1 text-[16px] font-semibold text-ink leading-snug no-select"
+            onMouseDown={press} onMouseUp={release} onMouseLeave={release}
+            onTouchStart={press} onTouchEnd={release} onTouchCancel={release}>
+            {def.titulo_corto}
+          </p>
+          <button onClick={() => setCriterio(c => !c)} aria-label="Ver criterio de evaluación"
+            className={cx("shrink-0 p-2 -m-1 focus-ring transition-colors", criterio ? "text-navy-700" : "text-ink-mute")}>
+            <Icon name="info" size={17} />
+          </button>
+        </div>
+
+        {criterio && (
+          <div className="clay-inset px-3 py-2.5 mb-3 a-dn">
+            <p className="text-[15px] text-ink-soft leading-relaxed">{def.criterio_completo}</p>
+            <p className="rotulo mt-2">Área responsable · {def.area_responsable}</p>
+          </div>
+        )}
+
+        {/* Tres teclas cuadradas: marca arriba, palabra abajo, siempre ambas */}
+        <div className="flex">
+          {["B","R","M"].map(k => {
+            const v = VALOR[k], on = estado === k;
+            const bg = { B:"bg-good", R:"bg-warn", M:"bg-bad" }[k];
+            return (
+              <button key={k} onClick={() => onEstado(k)}
+                aria-pressed={on} aria-label={`${def.titulo_corto}: ${v.label}`}
+                className={cx("clay-btn flex-1 min-h-[52px] flex flex-col items-center justify-center gap-0.5 border border-paper-rule -ml-px first:ml-0",
+                  on ? cx(bg, "text-paper-hi border-transparent") : "bg-paper-hi text-ink-mute")}>
+                <Icon name={MARCA[k]} size={18} strokeWidth={on ? 3 : 2.2} />
+                <span className="text-[11px] font-bold uppercase" style={{ letterSpacing:".08em" }}>{v.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {(estado === "R" || estado === "M") && (
+        <button onClick={onAbrirObs}
+          className="w-full px-3.5 py-3 min-h-[48px] border-t border-ink/10 text-left clay-press focus-ring">
+          {obs.length === 0 ? (
+            <div className="flex items-center gap-2">
+              <Icon name="alert" size={16} className={estado === "M" ? "text-bad-ink" : "text-warn-ink"} />
+              <span className={cx("text-[15px] font-bold", estado === "M" ? "text-bad-ink" : "text-warn-ink")}>
+                Registrá la observación
+              </span>
+              <Icon name="chevron-r" size={16} className="ml-auto text-ink-mute" />
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <Icon name="ticket" size={13} className={estado === "M" ? "text-bad-ink" : "text-warn-ink"} />
+                <span className={cx("rotulo", estado === "M" ? "text-bad-ink" : "text-warn-ink")}>Genera ticket</span>
+                <Icon name="chevron-r" size={15} className="ml-auto text-ink-mute" />
+              </div>
+              <p className="text-[15px] text-ink-soft font-medium leading-snug">{obs.join(" · ")}</p>
+            </div>
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function Step3({ rd, setRD, onNext, onBack }) {
+  const { checklistDefs, secciones, observaciones, ajustes } = useApp();
+  const [abierta, setAbierta] = useState(["seguridad"]);
+  const [obsItem, setObsItem] = useState(null);
+  const [tmpPred, setTmpPred] = useState([]);
+  const [tmpLibre,setTmpLibre]= useState("");
+
+  const respuestas = rd.respuestas || {};
+
+  // Checklist propio del objetivo: plantilla del tipo + sus ajustes (PRD §6)
+  const items = useMemo(
+    () => resolverChecklist(rd.objetivo, checklistDefs, ajustes),
+    [checklistDefs, ajustes, rd.objetivo]
+  );
+
+  const porSeccion = useMemo(() => {
+    const g = {};
+    for (const s of secciones) g[s.clave] = items.filter(i => i.seccion_clave === s.clave).sort((a,b) => a.orden - b.orden);
+    return g;
+  }, [items, secciones]);
+
+  const total     = items.length;
+  const completos = items.filter(i => respuestas[i.id]?.estado).length;
+  const pendientes= total - completos;
+
+  // Un ítem R/M sin observación bloquea el avance (PRD §3.1)
+  const sinObs = items.filter(i => {
+    const r = respuestas[i.id];
+    return (r?.estado === "R" || r?.estado === "M") && !(r.obsPred?.length || r.obsLibre?.trim());
+  });
+
+  const tickets = items.filter(i => ["R","M"].includes(respuestas[i.id]?.estado));
+
+  const setEstado = (item, estado) => {
+    setRD(p => {
+      const prev = p.respuestas?.[item.id] || {};
+      const next = estado === "B"
+        ? { estado:"B", obsPred:[], obsLibre:"" }
+        : { ...prev, estado };
+      return { ...p, respuestas: { ...(p.respuestas || {}), [item.id]: next } };
+    });
+    if (estado !== "B") abrirObs(item, estado);
+  };
+
+  const abrirObs = (item, estadoForzado) => {
+    const r = respuestas[item.id] || {};
+    setTmpPred(r.obsPred || []); setTmpLibre(r.obsLibre || "");
+    setObsItem({ ...item, _estado: estadoForzado || r.estado });
+  };
+
+  const guardarObs = () => {
+    setRD(p => ({
+      ...p,
+      respuestas: {
+        ...(p.respuestas || {}),
+        [obsItem.id]: { ...(p.respuestas?.[obsItem.id] || {}), obsPred: tmpPred, obsLibre: tmpLibre.trim() },
+      },
+    }));
+    setObsItem(null);
+  };
+
+  const toggleSec = (clave) => setAbierta(a => a.includes(clave) ? a.filter(x => x !== clave) : [...a, clave]);
+
+  // Observaciones sugeridas: primero el área del ítem, luego el resto
+  const obsAgrupadas = useMemo(() => {
+    if (!obsItem) return [];
+    const area = obsItem.area_responsable;
+    const g = {};
+    for (const o of observaciones) (g[o.area] = g[o.area] || []).push(o);
+    return Object.entries(g).sort(([a],[b]) => (a === area ? -1 : b === area ? 1 : a.localeCompare(b)));
+  }, [obsItem, observaciones]);
+
+  return (
+    <div className="flex flex-col gap-3.5 px-4 py-4 a-fade">
+      <SH title="Checklist de ronda"
+        sub={`${cortar(rd.objetivo?.nombre || "Objetivo", 30)} · ${SUBTIPO_LABEL[rd.objetivo?.subtipo] || ""} · ${total} ítems`} />
+
+      {/* Progreso */}
+      <Clay className="p-4">
+        <div className="flex items-center justify-between mb-2.5">
+          <div>
+            <p className="text-[13px] font-black text-ink">{completos} de {total} ítems evaluados</p>
+            <p className="text-[10px] text-ink-faint mt-0.5">
+              {pendientes > 0 ? `Faltan ${pendientes}` : "Checklist completo"}
+              {tickets.length > 0 && ` · ${tickets.length} incidencia${tickets.length > 1 ? "s" : ""}`}
+            </p>
+          </div>
+          <span className="text-2xl font-black text-brand-600 tnum">{total ? Math.round(completos / total * 100) : 0}%</span>
+        </div>
+        <Bar value={completos} max={total} color="#2D4175" height={9} />
+      </Clay>
+
+      {/* Secciones acordeón */}
+      {secciones.map(s => {
+        const arr = porSeccion[s.clave] || [];
+        if (!arr.length) return null;
+        const th   = SECCION_THEME[s.color] || SECCION_THEME.azul;
+        const done = arr.filter(i => respuestas[i.id]?.estado).length;
+        const open = abierta.includes(s.clave);
+        const mal  = arr.filter(i => ["R","M"].includes(respuestas[i.id]?.estado)).length;
+        return (
+          <div key={s.clave}>
+            <button onClick={() => toggleSec(s.clave)} aria-expanded={open}
+              className="clay w-full flex items-center gap-3 p-3.5 clay-press focus-ring">
+              <span className="w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0"
+                style={{ background:th.soft, color:th.ink }}>
+                <Icon name={{ seguridad:"shield", habilidades:"target", logistica:"layers", rrhh:"users" }[s.clave] || "clipboard"} size={19} />
+              </span>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-[17px] font-bold text-ink leading-tight">{s.nombre}</p>
+                <p className="text-[14px] text-ink-mute mt-1 tnum">
+                  {done}/{arr.length} evaluados{mal > 0 ? ` · ${mal} con observación` : ""}
+                </p>
+              </div>
+              {done === arr.length
+                ? <span className="w-6 h-6 rounded-full bg-good-soft text-good-ink flex items-center justify-center shrink-0"><Icon name="check" size={13} strokeWidth={3} /></span>
+                : <span className="folio text-[14px] px-2 py-1 shrink-0 border" style={{ background:th.soft, color:th.ink, borderColor:th.ink }}>{arr.length - done}</span>}
+              <Icon name="chevron" size={16} className={cx("text-ink-faint transition-transform shrink-0", open && "rotate-180")} />
+            </button>
+
+            {open && (
+              <div className="mt-2.5 border-t-2 border-ink">
+                {arr.map((def, i) => (
+                  <div key={def.id} className="a-up" style={{ animationDelay:`${i * 30}ms` }}>
+                    <ItemChecklist def={def} resp={respuestas[def.id]}
+                      onEstado={k => setEstado(def, k)} onAbrirObs={() => abrirObs(def)} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* Tickets que se van a generar */}
+      {tickets.length > 0 && (
+        <Clay className="p-4 a-up" tint="linear-gradient(135deg,#F0E7CF,#F0E7CF)">
+          <div className="flex items-center gap-2 mb-2">
+            <Icon name="ticket" size={16} className="text-tang-ink" />
+            <p className="text-[12px] font-black text-tang-ink">
+              {tickets.length} ticket{tickets.length > 1 ? "s" : ""} se generará{tickets.length > 1 ? "n" : ""} al guardar
+            </p>
+          </div>
+          <div className="flex flex-col gap-1">
+            {tickets.map(t => {
+              const r = respuestas[t.id];
+              const area = observaciones.find(o => o.texto === r.obsPred?.[0])?.area || t.area_responsable;
+              return (
+                <div key={t.id} className="flex items-center gap-2">
+                  <Badge tone={r.estado === "M" ? "bad" : "warn"}>{VALOR[r.estado].label}</Badge>
+                  <span className="text-[11px] text-ink-soft font-semibold truncate flex-1">{t.titulo_corto}</span>
+                  <span className="text-[10px] text-ink-faint font-bold shrink-0">{area}</span>
+                </div>
+              );
+            })}
+          </div>
+        </Clay>
+      )}
+
+      {sinObs.length > 0 && (
+        <div className="bg-warn-soft rounded-[16px] px-4 py-3 flex items-start gap-2">
+          <Icon name="alert" size={15} className="text-warn-ink mt-px" />
+          <p className="text-[11px] font-bold text-warn-ink leading-snug">
+            {sinObs.length} ítem{sinObs.length > 1 ? "s" : ""} marcado{sinObs.length > 1 ? "s" : ""} como Regular o Malo
+            sin observación. Tocá la fila para completarla.
+          </p>
+        </div>
+      )}
+
+      <div className="flex gap-2.5">
+        <Btn variant="white" icon="arrow-l" onClick={onBack} className="px-4">Atrás</Btn>
+        <Btn full size="lg" disabled={pendientes > 0 || sinObs.length > 0} onClick={onNext} iconRight="arrow-r">
+          {pendientes > 0 ? `Faltan ${pendientes} ítems` : sinObs.length > 0 ? "Completá las observaciones" : "Continuar a evidencia"}
+        </Btn>
+      </div>
+
+      {/* Hoja de observaciones predefinidas */}
+      <Sheet open={!!obsItem} onClose={() => setObsItem(null)}
+        title={obsItem?.titulo_corto} sub={`Valoración ${obsItem ? VALOR[obsItem._estado]?.label : ""} · elegí la observación que corresponda`}>
+        {obsItem && (
+          <div className="flex flex-col gap-4">
+            <div className="clay-inset px-3.5 py-3">
+              <p className="text-[11px] text-ink-soft leading-relaxed">{obsItem.criterio_completo}</p>
+            </div>
+
+            {obsAgrupadas.map(([area, arr]) => (
+              <div key={area}>
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge tone={AREA_THEME[area]?.tone || "gray"}>{area}</Badge>
+                  {area === obsItem.area_responsable && <span className="text-[10px] font-bold text-ink-faint">sugerida</span>}
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  {arr.map(o => {
+                    const on = tmpPred.includes(o.texto);
+                    return (
+                      <button key={o.texto}
+                        onClick={() => setTmpPred(p => on ? p.filter(x => x !== o.texto) : [...p, o.texto])}
+                        className={cx("clay-press flex items-center gap-2.5 px-3.5 py-3 rounded-[15px] text-left transition-all focus-ring",
+                          on ? "bg-brand-600 text-paper-hi" : "clay-sm text-ink-soft")}>
+                        <span className={cx("w-4.5 h-4.5 rounded-md flex items-center justify-center shrink-0 border-2",
+                          on ? "bg-paper-hi/25 border-paper-hi/50" : "border-paper-rule")} style={{ width:18, height:18 }}>
+                          {on && <Icon name="check" size={11} strokeWidth={3.5} />}
+                        </span>
+                        <span className="text-[12px] font-semibold leading-snug">{o.texto}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+            <Textarea label="Otra observación" value={tmpLibre} onChange={e => setTmpLibre(e.target.value)} rows={3}
+              placeholder="Describí la situación si no está en el listado…" />
+
+            <div className="flex gap-2.5 pb-1">
+              <Btn variant="white" onClick={() => setObsItem(null)} className="px-5">Cancelar</Btn>
+              <Btn full size="lg" icon="check" disabled={!tmpPred.length && !tmpLibre.trim()} onClick={guardarObs}>
+                Guardar observación
+              </Btn>
+            </div>
+          </div>
+        )}
+      </Sheet>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PASO 4 — Evidencia fotográfica con marca de agua (PRD §8.5)
+═══════════════════════════════════════════════════════════ */
+function Step4({ rd, setRD, onNext, onBack, supervisor }) {
+  const [cargando, setCargando] = useState(false);
+  const [ver, setVer] = useState(null);
+  const inputRef = useRef(null);
+  const fotos = rd.fotos || [];
+
+  const tomar = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setCargando(true);
+    const now = new Date();
+
+    // GPS real al momento de la captura; si no hay señal, cae a la última posición conocida del dispositivo (paso 1)
+    let lat = rd.deviceCoords?.lat, lng = rd.deviceCoords?.lng;
+    if (navigator.geolocation) {
+      try {
+        const pos = await new Promise((res, rej) =>
+          navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true, timeout: 8000, maximumAge: 4000 }));
+        lat = pos.coords.latitude; lng = pos.coords.longitude;
+      } catch { /* se mantiene el fallback */ }
+    }
+
+    for (const file of files) {
+      const dataUrl = await new Promise(res => {
+        const fr = new FileReader();
+        fr.onload = () => res(fr.result);
+        fr.readAsDataURL(file);
+      });
+      const estampada = await estamparFoto(dataUrl, {
+        l1: `${fmtFecha(now)} · ${now.toLocaleTimeString("es-AR")}`,
+        l2: lat != null ? `GPS ${lat.toFixed(5)}, ${lng.toFixed(5)}` : "GPS no disponible",
+        l3: `${supervisor} · ${rd.objetivo?.nombre || ""}`,
+      });
+      setRD(p => ({ ...p, fotos: [...(p.fotos || []), { dataUrl: estampada, lat, lng, ts: now.toISOString() }] }));
+    }
+    setCargando(false);
+    e.target.value = "";
+  };
+
+  const quitar = (i) => setRD(p => ({ ...p, fotos: (p.fotos || []).filter((_, k) => k !== i) }));
+
+  return (
+    <div className="flex flex-col gap-4 px-4 py-4 a-fade">
+      <SH title="Evidencia fotográfica" sub="Opcional · cada foto se sella con fecha, hora, GPS y supervisor" />
+
+      <input ref={inputRef} type="file" accept="image/*" capture="environment" multiple onChange={tomar} className="hidden" />
+
+      <button onClick={() => inputRef.current?.click()} disabled={cargando}
+        className="clay-btn w-full py-8 rounded-clay2 bg-paper-hi flex flex-col items-center gap-2.5 focus-ring">
+        <span className="w-16 h-16 rounded-full bg-brand-50 flex items-center justify-center text-brand-600">
+          <Icon name={cargando ? "refresh" : "camera"} size={28} className={cargando ? "a-spin" : ""} />
+        </span>
+        <div className="text-center">
+          <p className="text-sm font-black text-ink">{cargando ? "Procesando…" : "Capturar evidencia"}</p>
+          <p className="text-[11px] text-ink-faint mt-0.5">Cámara o galería · se puede sumar más de una</p>
+        </div>
+      </button>
+
+      {fotos.length > 0 && (
+        <div>
+          <Label className="mb-2">{fotos.length} foto{fotos.length > 1 ? "s" : ""} adjunta{fotos.length > 1 ? "s" : ""}</Label>
+          <div className="grid grid-cols-2 gap-2.5">
+            {fotos.map((f, i) => (
+              <div key={i} className="clay p-1.5 a-pop relative overflow-hidden" style={{ animationDelay:`${i * 60}ms` }}>
+                <button onClick={() => setVer(f)} className="block w-full focus-ring rounded-[16px] overflow-hidden">
+                  <img src={f.dataUrl} alt={`Evidencia ${i + 1}`} className="w-full h-28 object-cover rounded-[16px]" />
+                </button>
+                <button onClick={() => quitar(i)} aria-label="Quitar foto"
+                  className="absolute top-3 right-3 w-7 h-7 rounded-full bg-paper-hi/95 text-bad flex items-center justify-center shadow-md">
+                  <Icon name="x" size={14} strokeWidth={2.6} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <Clay className="p-3.5 flex items-start gap-2.5" tint="linear-gradient(135deg,#EFF2F7,#DEE5F0)">
+        <Icon name="stamp" size={16} className="text-brand-700 mt-px" />
+        <p className="text-[11px] text-brand-800 leading-relaxed font-medium">
+          La marca de agua se aplica al momento de la captura y no puede modificarse después.
+        </p>
+      </Clay>
+
+      <div className="flex gap-2.5">
+        <Btn variant="white" icon="arrow-l" onClick={onBack} className="px-4">Atrás</Btn>
+        <Btn full size="lg" onClick={onNext} iconRight="arrow-r">
+          {fotos.length ? "Continuar a firmas" : "Omitir y firmar"}
+        </Btn>
+      </div>
+
+      <Sheet open={!!ver} onClose={() => setVer(null)} title="Evidencia" sub="Marca de agua no editable">
+        {ver && <img src={ver.dataUrl} alt="Evidencia ampliada" className="w-full rounded-[18px]" />}
+      </Sheet>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PASO 5 — Firma individual por vigilador (PRD §5.2)
+═══════════════════════════════════════════════════════════ */
+function CanvasFirma({ onChange, disabled }) {
+  const ref     = useRef(null);
+  const dibuja  = useRef(false);
+  const trazado = useRef(false); // ref, no estado: `stop` corre en el mismo tick que el último `move`
+  const ultimo  = useRef(null);
+  const [hay, setHay] = useState(false);
+
+  const pos = (e, cv) => {
+    const r = cv.getBoundingClientRect();
+    const sx = cv.width / r.width, sy = cv.height / r.height;
+    const p = e.touches ? e.touches[0] : e;
+    return { x: (p.clientX - r.left) * sx, y: (p.clientY - r.top) * sy };
+  };
+
+  const start = e => { if (disabled) return; dibuja.current = true; ultimo.current = pos(e, ref.current); };
+  const move  = e => {
+    if (!dibuja.current || disabled) return;
+    e.preventDefault();
+    const cv = ref.current, ctx = cv.getContext("2d"), p = pos(e, cv);
+    ctx.beginPath();
+    ctx.strokeStyle = "#1C2A4E"; ctx.lineWidth = 2.8; ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.moveTo(ultimo.current.x, ultimo.current.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+    ultimo.current = p;
+    if (!trazado.current) { trazado.current = true; setHay(true); }
+  };
+  const stop = () => {
+    if (!dibuja.current) return;
+    dibuja.current = false;
+    if (trazado.current) onChange(ref.current.toDataURL("image/png"));
+  };
+  const limpiar = () => {
+    const cv = ref.current;
+    cv.getContext("2d").clearRect(0, 0, cv.width, cv.height);
+    trazado.current = false; setHay(false); onChange(null);
+  };
+
+  useEffect(() => { if (disabled) limpiar(); }, [disabled]);
+
+  return (
+    <div>
+      <div className={cx("clay-inset overflow-hidden transition-all", disabled && "opacity-40")}>
+        <canvas ref={ref} width={340} height={140} className="w-full sig-canvas"
+          onMouseDown={start} onMouseMove={move} onMouseUp={stop} onMouseLeave={stop}
+          onTouchStart={start} onTouchMove={move} onTouchEnd={stop} />
+      </div>
+      <div className="flex items-center justify-between mt-2">
+        <p className="text-[10px] text-ink-faint font-medium">
+          {disabled ? "Negativa registrada" : hay ? "Firma capturada" : "Firmá con el dedo o el cursor"}
+        </p>
+        {hay && !disabled && (
+          <button onClick={limpiar} className="text-[10px] font-black text-brand-600 flex items-center gap-1 focus-ring rounded px-1">
+            <Icon name="refresh" size={12} /> Rehacer
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Step5({ rd, setRD, onGuardar, onBack, guardando }) {
+  const { offline, apiStatus } = useApp();
+  const vigs   = rd.vigiladores || [];
+  const firmas = rd.firmas || {};
+  const [activo, setActivo] = useState(vigs[0]?.id);
+
+  const setFirma = (id, dataUrl) => setRD(p => ({
+    ...p, firmas: { ...(p.firmas || {}), [id]: { ...(p.firmas?.[id] || {}), dataUrl } },
+  }));
+  const setNego = (id) => setRD(p => {
+    const prev = p.firmas?.[id] || {};
+    return { ...p, firmas: { ...(p.firmas || {}), [id]: { dataUrl: prev.nego ? prev.dataUrl : null, nego: !prev.nego } } };
+  });
+
+  const firmados = vigs.filter(v => firmas[v.id]?.dataUrl || firmas[v.id]?.nego).length;
+  const puede    = firmados > 0 && firmados === vigs.length;
+  const negativas= vigs.filter(v => firmas[v.id]?.nego);
+
+  const items = Object.entries(rd.respuestas || {});
+  const inc   = items.filter(([, r]) => r.estado === "R" || r.estado === "M").length;
+
+  return (
+    <div className="flex flex-col gap-4 px-4 py-4 a-fade">
+      <SH title="Firma y cierre" sub="Cada vigilador inspeccionado debe firmar el acta" />
+
+      {/* Resumen del acta */}
+      <Clay className="p-4">
+        <Label className="mb-2.5">Resumen de la ronda</Label>
+        <Row k="Objetivo"    v={rd.objetivo?.nombre || "—"} />
+        <Row k="Modalidad"   v={rd.tipo === "remota" ? "Remota" : "Presencial"} tone={rd.tipo === "remota" ? "warn" : "good"} />
+        <Row k="Geocerca"    v={rd.gpsStatus === "inside" ? "Dentro" : "Fuera"} tone={rd.gpsStatus === "inside" ? "good" : "bad"} />
+        <Row k="Vigiladores" v={vigs.length} />
+        <Row k="Ítems evaluados" v={items.length} />
+        <Row k="Incidencias" v={inc} tone={inc > 0 ? "bad" : "good"} />
+        <Row k="Evidencia"   v={`${(rd.fotos || []).length} fotos`} last />
+      </Clay>
+
+      {/* Progreso de firmas */}
+      <Clay className="p-3.5">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[12px] font-black text-ink">{firmados} de {vigs.length} firmas registradas</p>
+          {puede && <Badge tone="good" icon="check">Completo</Badge>}
+        </div>
+        <Bar value={firmados} max={vigs.length} color="#1F6B4A" height={8} />
+      </Clay>
+
+      {/* Selector de vigilador */}
+      {vigs.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+          {vigs.map(v => {
+            const f = firmas[v.id];
+            const ok = f?.dataUrl || f?.nego;
+            return (
+              <button key={v.id} onClick={() => setActivo(v.id)}
+                className={cx("clay-btn shrink-0 px-3.5 py-2.5 rounded-[15px] flex items-center gap-2 text-[11px] font-black transition-all",
+                  activo === v.id ? "bg-brand-600 text-paper-hi" : "bg-paper-hi text-ink-mute")}>
+                {ok && <Icon name={f.nego ? "x-circle" : "check-circle"} size={13} />}
+                {cortar(v.nombre.split(" ")[0] + " " + (v.nombre.split(" ").slice(-1)[0] || ""), 16)}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Panel de firma del vigilador activo */}
+      {vigs.filter(v => v.id === activo).map(v => {
+        const f = firmas[v.id] || {};
+        return (
+          <Clay key={v.id} className="p-4 a-fade">
+            <div className="flex items-center gap-3 mb-3.5">
+              <Avatar nombre={v.nombre} size={44} src={v.foto_url} />
+              <div className="min-w-0">
+                <p className="text-[13px] font-black text-ink leading-tight truncate">{v.nombre}</p>
+                <p className="text-[10px] text-ink-mute">Legajo {v.legajo} · DNI {v.dni || "—"}</p>
+              </div>
+            </div>
+
+            {f.nego ? (
+              <div className="clay-inset py-9 flex flex-col items-center gap-2">
+                <Icon name="x-circle" size={30} className="text-bad" />
+                <p className="text-[12px] font-black text-bad-ink">Negativa a firmar registrada</p>
+              </div>
+            ) : (
+              <CanvasFirma onChange={d => setFirma(v.id, d)} disabled={false} />
+            )}
+
+            <button onClick={() => setNego(v.id)}
+              className={cx("clay-btn w-full mt-3 py-3 rounded-[15px] text-[11px] font-black flex items-center justify-center gap-2",
+                f.nego ? "bg-bad text-paper-hi" : "bg-paper-hi text-bad")}>
+              <Icon name={f.nego ? "refresh" : "x-circle"} size={15} />
+              {f.nego ? "Deshacer negativa" : "Registrar negativa a firmar"}
+            </button>
+          </Clay>
+        );
+      })}
+
+      {negativas.length > 0 && (
+        <div className="bg-bad-soft rounded-[16px] px-4 py-3 flex items-start gap-2 a-up">
+          <Icon name="alert" size={15} className="text-bad-ink mt-px" />
+          <p className="text-[11px] font-bold text-bad-ink leading-snug">
+            {negativas.length} negativa{negativas.length > 1 ? "s" : ""} a firmar · se generará un ticket a RRHH por cada una.
+          </p>
+        </div>
+      )}
+
+      {offline && (
+        <div className="bg-warn-soft rounded-[16px] px-4 py-3 flex items-start gap-2">
+          <Icon name="cloud-off" size={15} className="text-warn-ink mt-px" />
+          <p className="text-[11px] font-bold text-warn-ink leading-snug">
+            Sin conexión: el acta se guarda en el dispositivo y se sincroniza automáticamente al recuperar señal.
+          </p>
+        </div>
+      )}
+
+      <div className="flex gap-2.5">
+        <Btn variant="white" icon="arrow-l" onClick={onBack} className="px-4">Atrás</Btn>
+        <Btn full size="xl" variant={offline ? "warn" : "success"} icon={offline ? "cloud-off" : "save"}
+          disabled={!puede} loading={guardando} onClick={onGuardar}>
+          {guardando ? "Guardando…" : !puede ? `Faltan ${vigs.length - firmados} firmas` : offline ? "Guardar en cola" : "Guardar acta"}
+        </Btn>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PASO 6 — Acta de supervisión generada (PRD §5.1)
+═══════════════════════════════════════════════════════════ */
+function ActaGenerada({ rd, resultado, supervisor, onNueva }) {
+  const { checklistDefs } = useApp();
+  const { acta, estado, servidor, aviso } = resultado;
+  const encolada = estado === "encolada";
+  const fin = acta.generadaEn || new Date();
+
+  const respuestas = Object.entries(rd.respuestas || {}).map(([id, r]) => ({
+    def: checklistDefs.find(d => String(d.id) === String(id)) || { titulo_corto:"Ítem" }, r,
+  }));
+  const conObs = respuestas.filter(({ r }) => r.estado === "R" || r.estado === "M");
+
+  return (
+    <div className="flex flex-col gap-4 px-4 py-5 a-fade">
+      {/* Confirmación */}
+      <div className="pb-1">
+        <h2 className="display text-[22px] text-ink">
+          {encolada ? "Acta guardada localmente" : "Acta registrada"}
+        </h2>
+        <p className="text-[15px] text-ink-mute mt-2 leading-relaxed">
+          {encolada
+            ? "Sin conexión. Se enviará automáticamente al recuperar señal."
+            : servidor
+              ? "Sellada digitalmente y sincronizada con el servidor."
+              : "Sellada digitalmente. Los paneles se actualizaron al instante."}
+        </p>
+        {aviso && <p className="text-[14px] text-warn-ink font-bold mt-2">{aviso}</p>}
+      </div>
+
+      {/* El acta: hoja con su filete de margen y el sello asentado encima */}
+      <Clay className="overflow-hidden filete relative">
+        {/* Encabezado del folio */}
+        <div className="tela px-4 py-4 text-paper-hi border-b-2 border-navy-900">
+          <div className="flex items-center gap-3">
+            <span className="text-foil shrink-0"><Isotipo size={34} /></span>
+            <div className="min-w-0">
+              <p className="display text-[15px] leading-tight">Argentina Seguridad Integral</p>
+              <p className="rotulo text-foil mt-1">Acta de supervisión · ASISA</p>
+            </div>
+          </div>
+        </div>
+
+        {/* El código es el titular, no un epígrafe al pie.
+            Lleva su propio casillero: el sello cae al lado, nunca encima. */}
+        <div className="px-4 pt-4 pb-4 border-b border-paper-rule flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <Label className="mb-1.5">Folio</Label>
+            <p className="folio text-[20px] text-ink leading-none whitespace-nowrap">{acta.codigo}</p>
+          </div>
+
+          {/* El asentado: el único momento autorado de la aplicación */}
+          <div className={cx("sello shrink-0 px-2.5 py-1.5 no-select pointer-events-none",
+            encolada && "text-warn")} aria-hidden="true">
+            <span className="block text-[12px] font-black uppercase leading-none" style={{ letterSpacing:".1em" }}>
+              {encolada ? "En cola" : "Asentado"}
+            </span>
+            <span className="block text-[10px] font-bold tnum text-center mt-1">{fmtFecha(fin)}</span>
+          </div>
+        </div>
+
+        <div className="p-4 flex flex-col gap-4">
+          {/* Objetivo */}
+          <div>
+            <Label className="mb-1.5">Objetivo</Label>
+            <p className="text-[17px] font-bold text-ink leading-tight">{rd.objetivo?.nombre}</p>
+            <p className="text-[15px] text-ink-mute mt-1">{rd.objetivo?.direccion || "—"}</p>
+            <p className="text-[14px] text-ink-mute mt-1 tnum">
+              {SUBTIPO_LABEL[rd.objetivo?.subtipo]}
+              {rd.objetivo?.lat != null && ` · ${rd.objetivo.lat.toFixed(5)}, ${rd.objetivo.lng.toFixed(5)}`}
+            </p>
+          </div>
+
+          <div className="h-px bg-paper-rule" />
+
+          {/* Datos de la ronda */}
+          <div>
+            <Row k="Supervisor"    v={supervisor} />
+            <Row k="Inicio"        v={rd.horaInicio ? `${fmtFecha(rd.horaInicio)} · ${fmtHora(rd.horaInicio)}` : "—"} />
+            <Row k="Cierre"        v={`${fmtFecha(fin)} · ${fmtHora(fin)}`} />
+            <Row k="Modalidad"     v={rd.tipo === "remota" ? "Remota" : "Presencial"} tone={rd.tipo === "remota" ? "warn" : "good"} />
+            <Row k="Validación GPS"v={rd.gpsStatus === "inside" ? "Dentro del geocerco" : "Fuera del geocerco"} tone={rd.gpsStatus === "inside" ? "good" : "bad"} last />
+          </div>
+
+          {rd.justificacion && (
+            <div className="clay-inset px-3.5 py-3">
+              <Label className="mb-1">Justificación de supervisión remota</Label>
+              <p className="text-[11px] text-ink-soft leading-relaxed">{rd.justificacion}</p>
+            </div>
+          )}
+
+          <div className="h-px bg-paper-bed" />
+
+          {/* Vigiladores + firmas */}
+          <div>
+            <Label className="mb-2">Vigiladores inspeccionados</Label>
+            <div className="flex flex-col gap-2.5">
+              {(rd.vigiladores || []).map(v => {
+                const f = rd.firmas?.[v.id] || {};
+                return (
+                  <div key={v.id} className="clay-inset p-3">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <div className="min-w-0">
+                        <p className="text-[12px] font-black text-ink truncate">{v.nombre}</p>
+                        <p className="text-[10px] text-ink-faint">Legajo {v.legajo} · DNI {v.dni || "—"}</p>
+                      </div>
+                      <Badge tone={f.nego ? "bad" : "good"}>{f.nego ? "No firmó" : "Firmado"}</Badge>
+                    </div>
+                    {f.dataUrl
+                      ? <div className="bg-paper-hi rounded-[12px] p-1"><img src={f.dataUrl} alt={`Firma de ${v.nombre}`} className="w-full h-16 object-contain" /></div>
+                      : <div className="bg-paper-hi rounded-[12px] h-16 flex items-center justify-center">
+                          <p className="text-[10px] font-bold text-bad-ink">Negativa registrada · ticket a RRHH</p>
+                        </div>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="h-px bg-paper-bed" />
+
+          {/* Resultado del checklist */}
+          <div>
+            <Label className="mb-2">Resultado del checklist</Label>
+            <div className="flex gap-2 mb-2.5">
+              {["B","R","M"].map(k => {
+                const n = respuestas.filter(({ r }) => r.estado === k).length;
+                return (
+                  <div key={k} className={cx("flex-1 rounded-[13px] py-2 text-center",
+                    k === "B" ? "bg-good-soft" : k === "R" ? "bg-warn-soft" : "bg-bad-soft")}>
+                    <p className={cx("text-lg font-black tnum leading-none",
+                      k === "B" ? "text-good-ink" : k === "R" ? "text-warn-ink" : "text-bad-ink")}>{n}</p>
+                    <p className={cx("text-[9px] font-bold mt-0.5",
+                      k === "B" ? "text-good-ink" : k === "R" ? "text-warn-ink" : "text-bad-ink")}>{VALOR[k].label}</p>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex flex-col">
+              {respuestas.map(({ def, r }, i) => (
+                <div key={i} className={cx("flex items-center gap-2 py-2", i < respuestas.length - 1 && "border-b border-paper-rule")}>
+                  <span className={cx("w-5 h-5 rounded-md flex items-center justify-center shrink-0 text-paper-hi",
+                    r.estado === "B" ? "bg-good" : r.estado === "R" ? "bg-warn" : "bg-bad")}>
+                    <Icon name={VALOR[r.estado].icon} size={11} strokeWidth={3} />
+                  </span>
+                  <span className="text-[11px] text-ink-soft font-semibold flex-1 leading-snug">{def.titulo_corto}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Observaciones e incidencias */}
+          {conObs.length > 0 && (
+            <>
+              <div className="h-px bg-paper-bed" />
+              <div>
+                <Label className="mb-2">Observaciones e incidencias</Label>
+                <div className="flex flex-col gap-2">
+                  {conObs.map(({ def, r }, i) => {
+                    const tk = acta.tickets.find(t => t.item === def.titulo_corto);
+                    return (
+                      <div key={i} className={cx("rounded-[14px] p-3", r.estado === "M" ? "bg-bad-soft" : "bg-warn-soft")}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge tone={r.estado === "M" ? "bad" : "warn"}>{VALOR[r.estado].label}</Badge>
+                          {tk && <span className="text-[10px] font-mono font-black text-ink-mute">{tk.id}</span>}
+                        </div>
+                        <p className="text-[11px] font-black text-ink">{def.titulo_corto}</p>
+                        <p className="text-[11px] text-ink-soft mt-0.5 leading-snug">
+                          {[...(r.obsPred || []), r.obsLibre].filter(Boolean).join(" · ")}
+                        </p>
+                        {tk && <p className="text-[10px] text-ink-faint mt-1 font-bold">Área responsable: {tk.area}</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Evidencia */}
+          {(rd.fotos || []).length > 0 && (
+            <>
+              <div className="h-px bg-paper-bed" />
+              <div>
+                <Label className="mb-2">Evidencia fotográfica</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {rd.fotos.map((f, i) => (
+                    <img key={i} src={f.dataUrl} alt={`Evidencia ${i + 1}`} className="w-full h-20 object-cover rounded-[12px]" />
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Sello */}
+          <div className="clay-inset px-3.5 py-3">
+            <div className="flex items-start gap-2">
+              <Icon name="stamp" size={16} className="text-brand-700 mt-px" />
+              <div>
+                <p className="text-[10px] font-black text-brand-800 uppercase tracking-wide">Sello digital · no modificable</p>
+                <p className="text-[10px] text-ink-mute mt-1 font-mono leading-relaxed">
+                  {fmtFecha(fin)} {fin.toLocaleTimeString("es-AR")}<br />
+                  {rd.deviceCoords?.lat != null ? `GPS ${rd.deviceCoords.lat.toFixed(5)}, ${rd.deviceCoords.lng.toFixed(5)}` : "GPS no disponible"}<br />
+                  {supervisor}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Clay>
+
+      {/* Tickets emitidos */}
+      {acta.tickets.length > 0 && (
+        <Clay className="p-4">
+          <div className="flex items-center gap-2 mb-2.5">
+            <Icon name="send" size={16} className="text-brand-600" />
+            <p className="text-[12px] font-black text-ink">
+              {acta.tickets.length} ticket{acta.tickets.length > 1 ? "s" : ""} {encolada ? "pendiente de envío" : "enviado a las áreas"}
+            </p>
+          </div>
+          <div className="flex flex-col gap-2">
+            {acta.tickets.map(t => (
+              <div key={t.id} className="clay-inset px-3 py-2.5 flex items-center gap-2">
+                <Badge tone={AREA_THEME[t.area]?.tone || "gray"}>{t.area}</Badge>
+                <span className="text-[11px] text-ink-soft font-semibold truncate flex-1">{t.item}</span>
+                <span className="text-[9px] font-mono font-black text-ink-faint shrink-0">{t.id}</span>
+              </div>
+            ))}
+          </div>
+        </Clay>
+      )}
+
+      <Btn full size="xl" icon="refresh" onClick={onNueva}>Iniciar nueva ronda</Btn>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PANEL SUPERVISOR — wizard de 5 pasos + acta
+═══════════════════════════════════════════════════════════ */
+const PASOS = ["Inicio", "Vigiladores", "Checklist", "Evidencia", "Firmas"];
+
+function SupervisorPanel() {
+  const { currentUser, guardarRonda } = useApp();
+  const [paso, setPaso] = useState(0);
+  const [rd,   setRD]   = useState({});
+  const [res,  setRes]  = useState(null);
+  const [busy, setBusy] = useState(false);
+  const scrollRef = useRef(null);
+
+  const supervisor = currentUser?.nombre || "Supervisor";
+
+  const ir = (n) => { setPaso(n); scrollRef.current?.scrollTo({ top:0, behavior:"smooth" }); };
+  const reiniciar = () => { setRD({}); setRes(null); ir(0); };
+
+  const guardar = async () => {
+    setBusy(true);
+    const r = await guardarRonda(rd, supervisor);
+    setRes(r); setBusy(false);
+    scrollRef.current?.scrollTo({ top:0, behavior:"smooth" });
+  };
+
+  const pantallas = [
+    <Step1 rd={rd} setRD={setRD} onNext={() => ir(1)} />,
+    <Step2 rd={rd} setRD={setRD} onNext={() => ir(2)} onBack={() => ir(0)} />,
+    <Step3 rd={rd} setRD={setRD} onNext={() => ir(3)} onBack={() => ir(1)} />,
+    <Step4 rd={rd} setRD={setRD} onNext={() => ir(4)} onBack={() => ir(2)} supervisor={supervisor} />,
+    <Step5 rd={rd} setRD={setRD} onGuardar={guardar} onBack={() => ir(3)} guardando={busy} />,
+  ];
+
+  return (
+    <div className="flex flex-col h-full">
+      <PanelHeader icon="shield" rol="Supervisor de campo" nombre={supervisor} tone="brand" />
+      <ConnBar />
+      <SyncToast />
+      {!res && <Stepper steps={PASOS} current={paso} />}
+      <div ref={scrollRef} className="scroll-y flex-1">
+        {res
+          ? <ActaGenerada rd={rd} resultado={res} supervisor={supervisor} onNueva={reiniciar} />
+          : pantallas[paso]}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PANEL ADMINISTRATIVO — gestión de incidencias
+═══════════════════════════════════════════════════════════ */
+function AdminPanel() {
+  const { ticketsActivos, cerrarTicket, apiStatus, apiFetch, currentUser } = useApp();
+  const [apiTickets, setApiTickets] = useState(null);
+  const [cargando,   setCargando]   = useState(false);
+  const [filtro,     setFiltro]     = useState("activo");
+  const [area,       setArea]       = useState("todas");
+  const [sel,        setSel]        = useState(null);
+  const [resol,      setResol]      = useState("");
+  const [cerrando,   setCerrando]   = useState(false);
+
+  const conApi  = apiStatus === "connected" && apiTickets !== null;
+  const tickets = conApi ? apiTickets : ticketsActivos;
+
+  useEffect(() => {
+    if (apiStatus !== "connected") { setApiTickets(null); return; }
+    setCargando(true);
+    apiFetch("/api/tickets?limite=100").then(r => r.json()).then(d => {
+      if (!d.ok) return;
+      setApiTickets(d.tickets.map(t => ({
+        id: t.codigo_ticket, _dbId: t.id, obj: t.objetivo, sup: t.supervisor,
+        val: t.valoracion || "R", area: t.area_responsable, item: t.item_titulo,
+        vig: t.vigilador, estado: t.estado === "ABIERTO" ? "Activo" : "Cerrado",
+        desc: t.descripcion, resolucion: t.resolucion,
+        fecha: new Date(t.fecha_creacion).toLocaleString("es-AR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" }),
+        isNew: false,
+      })));
+    }).catch(e => console.warn("[tickets]", e.message)).finally(() => setCargando(false));
+  }, [apiStatus]);
+
+  const stats = {
+    crit: tickets.filter(t => t.val === "M" && t.estado === "Activo").length,
+    act:  tickets.filter(t => t.estado === "Activo").length,
+    cer:  tickets.filter(t => t.estado === "Cerrado").length,
+  };
+
+  const areas = useMemo(() => {
+    const s = {};
+    for (const t of tickets) if (t.estado === "Activo") s[t.area] = (s[t.area] || 0) + 1;
+    return s;
+  }, [tickets]);
+
+  const lista = tickets.filter(t =>
+    (filtro === "todas" || (filtro === "activo" ? t.estado === "Activo" : t.estado === "Cerrado")) &&
+    (area === "todas" || t.area === area)
+  );
+
+  const actual = sel ? tickets.find(t => t.id === sel.id) || sel : null;
+
+  const confirmarCierre = async () => {
+    setCerrando(true);
+    if (conApi && actual?._dbId) {
+      try { await apiFetch(`/api/tickets/${actual._dbId}/resolver`, { method:"PATCH", body: JSON.stringify({ resolucion: resol }) }); }
+      catch (e) { console.warn("[cerrar]", e.message); }
+      setApiTickets(ts => ts.map(t => t.id === actual.id ? { ...t, estado:"Cerrado", resolucion: resol } : t));
+    } else {
+      cerrarTicket(actual.id, resol);
+    }
+    setCerrando(false); setSel(null); setResol("");
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <PanelHeader icon="clipboard" rol="Gestión de incidencias" nombre={currentUser?.nombre || "Administración"} tone="plum" />
+      <ConnBar />
+      <SyncToast />
+
+      {/* Encabezado del folio: una faja continua, no tres tarjetas sueltas.
+          Cada cifra vive en un casillero de ancho fijo y nunca empuja a su vecina. */}
+      <div className="flex shrink-0 bg-paper border-y border-paper-rule">
+        {[["Críticas", stats.crit, "text-bad"], ["Activas", stats.act, "text-warn"], ["Cerradas", stats.cer, "text-good"]].map(([l, v, c]) => (
+          <div key={l} className="flex-1 min-w-0 px-3 py-2.5 border-r border-paper-rule last:border-r-0">
+            <p className={cx("folio text-[26px] leading-none", c)}>{v}</p>
+            <p className="rotulo mt-1 truncate">{l}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="px-4 pb-2 shrink-0">
+        <Segmented tone="plum" value={filtro} onChange={setFiltro}
+          options={[["activo","Activas",stats.act],["cerrado","Cerradas",stats.cer],["todas","Todas",tickets.length]]} />
+      </div>
+
+      {/* Filtro por área */}
+      {Object.keys(areas).length > 0 && (
+        <div className="flex gap-1.5 overflow-x-auto px-4 pb-2.5 shrink-0">
+          <button onClick={() => setArea("todas")}
+            className={cx("clay-btn shrink-0 px-3 min-h-[40px] text-[13px] font-bold uppercase border border-paper-rule",
+              area === "todas" ? "bg-stamp text-paper-hi border-transparent" : "bg-paper-hi text-ink-mute")}
+            style={{ letterSpacing:".07em" }}>Todas</button>
+          {Object.entries(areas).map(([a, n]) => (
+            <button key={a} onClick={() => setArea(a)}
+              className={cx("clay-btn shrink-0 px-3 min-h-[40px] text-[13px] font-bold uppercase whitespace-nowrap border border-paper-rule",
+                area === a ? "bg-stamp text-paper-hi border-transparent" : "bg-paper-hi text-ink-mute")}
+              style={{ letterSpacing:".07em" }}>
+              {a} <span className="tnum opacity-75">{n}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Cada incidencia es un asiento corrido del libro, no una tarjeta suelta:
+          se separan por regla, con su número de renglón en la canaleta y el
+          código de incidencia como titular. */}
+      <div className="scroll-y flex-1 bg-paper border-t-2 border-ink">
+        {cargando && <div className="p-4 flex flex-col gap-2">{[0,1,2].map(i => <Skeleton key={i} h={96} />)}</div>}
+
+        {!cargando && lista.length === 0 && (
+          <Empty icon="check-circle" title="Sin incidencias acá" sub="No hay tickets que coincidan con este filtro." />
+        )}
+
+        {!cargando && lista.map((t, i) => (
+          <button key={t.id} onClick={() => { setSel(t); setResol(""); }}
+            className={cx("w-full text-left flex a-up focus-ring border-b border-paper-rule clay-press",
+              t.val === "M" && t.estado === "Activo" && "filete")}
+            style={{ animationDelay:`${i * 35}ms` }}>
+            <span className="canaleta w-9 shrink-0 pt-4 text-center leading-none">{String(i + 1).padStart(2, "0")}</span>
+            <span className="flex-1 min-w-0 px-3.5 py-3.5">
+              <span className="flex items-baseline justify-between gap-2 mb-1.5">
+                <span className="folio text-[17px] text-ink truncate">{t.id}</span>
+                <Badge tone={t.estado === "Activo" ? (t.val === "M" ? "bad" : "warn") : "gray"}>{t.estado}</Badge>
+              </span>
+              <span className="block text-[16px] font-bold text-ink leading-tight">{t.obj}</span>
+              <span className="block text-[15px] text-ink-mute mt-1 leading-snug">{t.desc}</span>
+              {t.item && (
+                <span className="flex items-center gap-1.5 mt-2">
+                  <Icon name="clipboard" size={13} className="text-ink-mute shrink-0" />
+                  <span className="text-[14px] text-ink-mute truncate">{t.item}</span>
+                  <Badge tone={t.val === "M" ? "bad" : "warn"} className="ml-auto shrink-0">{VALOR[t.val]?.label || t.val}</Badge>
+                </span>
+              )}
+              <span className="flex items-center gap-2 mt-2.5 flex-wrap">
+                <Badge tone={AREA_THEME[t.area]?.tone || "gray"}>{t.area}</Badge>
+                {t.isNew && <Badge tone="brand">Nuevo</Badge>}
+                <span className="text-[13px] text-ink-mute ml-auto tnum">{t.sup} · {t.fecha}</span>
+              </span>
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Detalle y resolución */}
+      <Sheet open={!!sel} onClose={() => setSel(null)} title={actual?.obj} sub={actual?.id}>
+        {actual && (
+          <div className="flex flex-col gap-3.5">
+            <div className="flex gap-1.5 flex-wrap">
+              <Badge tone={AREA_THEME[actual.area]?.tone || "gray"}>{actual.area}</Badge>
+              <Badge tone={actual.val === "M" ? "bad" : "warn"}>{VALOR[actual.val]?.label || actual.val}</Badge>
+              <Badge tone={actual.estado === "Activo" ? "warn" : "good"}>{actual.estado}</Badge>
+            </div>
+
+            <Clay className="p-4">
+              <Label className="mb-1.5">Descripción</Label>
+              <p className="text-[13px] text-ink-soft leading-relaxed">{actual.desc}</p>
+            </Clay>
+
+            <Clay className="p-4">
+              {actual.item && <Row k="Ítem del checklist" v={actual.item} />}
+              {actual.vig  && <Row k="Vigilador" v={actual.vig} />}
+              <Row k="Supervisor" v={actual.sup} />
+              <Row k="Registrado" v={actual.fecha} last />
+            </Clay>
+
+            {actual.estado === "Activo" ? (
+              <>
+                <Textarea label="Resolución técnica" value={resol} onChange={e => setResol(e.target.value)} rows={4}
+                  placeholder="Describí la acción concreta que resolvió esta incidencia…"
+                  hint={<p className="text-[10px] text-ink-faint mt-1.5">Mínimo 5 caracteres.</p>} />
+                <Btn full size="lg" variant="success" icon="check-circle" loading={cerrando}
+                  disabled={resol.trim().length < 5} onClick={confirmarCierre}>
+                  Cerrar incidencia
+                </Btn>
+              </>
+            ) : (
+              <div className="bg-good-soft rounded-[16px] px-4 py-3.5">
+                <div className="flex items-center gap-2 mb-1">
+                  <Icon name="check-circle" size={16} className="text-good-ink" />
+                  <p className="text-[12px] font-black text-good-ink">Incidencia resuelta</p>
+                </div>
+                {actual.resolucion && <p className="text-[11px] text-good-ink/80 leading-relaxed mt-1">{actual.resolucion}</p>}
+              </div>
+            )}
+          </div>
+        )}
+      </Sheet>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PANEL DUEÑO — dashboard ejecutivo
+═══════════════════════════════════════════════════════════ */
+function OwnerPanel() {
+  const { kpis: kpisLocal, liveFeed, apiStatus, apiFetch, currentUser, objetivos } = useApp();
+  const [apiKpis, setApiKpis] = useState(null);
+  const [apiFeed, setApiFeed] = useState(null);
+  const [tab, setTab] = useState("tipo");
+
+  useEffect(() => {
+    if (apiStatus !== "connected") { setApiKpis(null); setApiFeed(null); return; }
+    apiFetch("/api/kpis").then(r => r.json()).then(d => {
+      if (!d.ok) return;
+      const k = d.kpis;
+      const porObjetivo = (k.cumplimiento_objetivos || []).map(o => ({
+        ...o, realizadas: o.rondas_realizadas, visitas_meta_mes: o.visitas_meta_mes,
+      }));
+      const porTipo = {};
+      for (const o of porObjetivo) {
+        porTipo[o.tipo] = porTipo[o.tipo] || { completadas:0, total:0 };
+        porTipo[o.tipo].completadas += o.realizadas;
+        porTipo[o.tipo].total       += o.visitas_meta_mes || 0;
+      }
+      setApiKpis({
+        visitas:     porObjetivo.reduce((a, o) => a + o.realizadas, 0),
+        metaVisitas: porObjetivo.reduce((a, o) => a + (o.visitas_meta_mes || 0), 0) || 1,
+        criticas:    k.tickets.criticos, activas: k.tickets.abiertos, cerradas: k.tickets.cerrados,
+        porArea:     k.tickets.por_area, diasProm: k.tickets.dias_promedio_resolucion,
+        rondas:      k.rondas, porTipo, porObjetivo,
+      });
+    }).catch(e => console.warn("[kpis]", e.message));
+
+    apiFetch("/api/actividad?limite=8").then(r => r.json()).then(d => {
+      if (!d.ok) return;
+      setApiFeed(d.actividad.map(a => ({
+        hora: fmtHora(a.fecha_hora),
+        sup:  a.supervisor.split(" ")[0][0] + ". " + a.supervisor.split(" ").slice(-1)[0],
+        obj:  cortar(a.objetivo, 20),
+        tipo: a.tipo === "remota" ? "Remota" : "Presencial",
+        ok:   a.tickets === 0, isNew: false,
+      })));
+    }).catch(() => {});
+  }, [apiStatus]);
+
+  const k    = apiKpis || kpisLocal;
+  const feed = apiFeed || liveFeed;
+  const pct  = Math.round(k.visitas / k.metaVisitas * 100);
+
+  const TIPO_COLOR = { Barrios:"#2D4175", Industrias:"#1F6B4A", Locales:"#8A5A12" };
+
+  return (
+    <div className="flex flex-col h-full">
+      <PanelHeader icon="chart" rol="Dashboard ejecutivo" nombre={currentUser?.nombre || "Gerencia"} tone="warn" />
+      <ConnBar />
+      <SyncToast />
+
+      <div className="scroll-y flex-1 px-4 pb-5 flex flex-col gap-3.5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="display text-[20px] text-ink first-letter:uppercase leading-tight">
+              {new Date().toLocaleDateString("es-AR", { month:"long", year:"numeric" })}
+            </h2>
+            <p className="rotulo mt-1.5">Ciclo de cumplimiento</p>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-2 border border-paper-rule bg-paper-hi shrink-0">
+            <Dot tone="bad" pulse />
+            <span className="rotulo">En vivo</span>
+          </div>
+        </div>
+
+        {/* Cobertura de visitas */}
+        <Clay className="p-4">
+          <Label className="mb-3">Cobertura de visitas mensuales</Label>
+          <p className="folio text-[56px] text-ink leading-none">{pct}<span className="text-[26px] text-ink-mute">%</span></p>
+          <p className="text-[16px] text-ink-mute mt-2 leading-snug tnum">
+            {k.visitas} visitas realizadas sobre {k.metaVisitas} planificadas
+          </p>
+          <div className="mt-3"><Bar value={k.visitas} max={k.metaVisitas} color="#2D4175" height={12} /></div>
+          {k.rondas && (
+            <div className="flex gap-1.5 mt-3">
+              <Badge tone="good">{k.rondas.presenciales} presenciales</Badge>
+              <Badge tone="warn">{k.rondas.remotas} remotas</Badge>
+            </div>
+          )}
+        </Clay>
+
+        {/* Incidencias: renglones del libro, no un mosaico de tarjetas.
+            Cada cifra ocupa su casillero fijo y no mueve al renglón vecino. */}
+        <Clay>
+          <div className={cx("flex items-baseline gap-3 px-4 py-3 border-b border-paper-rule", k.criticas > 0 && "bg-bad-soft filete")}>
+            <span className={cx("folio text-[40px] leading-none casillero w-[2ch]", k.criticas > 0 ? "text-bad" : "text-good")}>{k.criticas}</span>
+            <span className="min-w-0">
+              <span className={cx("block rotulo", k.criticas > 0 ? "text-bad-ink" : "text-good-ink")}>Críticas</span>
+              <span className={cx("block text-[15px] mt-1", k.criticas > 0 ? "text-bad-ink" : "text-good-ink")}>
+                {k.criticas > 0 ? "requieren atención" : "todo en orden"}
+              </span>
+            </span>
+          </div>
+          <div className="flex items-baseline gap-3 px-4 py-3 border-b border-paper-rule">
+            <span className="folio text-[26px] leading-none casillero w-[2ch] text-warn-ink">{k.activas}</span>
+            <span className="rotulo">Tickets activos</span>
+          </div>
+          <div className="flex items-baseline gap-3 px-4 py-3">
+            <span className="folio text-[26px] leading-none casillero w-[2ch] text-good">{k.cerradas}</span>
+            <span className="rotulo">Resueltos</span>
+          </div>
+        </Clay>
+
+        {k.diasProm > 0 && (
+          <Clay className="px-4 py-3 flex items-baseline gap-3">
+            <span className="folio text-[26px] leading-none casillero w-[2ch] text-ink">{k.diasProm}</span>
+            <span className="rotulo">Días promedio de resolución</span>
+          </Clay>
+        )}
+
+        {/* Cumplimiento */}
+        <Clay className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <Label>Cumplimiento</Label>
+            <div className="clay-inset flex gap-1 p-1">
+              {[["tipo","Por tipo"],["obj","Por objetivo"]].map(([kk, l]) => (
+                <button key={kk} onClick={() => setTab(kk)}
+                  className={cx("px-2.5 py-1 rounded-[10px] text-[10px] font-black transition-all",
+                    tab === kk ? "bg-brand-600 text-paper-hi" : "text-ink-mute")}>{l}</button>
+              ))}
+            </div>
+          </div>
+
+          {tab === "tipo" ? (
+            <div className="flex flex-col gap-3.5">
+              {Object.entries(k.porTipo || {}).map(([tipo, d]) => {
+                const p = d.total ? Math.round(d.completadas / d.total * 100) : 0;
+                return (
+                  <div key={tipo}>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-[12px] font-bold text-ink-soft">{tipo}</span>
+                      <span className="text-[11px] text-ink-mute tnum">
+                        {d.completadas}/{d.total} · <span className="font-black text-ink">{p}%</span>
+                      </span>
+                    </div>
+                    <Bar value={d.completadas} max={d.total || 1} color={TIPO_COLOR[tipo] || "#2D4175"} height={9} />
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {(k.porObjetivo || []).map(o => {
+                const meta = o.visitas_meta_mes || 0;
+                const p = meta ? Math.round(o.realizadas / meta * 100) : 0;
+                return (
+                  <div key={o.id}>
+                    <div className="flex justify-between items-center gap-2 mb-1.5">
+                      <span className="text-[11px] font-bold text-ink-soft truncate flex-1">{o.nombre}</span>
+                      <span className="text-[10px] text-ink-mute tnum shrink-0">{o.realizadas}/{meta}</span>
+                    </div>
+                    <Bar value={o.realizadas} max={meta || 1} color={p >= 100 ? "#1F6B4A" : p >= 60 ? "#2D4175" : "#8A5A12"} height={7} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Clay>
+
+        {/* Tickets por área */}
+        {k.porArea?.length > 0 && (
+          <Clay className="p-4">
+            <Label className="mb-3">Tickets abiertos por área</Label>
+            <div className="flex flex-col gap-2">
+              {k.porArea.map(a => (
+                <div key={a.area_responsable} className="flex items-center gap-2.5">
+                  <Badge tone={AREA_THEME[a.area_responsable]?.tone || "gray"}>{a.area_responsable}</Badge>
+                  <div className="flex-1"><Bar value={parseInt(a.cantidad)} max={Math.max(...k.porArea.map(x => parseInt(x.cantidad)))} color="#4B3A7A" height={7} /></div>
+                  <span className="text-[11px] font-black text-ink tnum w-4 text-right">{a.cantidad}</span>
+                </div>
+              ))}
+            </div>
+          </Clay>
+        )}
+
+        {/* Feed en vivo */}
+        <Clay className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <Label>Actividad en tiempo real</Label>
+            <div className="flex items-center gap-1.5"><Dot tone="good" pulse /><span className="text-[10px] font-black text-good-ink">Live</span></div>
+          </div>
+          {feed.length === 0
+            ? <Empty icon="activity" title="Sin actividad" sub="Las rondas aparecerán acá al guardarse." />
+            : feed.map((a, i) => (
+              <div key={i} className={cx("flex items-center gap-2.5 py-2.5", i < feed.length - 1 && "border-b border-paper-rule")}>
+                <span className="text-[10px] text-ink-faint font-mono w-9 shrink-0 tnum">{a.hora}</span>
+                <Dot tone={a.tipo === "Presencial" ? "good" : "warn"} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-bold text-ink truncate">
+                    {a.isNew && <span className="text-brand-600">● </span>}{a.sup} → {a.obj}
+                  </p>
+                  <p className="text-[10px] text-ink-faint">{a.isNew ? "Recién · " : ""}{a.tipo}{!a.ok ? " · con incidencia" : ""}</p>
+                </div>
+                <Icon name={a.ok ? "check-circle" : "alert"} size={15} className={a.ok ? "text-good" : "text-warn"} />
+              </div>
+            ))}
+        </Clay>
+
+        <p className="text-center text-[10px] text-ink-faint pb-1">ASISA · Sistema de Supervisión v3.0</p>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MARCO DE TELÉFONO
+═══════════════════════════════════════════════════════════ */
+function PhoneFrame({ children }) {
+  const { offline } = useApp();
+  const [t, setT] = useState(new Date());
+  useEffect(() => { const i = setInterval(() => setT(new Date()), 20000); return () => clearInterval(i); }, []);
+
+  return (
+    /* El teléfono se apoya sobre la tapa del libro: tela navy con su grano. */
+    <div className="tela min-h-screen flex flex-col items-center justify-center p-4 pt-3">
+      <ApiConfigBar />
+      <div className="w-full" style={{ maxWidth:"392px" }}>
+        <div style={{
+          background:"#DDE0E4", overflow:"hidden", height:"784px",
+          border:"1px solid #101A33", position:"relative",
+          display:"flex", flexDirection:"column",
+          boxShadow:"0 2px 0 rgba(0,0,0,.45), 0 26px 50px -18px rgba(0,0,0,.6)",
+        }}>
+          {/* Barra de estado */}
+          <div className="flex justify-between items-center px-5 pt-2.5 pb-1.5 shrink-0 relative bg-paper border-b border-paper-rule">
+            <span className="folio text-[12px] text-ink">{fmtHora(t)}</span>
+            <div className="absolute left-1/2 -translate-x-1/2 top-2 w-[84px] h-[22px] bg-ink" />
+            <div className="flex items-center gap-1.5 text-ink-soft">
+              <Icon name={offline ? "wifi-off" : "wifi"} size={14} className={offline ? "text-bad" : ""} />
+              <svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true">
+                <rect x="0.5" y="0.5" width="19" height="11" fill="none" stroke="currentColor" strokeWidth="1.2" opacity=".5" />
+                <rect x="2" y="2" width="15" height="8" fill="currentColor" />
+                <rect x="21" y="4" width="2" height="4" fill="currentColor" opacity=".5" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-hidden flex flex-col">{children}</div>
+
+          <div className="flex justify-center py-2 shrink-0 bg-paper border-t border-paper-rule">
+            <div className="w-32 h-[3px] bg-ink/30" />
+          </div>
+        </div>
+      </div>
+      <p className="rotulo mt-4 text-navy-400">ASISA · Libro de novedades · Prototipo</p>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RAÍZ
+═══════════════════════════════════════════════════════════ */
+function AppInner() {
+  const { currentUser } = useApp();
+  return (
+    <PhoneFrame>
+      {!currentUser                     && <LoginScreen />}
+      {currentUser?.rol === "supervisor"&& <SupervisorPanel />}
+      {currentUser?.rol === "admin"     && <AdminPanel />}
+      {currentUser?.rol === "dueno"     && <OwnerPanel />}
+    </PhoneFrame>
+  );
+}
+
+function App() {
+  return <AppProvider><AppInner /></AppProvider>;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
