@@ -6,3 +6,6 @@ certs/
 # Generado por `npm run cap:sync-web` a partir de asi_prototype.html (fuente única)
 www/
 .DS_Store
+
+# Documentos internos de negocio — no subir (los repos son públicos)
+ANALISIS_VALUACION.md
