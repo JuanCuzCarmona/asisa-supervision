@@ -4,7 +4,7 @@ import { Image, Pressable, RefreshControl, ScrollView, View } from "react-native
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { apiFetch } from "../api";
-import { Avatar, BarraProgreso, EMBLEMA, Grupo, Icono, Punto, T } from "../components/ui";
+import { Avatar, BarraProgreso, EMBLEMA, Grupo, Icono, Punto, T, useMargenInferior } from "../components/ui";
 import { SEED_FEED } from "../data/seed";
 import { hora, iniciales } from "../domain/formato";
 import { useSession } from "../state/session";
@@ -18,6 +18,7 @@ interface Kpis {
 
 export default function Direccion() {
   const ins = useSafeAreaInsets();
+  const abajo = useMargenInferior();
   const s = useSession();
   const [api, setApi] = useState<Kpis | null>(null);
   const [cargando, setCargando] = useState(false);
@@ -67,7 +68,7 @@ export default function Direccion() {
           <Avatar texto={iniciales(s.usuario?.nombre)} />
         </Pressable>
       </View>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: ins.bottom + 24, gap: 16 }}
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: abajo + 24, gap: 16 }}
         refreshControl={<RefreshControl refreshing={cargando} onRefresh={cargar} tintColor={color.accion} />}>
         <View>
           <T v="display" style={{ marginTop: 8 }}>{mes.charAt(0).toUpperCase() + mes.slice(1)}</T>

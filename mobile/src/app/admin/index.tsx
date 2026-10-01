@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { FlatList, Image, Pressable, RefreshControl, ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Avatar, Chip, EMBLEMA, Icono, T } from "../../components/ui";
+import { Avatar, Chip, EMBLEMA, Icono, T, useMargenInferior } from "../../components/ui";
 import { iniciales } from "../../domain/formato";
 import { useSession } from "../../state/session";
 import { useTickets } from "../../state/tickets";
@@ -13,6 +13,7 @@ type Filtro = "activo" | "cerrado" | "todas";
 
 export default function Admin() {
   const ins = useSafeAreaInsets();
+  const abajo = useMargenInferior();
   const s = useSession();
   const { tickets, cargando, recargar } = useTickets();
   const [filtro, setFiltro] = useState<Filtro>("activo");
@@ -46,7 +47,7 @@ export default function Admin() {
         data={lista}
         keyExtractor={t => t.id}
         refreshControl={<RefreshControl refreshing={cargando} onRefresh={recargar} tintColor={color.accion} />}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: ins.bottom + 24 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: abajo + 24 }}
         ListHeaderComponent={
           <View>
             <T v="display" style={{ marginTop: 8 }}>Incidencias</T>

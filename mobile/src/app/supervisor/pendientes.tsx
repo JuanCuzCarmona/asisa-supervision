@@ -3,13 +3,14 @@ import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn } from "react-native-reanimated";
-import { Boton, Chip, Etiqueta, Grupo, Icono, T } from "../../components/ui";
+import { Boton, Chip, Etiqueta, Grupo, Icono, T, useMargenInferior } from "../../components/ui";
 import { hora } from "../../domain/formato";
 import { useSession } from "../../state/session";
 import { color, font, radius } from "../../theme";
 
 export default function Pendientes() {
   const ins = useSafeAreaInsets();
+  const abajo = useMargenInferior();
   const s = useSession();
   const n = s.pendientes.length;
   const panel = !s.online
@@ -21,7 +22,7 @@ export default function Pendientes() {
         : { titulo: "Todo sincronizado", detalle: "No hay actas pendientes en este celular.", fondo: color.bienSoft, tinta: color.bienInk, icono: "check" };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: color.fondo }} contentContainerStyle={{ padding: 20, paddingTop: ins.top + 8, paddingBottom: ins.bottom + 24 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: color.fondo }} contentContainerStyle={{ padding: 20, paddingTop: ins.top + 8, paddingBottom: abajo + 24 }}>
       <View style={{ marginLeft: -12, alignSelf: "flex-start" }}><Boton variante="texto" titulo="‹ Inicio" onPress={() => router.back()} /></View>
       <T v="display" style={{ marginTop: 6, marginBottom: 16 }}>Conexión</T>
       <Animated.View entering={FadeIn} style={{ padding: 16, borderRadius: radius.card, backgroundColor: panel.fondo, gap: 12 }}>

@@ -8,6 +8,15 @@ import {
 } from "react-native";
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Platform } from "react-native";
+
+/** Margen inferior seguro. En Android 10 o anteriores con botones de navegación,
+ *  el área segura inferior llega en 0 aunque la barra del sistema quede encima
+ *  del contenido (lo vimos en el emulador API 29): se reserva un piso de 48 dp. */
+export function useMargenInferior() {
+  const ins = useSafeAreaInsets();
+  return Platform.OS === "android" ? Math.max(ins.bottom, 48) : ins.bottom;
+}
 import * as Haptics from "expo-haptics";
 import Svg, { Path, Circle, Rect } from "react-native-svg";
 import { router } from "expo-router";
@@ -217,9 +226,9 @@ export function BarraPaso({ atras, paso, total = 5 }: { atras: string; paso: num
 
 /* ── Barra de acción fija abajo, al alcance del pulgar ── */
 export function BarraAccion({ resumen, children }: { resumen?: string; children: React.ReactNode }) {
-  const ins = useSafeAreaInsets();
+  const abajo = useMargenInferior();
   return (
-    <View style={{ backgroundColor: color.superficie, borderTopWidth: 1, borderTopColor: color.linea, paddingHorizontal: 20, paddingTop: 12, paddingBottom: Math.max(ins.bottom, 12) + 10, gap: 10 }}>
+    <View style={{ backgroundColor: color.superficie, borderTopWidth: 1, borderTopColor: color.linea, paddingHorizontal: 20, paddingTop: 12, paddingBottom: abajo + 10, gap: 10 }}>
       {resumen ? <T v="meta" style={{ fontFamily: font.semibold }} numberOfLines={1}>{resumen}</T> : null}
       {children}
     </View>
@@ -230,7 +239,7 @@ export function BarraAccion({ resumen, children }: { resumen?: string; children:
 export function Hoja({ visible, onCerrar, titulo, subtitulo, sobretitulo, sobretituloColor, children }: {
   visible: boolean; onCerrar: () => void; titulo: string; subtitulo?: string; sobretitulo?: string; sobretituloColor?: string; children: React.ReactNode;
 }) {
-  const ins = useSafeAreaInsets();
+  const abajo = useMargenInferior();
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onCerrar} statusBarTranslucent>
       {visible && (
@@ -239,7 +248,7 @@ export function Hoja({ visible, onCerrar, titulo, subtitulo, sobretitulo, sobret
             <Pressable style={{ flex: 1 }} onPress={onCerrar} accessibilityLabel="Cerrar" />
           </Animated.View>
           <Animated.View entering={SlideInDown.duration(320)} exiting={SlideOutDown.duration(220)}
-            style={{ backgroundColor: color.superficie, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, paddingHorizontal: 20, paddingTop: 8, paddingBottom: ins.bottom + 20, maxHeight: "86%" }}>
+            style={{ backgroundColor: color.superficie, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, paddingHorizontal: 20, paddingTop: 8, paddingBottom: abajo + 20, maxHeight: "86%" }}>
             <View style={{ width: 36, height: 5, borderRadius: 3, backgroundColor: color.bordeCampo, alignSelf: "center", marginBottom: 14 }} />
             {sobretitulo ? <T v="label" c={sobretituloColor || color.tintaSuave}>{sobretitulo}</T> : null}
             <T v="title" style={{ marginTop: 4 }}>{titulo}</T>

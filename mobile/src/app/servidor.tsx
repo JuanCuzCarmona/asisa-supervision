@@ -3,13 +3,14 @@ import { ScrollView, Switch, View } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { apiFetch } from "../api";
-import { Boton, Campo, Etiqueta, Grupo, T } from "../components/ui";
+import { Boton, Campo, Etiqueta, Grupo, T, useMargenInferior } from "../components/ui";
 import { useSession } from "../state/session";
 import { color } from "../theme";
 
 /** Equivalente al ApiConfigBar de la web: sin URL la app funciona en modo demo. */
 export default function Servidor() {
   const ins = useSafeAreaInsets();
+  const abajo = useMargenInferior();
   const s = useSession();
   const [url, setUrl] = useState(s.apiUrl || "http://10.0.2.2:3000");
   const [probando, setProbando] = useState(false);
@@ -30,7 +31,7 @@ export default function Servidor() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: color.fondo }} contentContainerStyle={{ padding: 20, paddingTop: ins.top + 16, paddingBottom: ins.bottom + 24, gap: 20 }}
+    <ScrollView style={{ flex: 1, backgroundColor: color.fondo }} contentContainerStyle={{ padding: 20, paddingTop: ins.top + 16, paddingBottom: abajo + 24, gap: 20 }}
       keyboardShouldPersistTaps="handled">
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
         <T v="display" style={{ fontSize: 28 }}>Servidor</T>

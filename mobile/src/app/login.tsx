@@ -4,7 +4,7 @@ import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { Boton, EMBLEMA, Grupo, Hoja, Icono, Logo, Separador, T, Fila } from "../components/ui";
+import { Boton, EMBLEMA, Grupo, Hoja, Icono, Logo, Separador, T, Fila, useMargenInferior } from "../components/ui";
 import { DEMO_CRED, useSession } from "../state/session";
 import { color, font } from "../theme";
 
@@ -12,10 +12,11 @@ const ROL_DEMO: Record<string, string> = { supervisor: "Supervisor", admin: "Adm
 
 export default function Login() {
   const ins = useSafeAreaInsets();
+  const abajo = useMargenInferior();
   const { height } = useWindowDimensions();
   // Pantallas bajas (celulares chicos de gama baja): menos aire arriba para que
   // el formulario y el botón Ingresar entren sin desplazar.
-  const compacto = height - ins.top - ins.bottom < 700;
+  const compacto = height - ins.top - abajo < 700;
   const { login, apiUrl } = useSession();
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
@@ -44,7 +45,7 @@ export default function Login() {
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: color.fondo }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       {/* Marca de agua del emblema, solo en el login */}
       <Image source={EMBLEMA} style={{ position: "absolute", right: -86, bottom: -48, width: 300, height: 387, opacity: 0.045 }} />
-      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingTop: ins.top + (compacto ? 24 : 52), paddingBottom: ins.bottom + 16 }}
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingTop: ins.top + (compacto ? 24 : 52), paddingBottom: abajo + 16 }}
         keyboardShouldPersistTaps="handled">
         <Animated.View entering={FadeInDown.duration(500)} style={{ alignItems: "center" }}>
           <Logo ancho={compacto ? 170 : 204} />
@@ -62,7 +63,7 @@ export default function Login() {
           <Grupo>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 12, minHeight: 58, paddingLeft: 16, paddingRight: 8 }}>
               <Icono n="user" c={color.tintaMuda} size={20} w={1.8} />
-              <T v="meta" style={{ width: 92, fontSize: 16 }}>Usuario</T>
+              <T v="meta" numberOfLines={1} style={{ minWidth: 92, fontSize: 16 }}>Usuario</T>
               <TextInput value={user} onChangeText={setUser} placeholder="nombre.apellido" placeholderTextColor={color.placeholder}
                 autoCapitalize="none" autoCorrect={false} autoComplete="username" returnKeyType="next"
                 onSubmitEditing={() => passRef.current?.focus()}
@@ -71,7 +72,7 @@ export default function Login() {
             <Separador inset={48} />
             <View style={{ flexDirection: "row", alignItems: "center", gap: 12, minHeight: 58, paddingLeft: 16, paddingRight: 4 }}>
               <Icono n="lock" c={color.tintaMuda} size={20} w={1.8} />
-              <T v="meta" style={{ width: 92, fontSize: 16 }}>Contraseña</T>
+              <T v="meta" numberOfLines={1} style={{ minWidth: 92, fontSize: 16 }}>Contraseña</T>
               <TextInput ref={passRef} value={pass} onChangeText={setPass} placeholder="Requerida" placeholderTextColor={color.placeholder}
                 secureTextEntry={!ver} autoComplete="current-password" returnKeyType="go" onSubmitEditing={entrar}
                 style={{ flex: 1, height: 56, fontFamily: font.regular, fontSize: 17, color: color.marino }} />

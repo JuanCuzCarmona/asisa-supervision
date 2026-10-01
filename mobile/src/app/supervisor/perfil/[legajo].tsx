@@ -2,7 +2,7 @@
 import { Linking, ScrollView, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Avatar, Boton, Chip, Etiqueta, FilaDato, Grupo, Icono, T } from "../../../components/ui";
+import { Avatar, Boton, Chip, Etiqueta, FilaDato, Grupo, Icono, T, useMargenInferior } from "../../../components/ui";
 import { SEED_HISTORIAL, SEED_SANCIONES } from "../../../data/seed";
 import { diasHasta, fechaCorta, iniciales } from "../../../domain/formato";
 import { useSession } from "../../../state/session";
@@ -10,6 +10,7 @@ import { color, font, radius } from "../../../theme";
 
 export default function Perfil() {
   const ins = useSafeAreaInsets();
+  const abajo = useMargenInferior();
   const { legajo } = useLocalSearchParams<{ legajo: string }>();
   const { catalogos } = useSession();
   const v = catalogos.vigiladores.find(x => String(x.legajo) === String(legajo));
@@ -22,7 +23,7 @@ export default function Perfil() {
   const vencida = dias != null && dias < 0;
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: color.fondo }} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: ins.top + 8, paddingBottom: ins.bottom + 28 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: color.fondo }} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: ins.top + 8, paddingBottom: abajo + 28 }}>
       <View style={{ marginLeft: -12, alignSelf: "flex-start" }}>
         <Boton variante="texto" titulo="‹ Vigiladores" onPress={() => router.back()} />
       </View>
