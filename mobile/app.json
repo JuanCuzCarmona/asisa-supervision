@@ -1,0 +1,74 @@
+{
+  "expo": {
+    "name": "ASI Supervisión",
+    "slug": "asi-supervision",
+    "scheme": "asi",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F4F6FA",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ar.com.argentinaseguridad.supervision"
+    },
+    "android": {
+      "package": "ar.com.argentinaseguridad.supervision",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png",
+        "backgroundImage": "./assets/android-icon-background.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-secure-store",
+      "expo-sqlite",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/brand/asi-emblem-navy.png",
+          "imageWidth": 110,
+          "backgroundColor": "#F4F6FA"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "ASI usa tu ubicación para validar que estás dentro del geocerco del objetivo al iniciar la ronda."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "ASI usa la cámara para tomar la evidencia fotográfica de la ronda.",
+          "photosPermission": "ASI accede a tus fotos para adjuntar evidencia a la ronda."
+        }
+      ],
+      "expo-status-bar",
+      "./plugins/withRedLocal",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "buildArchs": [
+              "armeabi-v7a",
+              "arm64-v8a"
+            ]
+          }
+        }
+      ],
+      "./plugins/withGradleSpeed"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
