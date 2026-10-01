@@ -332,7 +332,7 @@ INSERT INTO objetivos (nombre, tipo, subtipo, modalidad, direccion, lat, lng, ra
   ('Local Comercial Av. Corrientes', 'Locales',    'local_comercial',     'unipersonal', 'Av. Corrientes 2450, CABA',      -34.6037, -58.3968, 120, 12),
   ('Shopping Norte',                 'Locales',    'local_comercial',     'multipuesto', 'Av. Cabildo 3100, CABA',         -34.5567, -58.4614, 200, 8),
   ('Corporativo Torre Madero',       'Locales',    'empresa_oficinas',    'unipersonal', 'Juana Manso 1150, Pto. Madero',  -34.6098, -58.3627, 150, 6),
-  ('Barrio Demo Cercano',            'Barrios',    'barrio_unipersonal',  'unipersonal', 'Mendoza, Argentina (ubicación de prueba)', -33.0065563773082, -68.87021036414507, 500, 4)
+  ('Barrio Demo Cercano',            'Barrios',    'barrio_unipersonal',  'unipersonal', 'Mendoza, Argentina (ubicación de prueba)', -32.939449, -68.850794, 1000, 4)
 ON CONFLICT (nombre) DO UPDATE SET
   subtipo          = EXCLUDED.subtipo,
   modalidad        = EXCLUDED.modalidad,
