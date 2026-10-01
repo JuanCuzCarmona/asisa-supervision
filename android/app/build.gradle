@@ -1,5 +1,15 @@
 apply plugin: 'com.android.application'
 
+// Firma única de ASI: se lee de ~/.gradle/gradle.properties (ASI_STORE_FILE, ASI_STORE_PASSWORD,
+// ASI_KEY_ALIAS, ASI_KEY_PASSWORD), nunca del repo. Con la misma clave en todas las computadoras,
+// cualquier APK nueva actualiza a la instalada sin el error "ya hay una versión anterior".
+// Si una máquina no la tiene, se compila con la clave de debug local, como antes.
+def firmaAsi = project.hasProperty('ASI_STORE_FILE') && file(project.property('ASI_STORE_FILE')).exists()
+
+// versionCode automático: minutos desde el 01/01/2026. Siempre crece, así Android trata
+// cada compilación como una actualización de la anterior.
+def versionAutomatica = (int) ((System.currentTimeMillis() - java.time.LocalDate.of(2026, 1, 1).atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()) / 60000)
+
 android {
     namespace = "com.asi.supervision"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,7 +17,7 @@ android {
         applicationId "com.asi.supervision"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        versionCode versionAutomatica
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
@@ -16,8 +26,22 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (firmaAsi) {
+            asi {
+                storeFile file(project.property('ASI_STORE_FILE'))
+                storePassword project.property('ASI_STORE_PASSWORD')
+                keyAlias project.property('ASI_KEY_ALIAS')
+                keyPassword project.property('ASI_KEY_PASSWORD')
+            }
+        }
+    }
     buildTypes {
+        debug {
+            if (firmaAsi) signingConfig signingConfigs.asi
+        }
         release {
+            if (firmaAsi) signingConfig signingConfigs.asi
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

@@ -65,7 +65,8 @@
           }
         }
       ],
-      "./plugins/withGradleSpeed"
+      "./plugins/withGradleSpeed",
+      "./plugins/withFirmaAsi"
     ],
     "experiments": {
       "typedRoutes": true

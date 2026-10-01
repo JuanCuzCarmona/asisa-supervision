@@ -9,3 +9,12 @@ www/
 
 # Documentos internos de negocio — no subir (los repos son públicos)
 ANALISIS_VALUACION.md
+
+# Claves de firma: nunca al repo (la de ASI vive en ~/ASI-Firma/)
+*.jks
+*.keystore
+!mobile/android/app/debug.keystore
+
+# Generado por scripts/build-web.sh
+web-dist/
+.vercel

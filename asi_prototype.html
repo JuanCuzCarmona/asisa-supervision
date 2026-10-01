@@ -2,7 +2,15 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#F4F6FA" />
+  <!-- iPhone: al "Agregar a inicio" abre a pantalla completa, como una app -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="ASI" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
   <title>ASI · Argentina Seguridad Integral</title>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -41,7 +49,9 @@
        Los nombres de clase .clay* se conservan para no tocar cada panel,
        pero ya no llevan sombras acolchadas. */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; font-family: "Barlow", system-ui, sans-serif; background: #F4F6FA; color: #16256E; -webkit-font-smoothing: antialiased; }
+    html, body { height: 100%; font-family: "Barlow", system-ui, sans-serif; background: #F4F6FA; color: #16256E; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+    /* iOS hace zoom al enfocar campos de menos de 16px: en celular todos van a 16px o más */
+    @media (pointer: coarse) { input, textarea, select { font-size: max(16px, 1em) !important; } }
     #root { min-height: 100vh; }
     button { cursor: pointer; border: 0 solid; background: none; font-family: inherit; color: inherit; }
     input, textarea, select { font-family: inherit; }
@@ -442,11 +452,12 @@ const SECCION_THEME = {
 };
 
 const AREA_THEME = {
-  "Logística":     { tone:"tang", label:"Logística" },
-  "Supervisión":   { tone:"brand",label:"Supervisión" },
-  "Operaciones":   { tone:"good", label:"Operaciones" },
-  "RRHH":          { tone:"plum", label:"RRHH" },
-  "Mantenimiento": { tone:"warn", label:"Mantenimiento" },
+  // Las áreas no son estados: van en chip neutro (Regla del Semáforo Honesto, DESIGN.md).
+  "Logística":     { tone:"gray", label:"Logística" },
+  "Supervisión":   { tone:"gray", label:"Supervisión" },
+  "Operaciones":   { tone:"gray", label:"Operaciones" },
+  "RRHH":          { tone:"gray", label:"RRHH" },
+  "Mantenimiento": { tone:"gray", label:"Mantenimiento" },
 };
 
 const VALOR = {
@@ -3336,6 +3347,15 @@ function OwnerPanel() {
 const isNativeApp = typeof window !== "undefined" &&
   !!window.Capacitor && (window.Capacitor.isNativePlatform ? window.Capacitor.isNativePlatform() : true);
 
+/* En un celular real (navegador o "Agregar a inicio" en iPhone) el marco de teléfono
+   falso sobra: la app ocupa la pantalla entera y respeta la isla dinámica y la barra
+   de inicio con env(safe-area-inset-*). La barra de servidor solo aparece con ?servidor. */
+const esCelularWeb = typeof window !== "undefined" && !isNativeApp &&
+  (window.matchMedia("(max-width: 600px) and (pointer: coarse)").matches ||
+   new URLSearchParams(window.location.search).has("celular"));
+const simularIphone = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("simular-iphone");
+const mostrarServidor = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("servidor");
+
 function PhoneFrame({ children, wide = false }) {
   const { offline } = useApp();
   const [t, setT] = useState(new Date());
@@ -3343,6 +3363,21 @@ function PhoneFrame({ children, wide = false }) {
 
   // En la app nativa (Android/Capacitor) el dispositivo real ya tiene su propia barra de
   // estado — el marco de teléfono es solo para la preview de escritorio en el navegador.
+  if (esCelularWeb) {
+    return (
+      <div className="flex flex-col" style={{ height:"100dvh", background:"#F4F6FA",
+        // ?simular-iphone imita la barra de inicio (34px) en una vista previa sin áreas seguras reales
+        paddingBottom: simularIphone ? "34px" : "env(safe-area-inset-bottom)",
+        paddingLeft:"env(safe-area-inset-left)", paddingRight:"env(safe-area-inset-right)" }}>
+        {/* Franja de la isla dinámica: blanca en admin/dirección para continuar su cabecera blanca.
+            ?simular-iphone la fija en 59px para la vista previa. */}
+        <div className="shrink-0" style={{ height: simularIphone ? "59px" : "env(safe-area-inset-top)", background: wide ? "#FFFFFF" : "#F4F6FA" }} />
+        {mostrarServidor && <div className="px-3 pt-2"><ApiConfigBar /></div>}
+        <div className="flex-1 overflow-hidden flex flex-col relative">{children}</div>
+      </div>
+    );
+  }
+
   if (isNativeApp) {
     return (
       <div className="min-h-screen flex flex-col" style={{ background:"#F4F6FA" }}>
