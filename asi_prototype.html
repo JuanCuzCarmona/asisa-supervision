@@ -8,105 +8,112 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600&display=swap" rel="stylesheet" />
   <script>
     tailwind.config = {
       theme: {
         extend: {
+          /* Paleta "Apple institucional" (DESIGN.md). Los nombres de tono
+             heredados (brand/aqua/plum/tang) se remapean al marino de marca
+             o a neutros: hay un solo color de marca. */
           colors: {
-            ink:   { DEFAULT:"#0f172a", soft:"#334155", mute:"#5b6b82", faint:"#64748b" },
-            brand: { 50:"#eff6ff",100:"#dbeafe",200:"#bfdbfe",300:"#93c5fd",400:"#60a5fa",500:"#3b82f6",600:"#2563eb",700:"#1d4ed8",800:"#1e40af" },
-            aqua:  { 50:"#f0f9ff",100:"#e0f2fe",200:"#bae6fd",300:"#7dd3fc",400:"#38bdf8",500:"#0ea5e9" },
-            good:  { DEFAULT:"#10b981", soft:"#d1fae5", ink:"#065f46" },
-            warn:  { DEFAULT:"#f59e0b", soft:"#fef3c7", ink:"#92400e" },
-            bad:   { DEFAULT:"#f43f5e", soft:"#ffe4e6", ink:"#9f1239" },
-            plum:  { DEFAULT:"#8b5cf6", soft:"#ede9fe", ink:"#5b21b6" },
-            tang:  { DEFAULT:"#f97316", soft:"#ffedd5", ink:"#9a3412" },
+            ink:   { DEFAULT:"#16256E", soft:"#26336A", mute:"#4A5578", faint:"#6B7494" },
+            brand: { 50:"#EEF1F8",100:"#E6EAF5",200:"#D5DAE6",300:"#B9C2DA",400:"#6B7494",500:"#2152A1",600:"#1F327C",700:"#16256E",800:"#0A1233" },
+            aqua:  { 50:"#EEF1F8",100:"#E6EAF5",200:"#D5DAE6",300:"#B9C2DA",400:"#2152A1",500:"#1F327C" },
+            good:  { DEFAULT:"#047857", soft:"#D1FAE5", ink:"#065F46" },
+            warn:  { DEFAULT:"#B45309", soft:"#FEF3C7", ink:"#92400E" },
+            bad:   { DEFAULT:"#BE123C", soft:"#FFE4E6", ink:"#9F1239" },
+            plum:  { DEFAULT:"#1F327C", soft:"#EEF1F8", ink:"#16256E" },
+            tang:  { DEFAULT:"#1F327C", soft:"#EEF1F8", ink:"#16256E" },
+            line:  { DEFAULT:"#E2E6EF", soft:"#EEF1F6", strong:"#D5DAE6" },
+            page:  "#F4F6FA",
           },
-          fontFamily: { sans: ["Inter","system-ui","-apple-system","sans-serif"] },
-          borderRadius: { clay:"22px", clay2:"28px", clay3:"34px" },
+          fontFamily: { sans: ["Barlow","system-ui","-apple-system","sans-serif"], cond: ["Barlow Semi Condensed","Barlow","sans-serif"] },
+          borderRadius: { clay:"14px", clay2:"14px", clay3:"22px" },
         }
       }
     }
   </script>
   <style>
+    /* ═══════ SISTEMA "APPLE INSTITUCIONAL" (ver DESIGN.md) ═══════
+       Superficies blancas planas sobre fondo gris azulado, separadas por
+       líneas de 1px. Un solo color de marca: el azul marino del logo.
+       Los nombres de clase .clay* se conservan para no tocar cada panel,
+       pero ya no llevan sombras acolchadas. */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; font-family: "Inter", system-ui, sans-serif; background: #dbe9fa; color: #0f172a; -webkit-font-smoothing: antialiased; }
+    html, body { height: 100%; font-family: "Barlow", system-ui, sans-serif; background: #F4F6FA; color: #16256E; -webkit-font-smoothing: antialiased; }
     #root { min-height: 100vh; }
-    button { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
+    button { cursor: pointer; border: 0 solid; background: none; font-family: inherit; color: inherit; }
     input, textarea, select { font-family: inherit; }
+    input::placeholder, textarea::placeholder { color: #8A93B0; }
     .tnum { font-variant-numeric: tabular-nums; }
+    .font-cond { font-family: "Barlow Semi Condensed", "Barlow", sans-serif; }
 
-    /* ── Scrollbar suave ── */
+    /* ── Escala de campo: el supervisor lee caminando, con guantes y luz
+       variable. Los tamaños chicos heredados se suben a un mínimo legible
+       y los pesos 800/900 se bajan a 600 (Barlow no se usa en negro). ── */
+    #root .text-\[9px\]  { font-size: 12px; }
+    #root .text-\[10px\] { font-size: 13px; }
+    #root .text-\[11px\] { font-size: 14px; }
+    #root .text-\[12px\], #root .text-xs { font-size: 14px; line-height: 1.4; }
+    #root .text-\[13px\] { font-size: 15px; }
+    #root .text-sm { font-size: 16px; line-height: 1.45; }
+    #root .font-black, #root .font-extrabold { font-weight: 600; }
+    #root .font-bold { font-weight: 600; }
+    #root .font-semibold { font-weight: 500; }
+    #root .tracking-tight { letter-spacing: -0.005em; }
+
+    /* ── Scrollbar discreta ── */
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #bfd4ee; border-radius: 6px; }
+    ::-webkit-scrollbar-thumb { background: #D5DAE6; border-radius: 6px; }
 
-    /* ═══════ CLAYMORPHISM — superficies ═══════ */
-    .clay {
-      background: #ffffff;
-      border-radius: 22px;
-      box-shadow:
-        8px 8px 18px rgba(37,99,235,.10),
-        -6px -6px 14px rgba(255,255,255,.95),
-        inset -1px -1px 2px rgba(191,219,254,.30),
-        inset 1px 1px 2px rgba(255,255,255,.90);
-    }
-    .clay-sm {
-      background: #ffffff;
-      border-radius: 16px;
-      box-shadow: 5px 5px 12px rgba(37,99,235,.09), -4px -4px 10px rgba(255,255,255,.92);
+    /* ═══════ Superficies ═══════ */
+    .clay, .clay-sm {
+      background: #FFFFFF;
+      border: 1px solid #E2E6EF;
+      border-radius: 14px;
     }
     .clay-inset {
-      background: #eef5fd;
-      border-radius: 18px;
-      box-shadow:
-        inset 5px 5px 11px rgba(37,99,235,.11),
-        inset -5px -5px 11px rgba(255,255,255,.95);
+      background: #FFFFFF;
+      border: 1px solid #E2E6EF;
+      border-radius: 12px;
+      min-height: 52px;
     }
-    .clay-inset:focus-within {
-      outline: 3px solid #2563eb; outline-offset: 2px;
-    }
-    .clay-tint {
-      border-radius: 22px;
-      box-shadow: 7px 7px 16px rgba(37,99,235,.10), -5px -5px 12px rgba(255,255,255,.85);
-    }
+    .clay-inset:focus-within { outline: 3px solid #2152A1; outline-offset: 2px; }
+    .clay-tint { border-radius: 14px; }
 
-    /* ═══════ CLAYMORPHISM — botones "apretables" ═══════ */
+    /* ═══════ Botones ═══════ */
     .clay-btn {
-      border-radius: 18px;
-      transition: transform .18s cubic-bezier(.34,1.4,.64,1), box-shadow .18s ease, background-color .18s ease, color .18s ease;
-      box-shadow: 6px 6px 14px rgba(37,99,235,.13), -4px -4px 11px rgba(255,255,255,.92);
+      border-radius: 14px;
+      transition: transform .1s ease, background-color .15s ease, color .15s ease;
     }
-    .clay-btn:active:not(:disabled) {
-      transform: translateY(2px) scale(.982);
-      box-shadow: inset 4px 4px 10px rgba(15,23,42,.16), inset -3px -3px 8px rgba(255,255,255,.35);
-    }
-    .clay-btn:disabled { cursor: not-allowed; box-shadow: 3px 3px 8px rgba(37,99,235,.07), -2px -2px 6px rgba(255,255,255,.8); }
-    .clay-btn:focus-visible, .focus-ring:focus-visible {
-      outline: 3px solid #2563eb; outline-offset: 3px;
-    }
-    .clay-press { transition: transform .18s cubic-bezier(.34,1.4,.64,1), box-shadow .18s ease; }
-    .clay-press:active { transform: translateY(1px) scale(.985); }
+    .clay-btn:active:not(:disabled) { transform: scale(.97); }
+    .clay-btn:disabled { cursor: not-allowed; }
+    .clay-btn:focus-visible, .focus-ring:focus-visible { outline: 3px solid #2152A1; outline-offset: 2px; }
+    .clay-press { transition: transform .1s ease, background-color .15s ease; }
+    .clay-press:active { transform: scale(.985); }
+    .fila-toque { transition: background-color .15s ease; }
+    .fila-toque:active { background-color: #E6EAF5; }
 
     /* ═══════ Animaciones ═══════ */
     @keyframes fadeIn   { from { opacity:0 } to { opacity:1 } }
-    @keyframes slideUp  { from { opacity:0; transform: translateY(18px) } to { opacity:1; transform:none } }
-    @keyframes slideDn  { from { opacity:0; transform: translateY(-14px) } to { opacity:1; transform:none } }
+    @keyframes slideUp  { from { opacity:0; transform: translateY(12px) } to { opacity:1; transform:none } }
+    @keyframes slideDn  { from { opacity:0; transform: translateY(-10px) } to { opacity:1; transform:none } }
     @keyframes sheetUp  { from { transform: translateY(100%) } to { transform: translateY(0) } }
-    @keyframes popIn    { 0% { transform: scale(.7); opacity:0 } 70% { transform: scale(1.07) } 100% { transform: scale(1); opacity:1 } }
+    @keyframes popIn    { 0% { transform: scale(.8); opacity:0 } 100% { transform: scale(1); opacity:1 } }
     @keyframes spin     { to { transform: rotate(360deg) } }
     @keyframes breathe  { 0%,100% { opacity:1 } 50% { opacity:.35 } }
     @keyframes shimmer  { 0% { background-position: -420px 0 } 100% { background-position: 420px 0 } }
-    .a-fade  { animation: fadeIn .32s ease both }
-    .a-up    { animation: slideUp .42s cubic-bezier(.22,1,.36,1) both }
-    .a-dn    { animation: slideDn .34s cubic-bezier(.22,1,.36,1) both }
-    .a-sheet { animation: sheetUp .38s cubic-bezier(.22,1,.36,1) both }
-    .a-pop   { animation: popIn .46s cubic-bezier(.34,1.56,.64,1) both }
+    .a-fade  { animation: fadeIn .2s ease-out both }
+    .a-up    { animation: slideUp .32s cubic-bezier(.2,.8,.2,1) both }
+    .a-dn    { animation: slideDn .28s cubic-bezier(.2,.8,.2,1) both }
+    .a-sheet { animation: sheetUp .32s cubic-bezier(.2,.8,.2,1) both }
+    .a-pop   { animation: popIn .3s ease-out both }
     .a-spin  { animation: spin .9s linear infinite; display:inline-block }
-    .a-pulse { animation: breathe 1.9s ease-in-out infinite }
+    .a-pulse { animation: breathe 1.8s ease-in-out infinite }
     .skeleton {
-      background: linear-gradient(90deg, #e3edfa 25%, #f3f8ff 50%, #e3edfa 75%);
+      background: linear-gradient(90deg, #EEF1F6 25%, #F7F8FC 50%, #EEF1F6 75%);
       background-size: 840px 100%;
       animation: shimmer 1.5s infinite linear;
     }
@@ -120,7 +127,7 @@
     .sig-canvas { cursor: crosshair; display: block; touch-action: none; }
     .no-select { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
     .stripe-bg {
-      background-image: linear-gradient(135deg, rgba(37,99,235,.05) 25%, transparent 25%, transparent 50%, rgba(37,99,235,.05) 50%, rgba(37,99,235,.05) 75%, transparent 75%);
+      background-image: linear-gradient(135deg, rgba(22,37,110,.04) 25%, transparent 25%, transparent 50%, rgba(22,37,110,.04) 50%, rgba(22,37,110,.04) 75%, transparent 75%);
       background-size: 14px 14px;
     }
 
@@ -132,24 +139,22 @@
        ancho del viewport — quedan fijos en el marco de teléfono. */
     .device-wrap { width: 100%; max-width: 392px; }
     @media (min-width: 768px) {
-      .device-wrap.device-wrap--wide { max-width: 720px; }
+      .device-wrap.device-wrap--wide { max-width: 760px; }
     }
     @media (min-width: 1024px) {
-      .device-wrap.device-wrap--wide { max-width: 1080px; }
+      .device-wrap.device-wrap--wide { max-width: 1200px; }
     }
     .device-shell {
-      background: #eaf2fd; border-radius: 44px; overflow: hidden; height: 784px;
-      border: 9px solid #ffffff; position: relative; display: flex; flex-direction: column;
-      box-shadow: 22px 22px 55px rgba(37,99,235,.22), -16px -16px 44px rgba(255,255,255,.95), inset 0 1px 2px rgba(255,255,255,.9);
+      background: #F4F6FA; border-radius: 44px; overflow: hidden; height: 800px;
+      border: 8px solid #16256E; position: relative; display: flex; flex-direction: column;
+      box-shadow: 0 24px 60px rgba(22,37,110,.18);
     }
     @media (min-width: 768px) {
-      /* El bezel de teléfono deja de tener sentido en un panel ancho de
-         escritorio: se cambia por la elevación estándar Clay (xl, 28px)
-         del propio sistema de diseño en vez de inventar una nueva. */
+      /* En escritorio el bezel no tiene sentido: el panel se vuelve una
+         ventana plana con borde de 1px, como el resto del sistema. */
       .device-shell.device-shell--wide {
-        border-radius: 28px; border: none; height: auto; min-height: calc(100vh - 108px);
-        box-shadow: 8px 8px 18px rgba(37,99,235,.10), -6px -6px 14px rgba(255,255,255,.95),
-          inset -1px -1px 2px rgba(191,219,254,.30), inset 1px 1px 2px rgba(255,255,255,.90);
+        border-radius: 14px; border: 1px solid #E2E6EF; height: auto; min-height: calc(100vh - 108px);
+        box-shadow: none;
       }
       .device-shell--wide .phone-chrome { display: none; }
       .device-shell--wide .device-body { overflow: visible; }
@@ -214,6 +219,12 @@ function useDeviceGeolocation() {
   return { coords, error, reintentar: () => setSeq((s) => s + 1) };
 }
 
+/* Logo oficial de ASI (argentinaseguridad.com.ar) — embebido para que funcione
+   igual en el navegador y dentro de la APK sin archivos sueltos.
+   Fuentes: assets/brand/asi-lockup-navy.png y asi-emblem-navy.png */
+const LOGO_ASI = "data:image/png;base64,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";
+const EMBLEMA_ASI = "data:image/png;base64,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";
+
 /* ═══════════════════════════════════════════════════════════
    DATOS SEMILLA — funcionan sin backend (modo demo)
    Reflejan el mismo shape que devuelve GET /api/inicializar
@@ -226,7 +237,7 @@ const SEED_OBJETIVOS = [
   { id:5, nombre:"Local Comercial Av. Corrientes", tipo:"Locales",    subtipo:"local_comercial",    modalidad:"unipersonal", direccion:"Av. Corrientes 2450, CABA",     lat:-34.6037, lng:-58.3968, radio_geocerca_m:120, visitas_meta_mes:12, visitas_mes:9 },
   { id:6, nombre:"Shopping Norte",                 tipo:"Locales",    subtipo:"local_comercial",    modalidad:"multipuesto", direccion:"Av. Cabildo 3100, CABA",        lat:-34.5567, lng:-58.4614, radio_geocerca_m:200, visitas_meta_mes:8,  visitas_mes:6 },
   { id:7, nombre:"Corporativo Torre Madero",       tipo:"Locales",    subtipo:"empresa_oficinas",   modalidad:"unipersonal", direccion:"Juana Manso 1150, Pto. Madero", lat:-34.6098, lng:-58.3627, radio_geocerca_m:150, visitas_meta_mes:6,  visitas_mes:3 },
-  { id:8, nombre:"Barrio Demo Cercano",             tipo:"Barrios",    subtipo:"barrio_unipersonal",  modalidad:"unipersonal", direccion:"Mendoza, Argentina (ubicación de prueba)", lat:-33.0065563773082, lng:-68.87021036414507, radio_geocerca_m:500, visitas_meta_mes:4,  visitas_mes:0 },
+  { id:8, nombre:"Barrio Demo Cercano",             tipo:"Barrios",    subtipo:"barrio_unipersonal",  modalidad:"unipersonal", direccion:"Mendoza, Argentina (ubicación de prueba)", lat:-32.939449, lng:-68.850794, radio_geocerca_m:1000, visitas_meta_mes:4,  visitas_mes:0 },
 ];
 
 const SEED_VIGILADORES = [
@@ -422,10 +433,12 @@ const BASE_VISITAS = 36; // rondas previas del mes (seed) para que el KPI arranq
 
 /* ── Paletas por sección / área / severidad ── */
 const SECCION_THEME = {
-  azul:    { ink:"#1d4ed8", soft:"#dbeafe", chip:"bg-brand-100 text-brand-700", bar:"#3b82f6" },
-  verde:   { ink:"#047857", soft:"#d1fae5", chip:"bg-good-soft text-good-ink",  bar:"#10b981" },
-  naranja: { ink:"#c2410c", soft:"#ffedd5", chip:"bg-tang-soft text-tang-ink",  bar:"#f97316" },
-  rojo:    { ink:"#be123c", soft:"#ffe4e6", chip:"bg-bad-soft text-bad-ink",    bar:"#f43f5e" },
+  // Marino único (DESIGN.md): las secciones ya no tienen color propio;
+  // se distinguen por su título, no por un tono decorativo.
+  azul:    { ink:"#16256E", soft:"#EEF1F8", chip:"bg-brand-50 text-ink", bar:"#1F327C" },
+  verde:   { ink:"#16256E", soft:"#EEF1F8", chip:"bg-brand-50 text-ink", bar:"#1F327C" },
+  naranja: { ink:"#16256E", soft:"#EEF1F8", chip:"bg-brand-50 text-ink", bar:"#1F327C" },
+  rojo:    { ink:"#16256E", soft:"#EEF1F8", chip:"bg-brand-50 text-ink", bar:"#1F327C" },
 };
 
 const AREA_THEME = {
@@ -475,6 +488,7 @@ const ICON_PATHS = {
   info:        "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z|M12 16v-4|M12 8h.01",
   chevron:     "M6 9l6 6 6-6",
   "chevron-r": "M9 18l6-6-6-6",
+  fingerprint: "M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4|M14 13.12c0 2.38 0 6.38-1 8.88|M17.29 21.02c.12-.6.43-2.3.5-3.02|M2 12a10 10 0 0 1 18-6|M2 16h.01|M21.8 16c.2-2 .131-5.354 0-6|M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2|M8.65 22c.21-.66.45-1.32.57-2|M9 6.8a6 6 0 0 1 9 5.2v2",
   "arrow-r":   "M5 12h14|M12 5l7 7-7 7",
   "arrow-l":   "M19 12H5|M12 19l-7-7 7-7",
   logout:      "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4|M16 17l5-5-5-5|M21 12H9",
@@ -531,102 +545,107 @@ function Icon({ name, size = 20, className = "", strokeWidth = 2, fill = "none" 
    PRIMITIVAS CLAY
 ═══════════════════════════════════════════════════════════ */
 function Clay({ children, className = "", inset = false, tint, as: Tag = "div", ...rest }) {
+  // Sistema plano: el "tint" heredado (antes un gradiente) se reduce a su
+  // primer color, sin sombra — el tono suave alcanza para comunicar el estado.
+  const plano = tint ? (tint.match(/#[0-9a-f]{6}/i) || [tint])[0] : null;
   return (
     <Tag className={cx(inset ? "clay-inset" : tint ? "clay-tint" : "clay", className)}
-      style={tint ? { background: tint, ...(rest.style || {}) } : rest.style} {...rest}>
+      style={plano ? { background: plano, ...(rest.style || {}) } : rest.style} {...rest}>
       {children}
     </Tag>
   );
 }
 
 const BTN_VARIANTS = {
-  primary: "bg-gradient-to-br from-brand-600 to-brand-800 text-white",
-  aqua:    "bg-gradient-to-br from-aqua-300 to-aqua-500 text-white",
-  success: "bg-gradient-to-br from-emerald-700 to-emerald-800 text-white",
-  danger:  "bg-gradient-to-br from-rose-600 to-rose-800 text-white",
-  warn:    "bg-gradient-to-br from-amber-700 to-amber-800 text-white",
-  white:   "bg-white text-ink-soft",
-  soft:    "bg-brand-50 text-brand-700",
-  ghost:   "bg-transparent text-ink-mute shadow-none",
+  primary: "bg-brand-600 text-white",
+  aqua:    "bg-white text-ink border border-[#CCD3E3]",
+  success: "bg-good text-white",
+  danger:  "bg-bad text-white",
+  warn:    "bg-warn text-white",
+  white:   "bg-white text-ink border border-[#CCD3E3]",
+  soft:    "bg-brand-50 text-ink",
+  ghost:   "bg-transparent text-brand-500",
 };
 
 function Btn({ children, variant = "primary", size = "md", icon, iconRight, full, className = "", disabled, loading, ...rest }) {
+  // Alturas pensadas para el pulgar con guantes: 44px mínimo, 56px en la acción principal.
   const sizes = {
-    sm: "px-3.5 py-2.5 text-xs gap-1.5 rounded-[14px]",
-    md: "px-5 py-3.5 text-sm gap-2 rounded-[18px]",
-    lg: "px-6 py-4.5 text-base gap-2.5 rounded-[20px]",
-    xl: "px-6 py-5 text-lg gap-3 rounded-[22px]",
+    sm: "min-h-[44px] px-4 text-[15px] gap-1.5 rounded-[12px]",
+    md: "min-h-[52px] px-5 text-[17px] gap-2 rounded-[14px]",
+    lg: "min-h-[56px] px-6 text-[17px] gap-2.5 rounded-[14px]",
+    xl: "min-h-[58px] px-6 text-[18px] gap-3 rounded-[14px]",
   };
   const dis = disabled || loading;
   return (
     <button disabled={dis}
       className={cx(
-        "clay-btn inline-flex items-center justify-center font-bold tracking-tight no-select",
+        "clay-btn inline-flex items-center justify-center font-semibold no-select",
         sizes[size], full && "w-full",
-        dis ? "bg-slate-200 text-slate-400" : BTN_VARIANTS[variant],
-        variant === "ghost" && "shadow-none",
+        dis && !loading ? "bg-[#D5DAE6] text-ink-mute" : BTN_VARIANTS[variant],
+        loading && "opacity-90",
         className
       )} {...rest}>
-      {loading ? <Icon name="refresh" size={17} className="a-spin" /> : icon ? <Icon name={icon} size={17} /> : null}
+      {loading ? <Icon name="refresh" size={18} className="a-spin" /> : icon ? <Icon name={icon} size={19} /> : null}
       {children}
-      {iconRight && !loading && <Icon name={iconRight} size={17} />}
+      {iconRight && !loading && <Icon name={iconRight} size={19} />}
     </button>
   );
 }
 
+// Semáforo honesto: solo bien/regular/mal llevan color. El resto es neutro.
 const TONE_CHIP = {
-  good:  "bg-good-soft  text-good-ink",
-  warn:  "bg-warn-soft  text-warn-ink",
-  bad:   "bg-bad-soft   text-bad-ink",
-  brand: "bg-brand-100  text-brand-700",
-  aqua:  "bg-aqua-100   text-sky-700",
-  plum:  "bg-plum-soft  text-plum-ink",
-  tang:  "bg-tang-soft  text-tang-ink",
-  gray:  "bg-slate-100  text-slate-600",
+  good:  "bg-good-soft text-good-ink",
+  warn:  "bg-warn-soft text-warn-ink",
+  bad:   "bg-bad-soft  text-bad-ink",
+  brand: "bg-brand-50  text-ink",
+  aqua:  "bg-brand-50  text-ink",
+  plum:  "bg-brand-50  text-ink",
+  tang:  "bg-brand-50  text-ink",
+  gray:  "bg-brand-50  text-ink-mute",
 };
 
 function Badge({ tone = "gray", children, icon, className = "" }) {
   return (
-    <span className={cx("inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap", TONE_CHIP[tone] || TONE_CHIP.gray, className)}>
-      {icon && <Icon name={icon} size={12} strokeWidth={2.6} />}
+    <span className={cx("inline-flex items-center gap-1 rounded-full px-2.5 min-h-[26px] text-[13px] font-semibold whitespace-nowrap", TONE_CHIP[tone] || TONE_CHIP.gray, className)}>
+      {icon && <Icon name={icon} size={13} strokeWidth={2.4} />}
       {children}
     </span>
   );
 }
 
 function Dot({ tone = "good", pulse }) {
-  const c = { good:"bg-good", warn:"bg-warn", bad:"bg-bad", brand:"bg-brand-500", gray:"bg-slate-400" };
+  const c = { good:"bg-[#10B981]", warn:"bg-warn", bad:"bg-[#F43F5E]", brand:"bg-brand-500", gray:"bg-brand-300" };
   return <span className={cx("w-2 h-2 rounded-full shrink-0", c[tone], pulse && "a-pulse")} />;
 }
 
-/* ── Encabezado de sección ── */
+/* ── Encabezado de sección: título grande estilo iOS ── */
 function SH({ title, sub, right }) {
   return (
     <div className="flex items-end justify-between gap-3 mb-1">
       <div>
-        <h2 className="text-[21px] font-black text-ink tracking-tight leading-tight">{title}</h2>
-        {sub && <p className="text-xs text-ink-mute mt-1 leading-snug">{sub}</p>}
+        <h2 className="text-[28px] font-semibold text-ink leading-[1.1] tracking-[-0.01em]">{title}</h2>
+        {sub && <p className="text-[16px] text-ink-mute mt-1.5 leading-snug">{sub}</p>}
       </div>
       {right}
     </div>
   );
 }
 
-/* ── Etiqueta pequeña tipo overline ── */
+/* ── Etiqueta de grupo: mayúscula condensada con tracking ancho ── */
 function Label({ children, className = "" }) {
-  return <p className={cx("text-[10px] font-black uppercase tracking-[.13em] text-ink-faint", className)}>{children}</p>;
+  return <p className={cx("font-cond text-[13px] font-semibold uppercase tracking-[.18em] text-ink-mute", className)}>{children}</p>;
 }
 
-/* ── Campo de texto clay ── */
+/* ── Campo de texto ── */
 function Input({ label, icon, error, className = "", ...rest }) {
   return (
     <label className="block">
-      {label && <Label className="mb-1.5">{label}</Label>}
-      <div className={cx("clay-inset flex items-center gap-2.5 px-3.5 py-3 transition-shadow", error && "ring-2 ring-bad/40")}>
-        {icon && <Icon name={icon} size={17} className="text-ink-faint" />}
-        <input className={cx("flex-1 bg-transparent outline-none text-[15px] font-semibold text-ink placeholder:text-ink-faint placeholder:font-medium min-w-0", className)} {...rest} />
+      {label && <Label className="mb-2 px-1">{label}</Label>}
+      <div className={cx("clay-inset flex items-center gap-2.5 px-3.5", error && "ring-2 ring-bad/40")}>
+        {icon && <Icon name={icon} size={20} className="text-ink-faint" />}
+        <input className={cx("flex-1 h-[52px] bg-transparent outline-none text-[17px] text-ink placeholder:text-[#8A93B0] min-w-0", className)} {...rest} />
       </div>
-      {error && <p className="text-[11px] text-bad-ink font-semibold mt-1.5 flex items-center gap-1"><Icon name="alert" size={12} />{error}</p>}
+      {error && <p className="text-[14px] text-bad-ink font-semibold mt-1.5 flex items-center gap-1"><Icon name="alert" size={14} />{error}</p>}
     </label>
   );
 }
@@ -634,9 +653,9 @@ function Input({ label, icon, error, className = "", ...rest }) {
 function Textarea({ label, hint, className = "", ...rest }) {
   return (
     <label className="block">
-      {label && <Label className="mb-1.5">{label}</Label>}
+      {label && <Label className="mb-2 px-1">{label}</Label>}
       <div className="clay-inset px-3.5 py-3">
-        <textarea className={cx("w-full bg-transparent outline-none text-sm font-medium text-ink placeholder:text-ink-faint resize-none leading-relaxed", className)} {...rest} />
+        <textarea className={cx("w-full bg-transparent outline-none text-[17px] text-ink placeholder:text-[#8A93B0] resize-none leading-relaxed", className)} {...rest} />
       </div>
       {hint}
     </label>
@@ -644,80 +663,68 @@ function Textarea({ label, hint, className = "", ...rest }) {
 }
 
 /* ── Anillo de progreso ── */
-function Ring({ value, max, color = "#2563eb", size = 116, label }) {
+function Ring({ value, max, color = "#1F327C", size = 116, label }) {
   const r = 43, c = 2 * Math.PI * r;
   const pct = max > 0 ? Math.min(value / max, 1) : 0;
   return (
     <svg width={size} height={size} viewBox="0 0 110 110" className="shrink-0">
-      <defs>
-        <filter id="ringSoft" x="-40%" y="-40%" width="180%" height="180%">
-          <feDropShadow dx="2" dy="3" stdDeviation="3" floodColor={color} floodOpacity=".28" />
-        </filter>
-      </defs>
-      <circle cx="55" cy="55" r={r} fill="none" stroke="#e2edfb" strokeWidth="11" />
-      <circle cx="55" cy="55" r={r} fill="none" stroke={color} strokeWidth="11" strokeLinecap="round"
+      <circle cx="55" cy="55" r={r} fill="none" stroke="#E6EAF2" strokeWidth="9" />
+      <circle cx="55" cy="55" r={r} fill="none" stroke={color} strokeWidth="9" strokeLinecap="round"
         strokeDasharray={c} strokeDashoffset={c - pct * c} transform="rotate(-90 55 55)"
-        filter="url(#ringSoft)" style={{ transition: "stroke-dashoffset 1.3s cubic-bezier(.22,1,.36,1)" }} />
-      <text x="55" y="52" textAnchor="middle" fill="#0f172a" fontSize="23" fontWeight="900" fontFamily="Inter">{Math.round(pct * 100)}%</text>
-      <text x="55" y="68" textAnchor="middle" fill="#5b6b82" fontSize="10" fontWeight="600" fontFamily="Inter">{label || `${value}/${max}`}</text>
+        style={{ transition: "stroke-dashoffset 1s cubic-bezier(.2,.8,.2,1)" }} />
+      <text x="55" y="53" textAnchor="middle" fill="#16256E" fontSize="24" fontWeight="600" fontFamily="Barlow">{Math.round(pct * 100)}%</text>
+      <text x="55" y="70" textAnchor="middle" fill="#4A5578" fontSize="11" fontWeight="500" fontFamily="Barlow">{label || `${value}/${max}`}</text>
     </svg>
   );
 }
 
-/* ── Barra de progreso ── */
-function Bar({ value, max, color = "#3b82f6", height = 10 }) {
+/* ── Barra de progreso: un solo tono, extremos redondeados ── */
+function Bar({ value, max, color = "#1F327C", height = 8 }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
-    <div className="clay-inset w-full overflow-hidden" style={{ height, borderRadius: height }}>
-      <div className="h-full rounded-full transition-[width] duration-1000 ease-out"
-        style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${color}cc, ${color})`, boxShadow: `0 1px 6px ${color}66` }} />
+    <div className="w-full overflow-hidden bg-[#E6EAF2]" style={{ height, borderRadius: height / 2 }}>
+      <div className="h-full transition-[width] duration-700 ease-out"
+        style={{ width: `${pct}%`, background: color, borderRadius: height / 2 }} />
     </div>
   );
 }
 
-/* ── Avatar clay ── */
-function Avatar({ nombre, size = 48, tone = "brand", src }) {
-  const grad = {
-    brand: "linear-gradient(135deg,#60a5fa,#2563eb)",
-    aqua:  "linear-gradient(135deg,#7dd3fc,#0ea5e9)",
-    plum:  "linear-gradient(135deg,#c4b5fd,#8b5cf6)",
-    warn:  "linear-gradient(135deg,#fcd34d,#f59e0b)",
-  }[tone];
+/* ── Avatar: iniciales sobre círculo neutro ── */
+function Avatar({ nombre, size = 48, src }) {
   return (
-    <div className="rounded-[35%] shrink-0 flex items-center justify-center font-black text-white overflow-hidden"
-      style={{ width:size, height:size, background:grad, fontSize:size*.34,
-               boxShadow:"5px 5px 12px rgba(37,99,235,.22), -3px -3px 8px rgba(255,255,255,.85)" }}>
+    <div className="rounded-full shrink-0 flex items-center justify-center font-semibold text-ink overflow-hidden bg-[#E6EAF5]"
+      style={{ width:size, height:size, fontSize:size*.36 }}>
       {src ? <img src={src} alt="" className="w-full h-full object-cover" /> : iniciales(nombre)}
     </div>
   );
 }
 
-/* ── Stepper del wizard ── */
+/* ── Stepper del wizard: "Paso N de 5" + segmentos ── */
 function Stepper({ steps, current }) {
   return (
-    <div className="flex items-center gap-1.5 px-4 py-3 shrink-0">
-      {steps.map((s, i) => (
-        <div key={s} className="flex-1 flex flex-col gap-1.5">
-          <div className={cx("h-[5px] rounded-full transition-all duration-500",
-            i < current ? "bg-brand-500" : i === current ? "bg-gradient-to-r from-brand-500 to-aqua-300" : "bg-slate-200")} />
-          <span className={cx("text-[9px] font-bold tracking-tight truncate transition-colors",
-            i === current ? "text-brand-700" : i < current ? "text-brand-400" : "text-slate-400")}>{s}</span>
-        </div>
-      ))}
+    <div className="px-5 pt-1 pb-3 shrink-0">
+      <div className="flex items-center justify-between mb-2">
+        <span className="font-cond text-[13px] font-semibold uppercase tracking-[.18em] text-ink-mute">Paso {current + 1} de {steps.length}</span>
+        <span className="text-[15px] font-medium text-ink">{steps[current]}</span>
+      </div>
+      <div className="grid gap-1" style={{ gridTemplateColumns:`repeat(${steps.length}, minmax(0,1fr))` }}>
+        {steps.map((s, i) => (
+          <div key={s} className={cx("h-1 rounded-full transition-colors duration-300", i <= current ? "bg-brand-600" : "bg-[#D5DAE6]")} />
+        ))}
+      </div>
     </div>
   );
 }
 
-/* ── Selector segmentado ── */
-function Segmented({ options, value, onChange, tone = "brand" }) {
-  const activeBg = { brand:"bg-brand-600", plum:"bg-plum", aqua:"bg-aqua-500" }[tone];
+/* ── Selector segmentado estilo iOS ── */
+function Segmented({ options, value, onChange }) {
   return (
-    <div className="clay-inset flex gap-1 p-1.5">
+    <div className="flex gap-0.5 p-[3px] rounded-[11px] bg-[#E6EAF2]" role="group">
       {options.map(([k, label, count]) => (
-        <button key={k} onClick={() => onChange(k)}
-          className={cx("flex-1 py-2.5 rounded-[13px] text-xs font-bold transition-all duration-200 clay-press",
-            value === k ? cx(activeBg, "text-white shadow-md") : "text-ink-mute hover:text-ink-soft")}>
-          {label}{count != null && <span className="ml-1 opacity-70 tnum">{count}</span>}
+        <button key={k} onClick={() => onChange(k)} aria-pressed={value === k}
+          className={cx("flex-1 min-h-[40px] rounded-[8px] text-[15px] transition-colors duration-150",
+            value === k ? "bg-white text-ink font-semibold shadow-[0_1px_3px_rgba(22,37,110,.14)]" : "text-ink-mute font-medium")}>
+          {label}{count != null && <span className="ml-1 text-ink-faint tnum">{count}</span>}
         </button>
       ))}
     </div>
@@ -735,21 +742,20 @@ function Sheet({ open, onClose, title, sub, children, maxH = "86%" }) {
 
   if (!open) return null;
   return (
-    <div className="absolute inset-0 z-50 flex items-end a-fade" style={{ background:"rgba(15,23,42,.42)" }}
+    <div className="absolute inset-0 z-50 flex items-end a-fade" style={{ background:"rgba(12,20,52,.38)" }}
       onClick={e => e.target === e.currentTarget && onClose()} role="dialog" aria-modal="true">
-      <div className="w-full bg-[#f2f7fe] a-sheet flex flex-col"
-        style={{ maxHeight:maxH, borderRadius:"30px 30px 0 0", boxShadow:"0 -14px 40px rgba(15,23,42,.20)" }}>
-        <div className="flex justify-center pt-3 pb-1 shrink-0">
-          <div className="w-11 h-1.5 rounded-full bg-slate-300" />
+      <div className="w-full bg-white a-sheet flex flex-col" style={{ maxHeight:maxH, borderRadius:"22px 22px 0 0" }}>
+        <div className="flex justify-center pt-2 pb-1 shrink-0">
+          <div className="w-9 h-[5px] rounded-full bg-[#D5DAE6]" />
         </div>
         <div className="flex items-start justify-between gap-3 px-5 pt-2 pb-3 shrink-0">
           <div className="min-w-0">
-            <h3 className="text-lg font-black text-ink tracking-tight leading-tight">{title}</h3>
-            {sub && <p className="text-xs text-ink-mute mt-0.5 leading-snug">{sub}</p>}
+            <h3 className="text-[22px] font-semibold text-ink leading-tight">{title}</h3>
+            {sub && <p className="text-[15px] text-ink-mute mt-1 leading-snug">{sub}</p>}
           </div>
           <button onClick={onClose} aria-label="Cerrar"
-            className="clay-sm w-10 h-10 rounded-full flex items-center justify-center text-ink-mute clay-press shrink-0 focus-ring">
-            <Icon name="x" size={18} />
+            className="w-11 h-11 rounded-full flex items-center justify-center text-ink-mute bg-brand-50 clay-press shrink-0 focus-ring">
+            <Icon name="x" size={19} />
           </button>
         </div>
         <div className="scroll-y px-5 pb-6 flex-1">{children}</div>
@@ -761,13 +767,13 @@ function Sheet({ open, onClose, title, sub, children, maxH = "86%" }) {
 /* ── Estado vacío ── */
 function Empty({ icon = "inbox", title, sub }) {
   return (
-    <div className="flex flex-col items-center justify-center py-14 px-6 text-center gap-3">
-      <div className="clay-inset w-20 h-20 rounded-full flex items-center justify-center text-brand-300">
-        <Icon name={icon} size={34} strokeWidth={1.8} />
+    <div className="flex flex-col items-center justify-center py-12 px-6 text-center gap-3">
+      <div className="w-16 h-16 rounded-full flex items-center justify-center text-ink-faint bg-brand-50">
+        <Icon name={icon} size={28} strokeWidth={1.8} />
       </div>
       <div>
-        <p className="font-black text-ink text-sm">{title}</p>
-        {sub && <p className="text-xs text-ink-mute mt-1 leading-relaxed max-w-[240px]">{sub}</p>}
+        <p className="font-semibold text-ink text-[17px]">{title}</p>
+        {sub && <p className="text-[15px] text-ink-mute mt-1 leading-relaxed max-w-[260px]">{sub}</p>}
       </div>
     </div>
   );
@@ -775,17 +781,17 @@ function Empty({ icon = "inbox", title, sub }) {
 
 /* ── Skeleton loader ── */
 function Skeleton({ h = 78, className = "" }) {
-  return <div className={cx("skeleton rounded-[20px]", className)} style={{ height: h }} />;
+  return <div className={cx("skeleton rounded-[14px]", className)} style={{ height: h }} />;
 }
 
 /* ── Fila etiqueta/valor ── */
 function Row({ k, v, tone, last }) {
   return (
-    <div className={cx("flex justify-between items-center gap-3 py-3", !last && "border-b border-slate-100")}>
-      <span className="text-[13px] text-ink-mute font-medium shrink-0">{k}</span>
+    <div className={cx("flex justify-between items-center gap-3 min-h-[48px] py-2", !last && "border-b border-line-soft")}>
+      <span className="text-[16px] text-ink-mute shrink-0">{k}</span>
       {tone
         ? <Badge tone={tone}>{v}</Badge>
-        : <span className="text-[13px] font-bold text-ink text-right leading-snug">{v}</span>}
+        : <span className="text-[16px] font-semibold text-ink text-right leading-snug">{v}</span>}
     </div>
   );
 }
@@ -1228,29 +1234,41 @@ const useApp = () => useContext(AppContext);
 /* ═══════════════════════════════════════════════════════════
    SHELL — cabecera, barra de conexión, aviso de sincronización
 ═══════════════════════════════════════════════════════════ */
-function PanelHeader({ icon, rol, nombre, tone = "brand" }) {
-  const { cerrarSesion } = useApp();
-  const grad = {
-    brand: "linear-gradient(135deg,#60a5fa,#2563eb)",
-    plum:  "linear-gradient(135deg,#c4b5fd,#8b5cf6)",
-    warn:  "linear-gradient(135deg,#fcd34d,#f59e0b)",
-  }[tone];
+function PanelHeader({ rol, nombre }) {
+  const { cerrarSesion, currentUser } = useApp();
+  const ancho = currentUser?.rol === "admin" || currentUser?.rol === "dueno";
+  if (ancho) {
+    // Escritorio/tablet: barra institucional con el logotipo completo.
+    return (
+      <div className="flex items-center gap-4 md:gap-5 px-4 md:px-8 min-h-[64px] shrink-0 bg-white border-b border-line">
+        <img src={LOGO_ASI} alt="Argentina Seguridad Integral" className="h-9 md:h-[42px] w-auto shrink-0" />
+        <span className="hidden md:block w-px h-7 bg-line" />
+        <span className="hidden md:block text-[17px] font-semibold text-ink truncate">{rol}</span>
+        <span className="flex-1" />
+        <div className="hidden sm:flex flex-col items-end min-w-0">
+          <span className="text-[15px] font-semibold text-ink truncate">{nombre}</span>
+          <span className="text-[13px] text-ink-mute">{currentUser?.rol === "admin" ? "Administración" : "Dirección"}</span>
+        </div>
+        <button onClick={cerrarSesion}
+          className="w-11 h-11 rounded-full flex items-center justify-center text-ink bg-[#E6EAF5] shrink-0 focus-ring clay-press"
+          aria-label="Cerrar sesión" title="Cerrar sesión">
+          <Icon name="logout" size={18} />
+        </button>
+      </div>
+    );
+  }
+  // Celular del supervisor: emblema + nombre, sin decoración.
   return (
-    <div className="flex items-center justify-between gap-3 px-4 py-3 shrink-0 bg-[#eaf2fd]">
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="w-11 h-11 rounded-[15px] flex items-center justify-center text-white shrink-0"
-          style={{ background:grad, boxShadow:"5px 5px 12px rgba(37,99,235,.22), -3px -3px 8px rgba(255,255,255,.9)" }}>
-          <Icon name={icon} size={21} />
-        </div>
-        <div className="min-w-0">
-          <p className="text-[11px] font-black text-ink tracking-wide uppercase leading-tight truncate">{rol}</p>
-          <p className="text-xs text-ink-mute truncate">{nombre}</p>
-        </div>
+    <div className="flex items-center gap-3 px-5 pt-3 pb-2 shrink-0">
+      <img src={EMBLEMA_ASI} alt="ASI" className="w-[30px] h-auto shrink-0" />
+      <div className="min-w-0 flex-1">
+        <p className="text-[17px] font-semibold text-ink leading-tight truncate">{nombre}</p>
+        <p className="text-[14px] text-ink-mute truncate">{rol}</p>
       </div>
       <button onClick={cerrarSesion}
-        className="clay-sm clay-press w-10 h-10 rounded-[14px] flex items-center justify-center text-ink-mute shrink-0 focus-ring"
+        className="w-11 h-11 rounded-full flex items-center justify-center text-ink bg-[#E6EAF5] shrink-0 focus-ring clay-press"
         aria-label="Cerrar sesión" title="Cerrar sesión">
-        <Icon name="logout" size={17} />
+        <Icon name="logout" size={18} />
       </button>
     </div>
   );
@@ -1259,24 +1277,23 @@ function PanelHeader({ icon, rol, nombre, tone = "brand" }) {
 function ConnBar() {
   const { offline, alternarConexion, syncing, queue, apiStatus } = useApp();
   return (
-    <div className="flex items-center justify-between gap-2 px-4 py-2 shrink-0">
-      <div className="flex items-center gap-2 min-w-0">
+    <div className="flex items-center justify-between gap-2 px-5 md:px-8 py-1.5 shrink-0">
+      <div className="flex items-center gap-2 min-w-0 h-8 px-3 rounded-full bg-white border border-line">
         {syncing ? (
-          <><Icon name="refresh" size={14} className="a-spin text-brand-600" />
-            <span className="text-[11px] font-bold text-brand-700">Sincronizando…</span></>
+          <><Icon name="refresh" size={15} className="a-spin text-ink" />
+            <span className="text-[14px] font-semibold text-ink">Sincronizando…</span></>
         ) : offline ? (
-          <><Icon name="wifi-off" size={14} className="text-bad" />
-            <span className="text-[11px] font-bold text-bad-ink">Sin conexión · {queue.length} en cola</span></>
+          <><Dot tone="warn" />
+            <span className="text-[14px] font-semibold text-warn-ink">Sin señal · {queue.length} en cola</span></>
         ) : (
-          <><Dot tone="good" pulse />
-            <span className="text-[11px] font-bold text-ink-mute">
-              {apiStatus === "connected" ? "Conectado · PostgreSQL" : "Online · Modo demo"}
+          <><Dot tone="good" />
+            <span className="text-[14px] font-semibold text-good-ink">
+              {apiStatus === "connected" ? "En línea" : "En línea · demo"}
             </span></>
         )}
       </div>
       <button onClick={alternarConexion} disabled={syncing}
-        className={cx("clay-btn px-3 py-1.5 rounded-full text-[10px] font-black tracking-wide uppercase transition-colors",
-          offline ? "bg-bad text-white" : "bg-white text-ink-mute")}>
+        className="min-h-[44px] px-2 text-[15px] font-medium text-brand-500 focus-ring rounded-[10px]">
         {offline ? "Reconectar" : "Simular corte"}
       </button>
     </div>
@@ -1287,16 +1304,16 @@ function SyncToast() {
   const { syncMsg, syncing, offline, queue } = useApp();
   let text = null, tone = "brand", icon = "cloud";
 
-  if (syncing)            { text = `Procesando ${queue.length} acta${queue.length !== 1 ? "s" : ""} en cola…`; tone = "brand"; icon = "refresh"; }
+  if (syncing)            { text = `Enviando ${queue.length} acta${queue.length !== 1 ? "s" : ""} en cola…`; tone = "brand"; icon = "refresh"; }
   else if (syncMsg)       { text = syncMsg.text; tone = syncMsg.tone; icon = syncMsg.tone === "warn" ? "alert" : "check-circle"; }
-  else if (offline && queue.length) { text = `${queue.length} acta${queue.length > 1 ? "s" : ""} en cola local · se enviará al recuperar señal`; tone = "warn"; icon = "cloud-off"; }
+  else if (offline && queue.length) { text = `${queue.length} acta${queue.length > 1 ? "s" : ""} guardada${queue.length > 1 ? "s" : ""} en el celular · se envían solas al volver la señal (reintento cada 60 s)`; tone = "offline"; icon = "cloud-off"; }
 
   if (!text) return null;
-  const bg = { brand:"bg-brand-100 text-brand-800", good:"bg-good-soft text-good-ink", warn:"bg-warn-soft text-warn-ink" }[tone];
+  const bg = { brand:"bg-[#E6EAF5] text-ink", good:"bg-good-soft text-good-ink", warn:"bg-warn-soft text-warn-ink", offline:"bg-brand-600 text-white" }[tone];
   return (
-    <div className={cx("mx-4 mb-1 rounded-[16px] px-3.5 py-2.5 flex items-center gap-2 a-dn shrink-0", bg)}>
-      <Icon name={icon} size={15} className={syncing ? "a-spin" : ""} />
-      <span className="text-[11px] font-bold leading-snug">{text}</span>
+    <div className={cx("mx-5 md:mx-8 mb-2 rounded-[14px] px-4 py-3 flex items-center gap-2.5 a-dn shrink-0", bg)}>
+      <Icon name={icon} size={18} className={syncing ? "a-spin" : ""} />
+      <span className="text-[15px] font-semibold leading-snug">{text}</span>
     </div>
   );
 }
@@ -1317,29 +1334,29 @@ function ApiConfigBar() {
   return (
     <div className="w-full max-w-[404px] mx-auto mb-2.5">
       <button onClick={() => setOpen(o => !o)}
-        className="clay w-full flex items-center gap-2.5 px-4 py-2.5 clay-press focus-ring">
+        className="clay w-full flex items-center gap-2.5 px-4 min-h-[44px] clay-press focus-ring">
         <Dot tone={S.tone} pulse={apiStatus === "connecting"} />
-        <span className="text-[11px] font-black text-ink tracking-wide">{S.label}</span>
-        <span className="text-[10px] text-ink-faint truncate flex-1 text-left font-medium">{S.detail}</span>
-        <Icon name="chevron" size={15} className={cx("text-ink-faint transition-transform", open && "rotate-180")} />
+        <span className="text-[14px] font-semibold text-ink">{S.label}</span>
+        <span className="text-[13px] text-ink-faint truncate flex-1 text-left">{S.detail}</span>
+        <Icon name="chevron" size={16} className={cx("text-ink-faint transition-transform", open && "rotate-180")} />
       </button>
 
       {open && (
         <Clay className="mt-2 p-4 a-dn">
           <Label className="mb-2">Servidor ASI — URL de la API</Label>
           <div className="flex gap-2">
-            <div className="clay-inset flex-1 flex items-center gap-2 px-3 py-2.5 min-w-0">
-              <Icon name="link" size={15} className="text-ink-faint" />
+            <div className="clay-inset flex-1 flex items-center gap-2 px-3 min-w-0">
+              <Icon name="link" size={16} className="text-ink-faint" />
               <input value={input} onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && conectarApi(input)}
                 placeholder="http://localhost:3000" spellCheck="false"
-                className="flex-1 bg-transparent outline-none text-[12px] font-mono font-semibold text-ink min-w-0" />
+                className="flex-1 bg-transparent outline-none text-[15px] font-mono text-ink min-w-0" />
             </div>
             {apiStatus === "connected"
               ? <Btn size="sm" variant="white" onClick={desconectarApi}>Salir</Btn>
               : <Btn size="sm" onClick={() => conectarApi(input)} loading={apiStatus === "connecting"}>Conectar</Btn>}
           </div>
-          <p className="text-[10px] text-ink-faint mt-2.5 leading-relaxed">
+          <p className="text-[14px] text-ink-mute mt-2.5 leading-relaxed">
             Sin conexión la app funciona con datos de ejemplo. Al conectar, los objetivos, vigiladores y el
             checklist se leen de PostgreSQL.
           </p>
@@ -1365,6 +1382,7 @@ function LoginScreen() {
   const [ver,  setVer]    = useState(false);
   const [load, setLoad]   = useState(false);
   const [err,  setErr]    = useState(null);
+  const [demo, setDemo]   = useState(false);
 
   const entrar = async () => {
     setErr(null);
@@ -1390,83 +1408,103 @@ function LoginScreen() {
     setLoad(false);
   };
 
-  return (
-    <div className="scroll-y px-6 py-7 a-fade" style={{ background:"linear-gradient(170deg,#eff6ff 0%,#e0f0fd 55%,#dbeafe 100%)" }}>
-      {/* Marca */}
-      <div className="flex flex-col items-center mb-7">
-        <div className="relative mb-4 a-pop">
-          <div className="w-[74px] h-[74px] rounded-[26px] flex items-center justify-center text-white"
-            style={{ background:"linear-gradient(135deg,#60a5fa,#1d4ed8)", boxShadow:"9px 9px 22px rgba(37,99,235,.32), -6px -6px 16px rgba(255,255,255,.95)" }}>
-            <Icon name="shield-ok" size={36} strokeWidth={2.1} />
-          </div>
-          <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-good border-[3px] border-[#eaf2fd]" />
-        </div>
-        <h1 className="text-[25px] font-black text-ink tracking-tight text-center leading-tight">Argentina Seguridad</h1>
-        <p className="text-[11px] text-brand-600 font-black tracking-[.22em] uppercase mt-1">Integral · ASI</p>
-      </div>
+  const ROL_DEMO = { supervisor:"Supervisor", admin:"Administración", dueno:"Dirección" };
 
-      <Clay className="p-5 a-up">
-        <SH title="Iniciar sesión" sub="Acceso individual por supervisor" />
-        <div className="flex flex-col gap-3.5 mt-4">
-          <Input label="Usuario" icon="user" value={user} autoCapitalize="none" spellCheck="false"
-            onChange={e => setUser(e.target.value)} placeholder="tu.usuario" />
-          <div>
-            <Label className="mb-1.5">Contraseña</Label>
-            <div className="clay-inset flex items-center gap-2.5 px-3.5 py-3">
-              <Icon name="lock" size={17} className="text-ink-faint" />
+  return (
+    <div className="relative flex-1 flex flex-col overflow-hidden bg-page a-fade">
+      {/* Marca de agua del emblema — 4.5% de opacidad, solo en el login */}
+      <img src={EMBLEMA_ASI} alt="" aria-hidden="true"
+        className="absolute pointer-events-none select-none" style={{ right:-86, bottom:-48, width:300, opacity:.045 }} />
+
+      <div className="scroll-y relative px-6 flex flex-col">
+        {/* Marca */}
+        <div className="flex flex-col items-center pt-14">
+          <img src={LOGO_ASI} alt="Argentina Seguridad Integral" className="w-[204px] h-auto" />
+          <div className="mt-5 flex items-center gap-2.5">
+            <span className="w-5 h-px bg-[#B9C2DA]" />
+            <span className="font-cond text-[13px] font-semibold uppercase tracking-[.2em] text-ink-mute">Panel de supervisión</span>
+            <span className="w-5 h-px bg-[#B9C2DA]" />
+          </div>
+        </div>
+
+        <div className="mt-11">
+          <h1 className="text-[30px] leading-[1.1] font-semibold tracking-[-0.01em] text-ink">Iniciar sesión</h1>
+          <p className="mt-2 mb-5 text-[16px] text-ink-mute">Ingresá con tu usuario corporativo.</p>
+
+          {/* Usuario y contraseña agrupados, como los ajustes de iOS */}
+          <div className="bg-white border border-line rounded-[14px] overflow-hidden focus-within:outline focus-within:outline-[3px] focus-within:outline-brand-500 focus-within:outline-offset-2">
+            <label className="flex items-center gap-3 min-h-[58px] pl-4 pr-2">
+              <Icon name="user" size={20} className="text-ink-faint" strokeWidth={1.8} />
+              <span className="w-[92px] text-[16px] font-medium text-ink shrink-0">Usuario</span>
+              <input value={user} onChange={e => setUser(e.target.value)} placeholder="nombre.apellido"
+                autoComplete="username" autoCapitalize="none" spellCheck="false"
+                className="flex-1 min-w-0 h-14 bg-transparent outline-none text-[17px] text-ink" />
+            </label>
+            <div className="h-px bg-line ml-12" />
+            <label className="flex items-center gap-3 min-h-[58px] pl-4 pr-1.5">
+              <Icon name="lock" size={20} className="text-ink-faint" strokeWidth={1.8} />
+              <span className="w-[92px] text-[16px] font-medium text-ink shrink-0">Contraseña</span>
               <input type={ver ? "text" : "password"} value={pass} onChange={e => setPass(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && entrar()} placeholder="••••••••"
-                className="flex-1 bg-transparent outline-none text-[15px] font-semibold text-ink placeholder:text-ink-faint min-w-0" />
-              <button onClick={() => setVer(v => !v)} className="text-ink-faint p-1 focus-ring rounded-lg"
+                onKeyDown={e => e.key === "Enter" && entrar()} placeholder="Requerida" autoComplete="current-password"
+                className="flex-1 min-w-0 h-14 bg-transparent outline-none text-[17px] text-ink" />
+              <button type="button" onClick={() => setVer(v => !v)} className="w-12 h-12 flex items-center justify-center text-ink-mute rounded-[10px] focus-ring"
                 aria-label={ver ? "Ocultar contraseña" : "Mostrar contraseña"}>
-                <Icon name={ver ? "eye-off" : "eye"} size={17} />
+                <Icon name={ver ? "eye-off" : "eye"} size={21} strokeWidth={1.8} />
               </button>
-            </div>
+            </label>
           </div>
 
           {err && (
-            <div className="bg-bad-soft rounded-[14px] px-3.5 py-2.5 flex items-start gap-2 a-dn">
-              <Icon name="alert" size={15} className="text-bad-ink mt-px" />
-              <p className="text-[12px] font-bold text-bad-ink leading-snug">{err}</p>
+            <div className="mt-3 bg-bad-soft rounded-[12px] px-4 py-3 flex items-start gap-2 a-dn" role="alert">
+              <Icon name="alert" size={17} className="text-bad-ink mt-px" />
+              <p className="text-[15px] font-semibold text-bad-ink leading-snug">{err}</p>
             </div>
           )}
 
-          <Btn full size="lg" onClick={entrar} loading={load} iconRight={load ? null : "arrow-r"}>
+          <div className="flex justify-end">
+            <button type="button" className="min-h-[44px] text-[15px] font-medium text-brand-500 focus-ring rounded-[8px]"
+              title="Pedí el blanqueo a Administración">¿Olvidaste tu contraseña?</button>
+          </div>
+
+          <Btn full size="lg" onClick={entrar} loading={load} className="mt-2">
             {load ? "Verificando…" : "Ingresar"}
           </Btn>
 
-          <div className="flex items-center gap-3 my-0.5">
-            <span className="h-px bg-slate-200 flex-1" />
-            <span className="text-[10px] font-bold text-ink-faint uppercase tracking-wider">o</span>
-            <span className="h-px bg-slate-200 flex-1" />
+          <div className="flex items-center gap-3 my-4">
+            <span className="h-px bg-line flex-1" />
+            <span className="text-[13px] text-ink-faint">o</span>
+            <span className="h-px bg-line flex-1" />
           </div>
 
-          <button disabled title="Disponible en la versión corporativa"
-            className="clay-btn w-full py-3.5 rounded-[18px] bg-white text-ink-faint text-xs font-bold flex items-center justify-center gap-2">
-            <Icon name="cloud" size={16} /> Continuar con OneDrive corporativo
-          </button>
+          <Btn full size="lg" variant="white" icon="fingerprint" disabled title="Disponible en la app nativa">
+            Ingresar con huella
+          </Btn>
         </div>
-      </Clay>
 
-      {/* Accesos de prueba */}
-      <Clay className="p-4 mt-3.5 a-up" style={{ animationDelay:"90ms" }}>
-        <Label className="mb-2.5">Accesos de prueba</Label>
-        <div className="flex flex-col gap-2">
-          {Object.entries(DEMO_CRED).map(([k, c]) => (
-            <button key={k} onClick={() => { setUser(c.username); setPass(c.password); setErr(null); }}
-              className="clay-inset clay-press flex items-center gap-3 px-3.5 py-2.5 text-left focus-ring">
-              <Icon name={k === "supervisor" ? "shield" : k === "admin" ? "clipboard" : "chart"} size={16} className="text-brand-600" />
-              <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-black text-ink">{c.nombre}</p>
-                <p className="text-[10px] text-ink-faint font-mono">{c.username} · {c.password}</p>
-              </div>
-              <Icon name="chevron-r" size={14} className="text-ink-faint" />
+        <div className="mt-auto pt-8 pb-5 flex flex-col items-center gap-0.5">
+          <button type="button" onClick={() => setDemo(true)}
+            className="min-h-[44px] px-3 text-[15px] font-medium text-brand-500 focus-ring rounded-[8px]">Accesos de prueba</button>
+          <div className="flex items-center gap-1.5 text-[13px] text-ink-faint">
+            <Icon name="shield-ok" size={14} />
+            <span>Conexión cifrada · ASI v3.0</span>
+          </div>
+        </div>
+      </div>
+
+      <Sheet open={demo} onClose={() => setDemo(false)} title="Accesos de prueba" sub="Solo disponibles en modo demostración.">
+        <div className="bg-white border border-line rounded-[14px] overflow-hidden">
+          {Object.entries(DEMO_CRED).map(([k, c], i) => (
+            <button key={k} onClick={() => { setUser(c.username); setPass(c.password); setErr(null); setDemo(false); }}
+              className={cx("fila-toque w-full min-h-[64px] px-4 flex items-center gap-3.5 text-left focus-ring", i > 0 && "border-t border-line")}>
+              <span className="flex-1 min-w-0">
+                <span className="block text-[17px] font-semibold text-ink">{ROL_DEMO[k]}</span>
+                <span className="block text-[14px] text-ink-faint">{c.nombre} · {c.username}</span>
+              </span>
+              <Icon name="chevron-r" size={16} className="text-ink-faint" />
             </button>
           ))}
         </div>
-      </Clay>
-
-      <p className="text-center text-[10px] text-ink-faint mt-5 font-medium">ASI · Panel de Supervisión v3.0</p>
+      </Sheet>
     </div>
   );
 }
@@ -1548,7 +1586,7 @@ function Step1({ rd, setRD, onNext }) {
           <div>
             <Label>Hora del dispositivo</Label>
             <p className="text-[34px] font-black text-ink tnum leading-none mt-1.5">{tick.toLocaleTimeString("es-AR")}</p>
-            <p className="text-xs text-ink-mute mt-1 capitalize">{fmtLargo(tick)}</p>
+            <p className="text-xs text-ink-mute mt-1 first-letter:uppercase">{fmtLargo(tick)}</p>
           </div>
           <div className={cx("w-14 h-14 rounded-[19px] flex items-center justify-center shrink-0",
             gps === "inside" ? "bg-good-soft text-good-ink" : (gps === "outside" || gps === "error") ? "bg-bad-soft text-bad-ink" : "bg-warn-soft text-warn-ink")}>
@@ -1597,12 +1635,13 @@ function Step1({ rd, setRD, onNext }) {
                   const cumple = meta > 0 && hechas >= meta;
                   return (
                     <button key={o.id} onClick={() => elegir(o)}
-                      className={cx("clay-press text-left p-3.5 rounded-[20px] transition-all duration-200 focus-ring",
-                        sel ? "bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-lg" : "clay")}>
+                      aria-pressed={sel}
+                      className={cx("clay fila-toque text-left px-4 py-3.5 min-h-[76px] focus-ring",
+                        sel && "!bg-brand-50 !border-brand-600")}>
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
-                          <p className={cx("text-sm font-black leading-tight", sel ? "text-white" : "text-ink")}>{o.nombre}</p>
-                          <p className={cx("text-[10px] mt-0.5 truncate", sel ? "text-brand-100" : "text-ink-faint")}>
+                          <p className="text-[17px] font-semibold leading-tight text-ink">{o.nombre}</p>
+                          <p className="text-[14px] mt-1 truncate text-ink-faint">
                             {SUBTIPO_LABEL[o.subtipo] || o.tipo}{o.direccion ? ` · ${o.direccion}` : ""}
                           </p>
                         </div>
@@ -1617,7 +1656,7 @@ function Step1({ rd, setRD, onNext }) {
                             <span role="button" tabIndex={0}
                               onClick={e => { e.stopPropagation(); arrancar("presencial"); }}
                               onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); e.preventDefault(); arrancar("presencial"); } }}
-                              className="clay-press w-[46px] h-[46px] rounded-full flex items-center justify-center shrink-0 bg-good text-white shadow-md focus-ring"
+                              className="clay-press w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-good text-white focus-ring"
                               title="Iniciar checklist presencial" aria-label="Iniciar checklist presencial">
                               <Icon name="check" size={20} strokeWidth={3} />
                             </span>
@@ -1626,24 +1665,24 @@ function Step1({ rd, setRD, onNext }) {
                             <span role="button" tabIndex={0}
                               onClick={e => { e.stopPropagation(); remotoRef.current?.scrollIntoView({ behavior:"smooth", block:"center" }); }}
                               onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); e.preventDefault(); remotoRef.current?.scrollIntoView({ behavior:"smooth", block:"center" }); } }}
-                              className="clay-press w-[46px] h-[46px] rounded-full flex items-center justify-center shrink-0 bg-bad text-white shadow-md focus-ring"
+                              className="clay-press w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-bad text-white focus-ring"
                               title="Fuera del geocerco — ir a justificar supervisión remota" aria-label="Fuera del geocerco — ir a justificar supervisión remota">
                               <Icon name="alert" size={20} strokeWidth={3} />
                             </span>
                           )}
                           {sel && gps !== "inside" && gps !== "outside" && gps !== "error"
-                            ? <span className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center shrink-0"><Icon name="check" size={14} strokeWidth={3} /></span>
-                            : !sel && <span className={cx("text-[10px] font-black tnum px-2 py-1 rounded-full shrink-0 min-w-[38px] text-center", cumple ? "bg-good-soft text-good-ink" : "bg-brand-50 text-brand-700")}>{hechas}/{meta}</span>}
+                            ? <span className="w-7 h-7 rounded-full bg-brand-600 text-white flex items-center justify-center shrink-0"><Icon name="check" size={15} strokeWidth={3} /></span>
+                            : !sel && <span className={cx("text-[15px] font-semibold tnum shrink-0", cumple ? "text-good-ink" : "text-ink")}>{hechas}/{meta}</span>}
                         </div>
                       </div>
                       {/* Cumplimiento mensual del objetivo (PRD §7) */}
                       <div className="mt-2.5">
-                        <div className={cx("w-full rounded-full overflow-hidden", sel ? "bg-white/25" : "bg-slate-100")} style={{ height:6 }}>
+                        <div className="w-full rounded-full overflow-hidden bg-[#E6EAF2]" style={{ height:5 }}>
                           <div className="h-full rounded-full transition-all duration-700"
                             style={{ width:`${meta ? Math.min(hechas / meta * 100, 100) : 0}%`,
-                                     background: sel ? "#ffffff" : cumple ? "#10b981" : "#3b82f6" }} />
+                                     background: cumple ? "#047857" : "#1F327C" }} />
                         </div>
-                        <p className={cx("text-[10px] mt-1 font-semibold", sel ? "text-brand-100" : "text-ink-faint")}>
+                        <p className="text-[14px] mt-1.5 text-ink-mute">
                           {hechas} de {meta} visitas este mes
                         </p>
                       </div>
@@ -1672,7 +1711,7 @@ function Step1({ rd, setRD, onNext }) {
 
       {(gps === "outside" || gps === "error") && (
         <div ref={remotoRef} className="flex flex-col gap-3 a-up">
-          <Clay className="p-4" tint="linear-gradient(135deg,#fff1f2,#ffe4e6)">
+          <Clay className="p-4" tint="#FFF1F2">
             <div className="flex items-start gap-2.5">
               <Icon name="alert" size={18} className="text-bad-ink mt-px" />
               <div>
@@ -2008,39 +2047,39 @@ function ItemChecklist({ def, resp, onEstado, onAbrirObs }) {
   const obs    = [...(resp?.obsPred || []), ...(resp?.obsLibre ? [resp.obsLibre] : [])];
 
   return (
-    <div className={cx("rounded-[20px] overflow-hidden transition-all duration-300",
-      estado === "M" ? "bg-bad-soft" : estado === "R" ? "bg-warn-soft" : "clay")}>
-      <div className="p-3.5">
+    <div className="clay overflow-hidden">
+      <div className="px-4 pt-3.5 pb-4">
         <div className="flex items-start gap-2 mb-3">
-          <p className="flex-1 text-[13px] font-black text-ink leading-snug no-select"
+          <p className="flex-1 text-[17px] font-semibold text-ink leading-snug no-select pt-1"
             onMouseDown={press} onMouseUp={release} onMouseLeave={release}
             onTouchStart={press} onTouchEnd={release} onTouchCancel={release}>
             {def.titulo_corto}
           </p>
           <button onClick={() => setCriterio(c => !c)} aria-label="Ver criterio de evaluación"
-            className={cx("shrink-0 p-1 rounded-lg focus-ring transition-colors", criterio ? "text-brand-600" : "text-ink-faint")}>
-            <Icon name="info" size={15} />
+            aria-expanded={criterio}
+            className={cx("shrink-0 w-11 h-11 -mt-1.5 -mr-2 flex items-center justify-center rounded-[10px] focus-ring transition-colors", criterio ? "text-ink" : "text-ink-mute")}>
+            <Icon name="info" size={22} strokeWidth={1.8} />
           </button>
         </div>
 
         {criterio && (
-          <div className="clay-inset px-3 py-2.5 mb-3 a-dn">
-            <p className="text-[11px] text-ink-soft leading-relaxed">{def.criterio_completo}</p>
-            <p className="text-[10px] text-ink-faint mt-1.5 font-bold">Área responsable: {def.area_responsable}</p>
+          <div className="bg-page rounded-[10px] px-3.5 py-3 mb-3 a-dn">
+            <p className="text-[15px] text-ink leading-relaxed">{def.criterio_completo}</p>
+            <p className="text-[14px] text-ink-mute mt-1.5">Área responsable: {def.area_responsable}</p>
           </div>
         )}
 
-        <div className="flex gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {["B","R","M"].map(k => {
             const v = VALOR[k], on = estado === k;
             const bg = { B:"bg-good", R:"bg-warn", M:"bg-bad" }[k];
             return (
               <button key={k} onClick={() => onEstado(k)}
                 aria-pressed={on} aria-label={`${def.titulo_corto}: ${v.label}`}
-                className={cx("clay-btn flex-1 py-3 rounded-[15px] flex flex-col items-center gap-0.5 transition-all",
-                  on ? cx(bg, "text-white") : "bg-white text-ink-mute")}>
-                <Icon name={v.icon} size={16} strokeWidth={2.4} />
-                <span className="text-[10px] font-black">{v.label}</span>
+                className={cx("clay-btn min-h-[52px] rounded-[12px] border flex items-center justify-center gap-1.5",
+                  on ? cx(bg, "text-white border-transparent") : "bg-white text-ink border-[#D5DAE6]")}>
+                {on && <Icon name={v.icon} size={16} strokeWidth={2.6} />}
+                <span className="text-[16px] font-semibold">{v.label}</span>
               </button>
             );
           })}
@@ -2049,7 +2088,7 @@ function ItemChecklist({ def, resp, onEstado, onAbrirObs }) {
 
       {(estado === "R" || estado === "M") && (
         <button onClick={onAbrirObs}
-          className="w-full px-3.5 py-3 border-t border-white/60 text-left clay-press focus-ring">
+          className="w-full min-h-[52px] px-4 py-3 border-t border-line text-left fila-toque focus-ring">
           {obs.length === 0 ? (
             <div className="flex items-center gap-2">
               <Icon name="alert" size={14} className={estado === "M" ? "text-bad-ink" : "text-warn-ink"} />
@@ -2165,7 +2204,7 @@ function Step3({ rd, setRD, onNext, onBack }) {
           </div>
           <span className="text-2xl font-black text-brand-600 tnum">{total ? Math.round(completos / total * 100) : 0}%</span>
         </div>
-        <Bar value={completos} max={total} color="#2563eb" height={9} />
+        <Bar value={completos} max={total} color="#1F327C" height={8} />
       </Clay>
 
       {/* Secciones acordeón */}
@@ -2212,7 +2251,7 @@ function Step3({ rd, setRD, onNext, onBack }) {
 
       {/* Tickets que se van a generar */}
       {tickets.length > 0 && (
-        <Clay className="p-4 a-up" tint="linear-gradient(135deg,#fff7ed,#ffedd5)">
+        <Clay className="p-4 a-up" tint="#FEF3C7">
           <div className="flex items-center gap-2 mb-2">
             <Icon name="ticket" size={16} className="text-tang-ink" />
             <p className="text-[12px] font-black text-tang-ink">
@@ -2383,7 +2422,7 @@ function Step4({ rd, setRD, onNext, onBack, supervisor }) {
         </div>
       )}
 
-      <Clay className="p-3.5 flex items-start gap-2.5" tint="linear-gradient(135deg,#eff6ff,#dbeafe)">
+      <Clay className="p-3.5 flex items-start gap-2.5" tint="#EEF1F8">
         <Icon name="stamp" size={16} className="text-brand-700 mt-px" />
         <p className="text-[11px] text-brand-800 leading-relaxed font-medium">
           La marca de agua se aplica al momento de la captura y no puede modificarse después.
@@ -2509,7 +2548,7 @@ function Step5({ rd, setRD, onGuardar, onBack, guardando }) {
           <p className="text-[12px] font-black text-ink">{firmados} de {vigs.length} firmas registradas</p>
           {puede && <Badge tone="good" icon="check">Completo</Badge>}
         </div>
-        <Bar value={firmados} max={vigs.length} color="#10b981" height={8} />
+        <Bar value={firmados} max={vigs.length} color="#1F327C" height={8} />
       </Clay>
 
       {/* Selector de vigilador */}
@@ -2632,18 +2671,11 @@ function ActaGenerada({ rd, resultado, supervisor, onNueva }) {
       {/* Documento */}
       <Clay className="overflow-hidden">
         {/* Encabezado institucional */}
-        <div className="px-4 py-4 text-white" style={{ background:"linear-gradient(135deg,#2563eb,#1d4ed8)" }}>
-          <div className="flex items-center gap-2.5">
-            <span className="w-10 h-10 rounded-[13px] bg-white/20 flex items-center justify-center">
-              <Icon name="shield-ok" size={20} />
-            </span>
-            <div>
-              <p className="text-[13px] font-black leading-tight">Argentina Seguridad Integral</p>
-              <p className="text-[10px] text-brand-100">Acta de Supervisión</p>
-            </div>
-          </div>
-          <div className="clay-inset mt-3 px-3 py-2" style={{ background:"rgba(255,255,255,.16)", boxShadow:"none" }}>
-            <p className="text-[11px] font-mono font-black tracking-wide">{acta.codigo}</p>
+        <div className="px-4 py-4 flex items-center justify-between gap-3 border-b border-line">
+          <img src={LOGO_ASI} alt="Argentina Seguridad Integral" className="h-10 w-auto" />
+          <div className="flex flex-col items-end min-w-0">
+            <span className="font-cond text-[12px] font-semibold uppercase tracking-[.18em] text-ink-mute">Acta de supervisión</span>
+            <span className="text-[14px] font-semibold text-ink tnum truncate">{acta.codigo}</span>
           </div>
         </div>
 
@@ -2866,7 +2898,7 @@ function SupervisorPanel() {
 
   return (
     <div className="flex flex-col h-full">
-      <PanelHeader icon="shield" rol="Supervisor de campo" nombre={supervisor} tone="brand" />
+      <PanelHeader rol="Supervisión de campo" nombre={supervisor} />
       <ConnBar />
       <SyncToast />
       {!res && <Stepper steps={PASOS} current={paso} />}
@@ -2944,7 +2976,7 @@ function AdminPanel() {
 
   return (
     <div className="flex flex-col h-full">
-      <PanelHeader icon="clipboard" rol="Gestión de incidencias" nombre={currentUser?.nombre || "Administración"} tone="plum" />
+      <PanelHeader rol="Gestión de incidencias" nombre={currentUser?.nombre || "Administración"} />
       <ConnBar />
       <SyncToast />
 
@@ -3121,18 +3153,18 @@ function OwnerPanel() {
   const feed = apiFeed || liveFeed;
   const pct  = Math.round(k.visitas / k.metaVisitas * 100);
 
-  const TIPO_COLOR = { Barrios:"#3b82f6", Industrias:"#10b981", Locales:"#f59e0b" };
+  const TIPO_COLOR = { Barrios:"#1F327C", Industrias:"#1F327C", Locales:"#1F327C" };
 
   return (
     <div className="flex flex-col h-full">
-      <PanelHeader icon="chart" rol="Dashboard ejecutivo" nombre={currentUser?.nombre || "Gerencia"} tone="warn" />
+      <PanelHeader rol="Dashboard ejecutivo" nombre={currentUser?.nombre || "Gerencia"} />
       <ConnBar />
       <SyncToast />
 
       <div className="scroll-y flex-1 px-4 md:px-6 pb-5 flex flex-col gap-3.5">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg md:text-xl font-black text-ink capitalize leading-tight">
+            <h2 className="text-[28px] md:text-[32px] font-semibold text-ink leading-[1.1] tracking-[-0.01em] first-letter:uppercase">
               {new Date().toLocaleDateString("es-AR", { month:"long", year:"numeric" })}
             </h2>
             <p className="text-[11px] text-ink-mute">Ciclo mensual de cumplimiento</p>
@@ -3153,7 +3185,7 @@ function OwnerPanel() {
             <Clay className="p-4 md:p-5">
               <Label className="mb-3">Cobertura de visitas mensuales</Label>
               <div className="flex items-center gap-4">
-                <Ring value={k.visitas} max={k.metaVisitas} color="#2563eb" size={118} label={`${k.visitas} de ${k.metaVisitas}`} />
+                <Ring value={k.visitas} max={k.metaVisitas} color="#1F327C" size={118} label={`${k.visitas} de ${k.metaVisitas}`} />
                 <div className="flex-1 min-w-0">
                   <p className="text-[42px] font-black text-ink tnum leading-none">{pct}<span className="text-xl text-brand-500">%</span></p>
                   <p className="text-xs text-ink-mute mt-1 leading-snug">{k.visitas} visitas realizadas<br />sobre {k.metaVisitas} planificadas</p>
@@ -3169,7 +3201,7 @@ function OwnerPanel() {
 
             {/* Incidencias */}
             <div className="flex gap-2.5">
-              <Clay className="flex-1 p-4" tint={k.criticas > 0 ? "linear-gradient(135deg,#fff1f2,#ffe4e6)" : "linear-gradient(135deg,#ecfdf5,#d1fae5)"}>
+              <Clay className="flex-1 p-4" tint={k.criticas > 0 ? "#FFF1F2" : "#ECFDF5"}>
                 <Label className={k.criticas > 0 ? "text-bad-ink" : "text-good-ink"}>Críticas</Label>
                 <p className={cx("text-[40px] font-black tnum leading-none mt-1", k.criticas > 0 ? "text-bad" : "text-good")}>{k.criticas}</p>
                 <p className={cx("text-[10px] font-bold mt-1", k.criticas > 0 ? "text-bad-ink" : "text-good-ink")}>
@@ -3227,7 +3259,7 @@ function OwnerPanel() {
                             {d.completadas}/{d.total} · <span className="font-black text-ink">{p}%</span>
                           </span>
                         </div>
-                        <Bar value={d.completadas} max={d.total || 1} color={TIPO_COLOR[tipo] || "#3b82f6"} height={9} />
+                        <Bar value={d.completadas} max={d.total || 1} color={TIPO_COLOR[tipo] || "#1F327C"} height={8} />
                       </div>
                     );
                   })}
@@ -3243,7 +3275,7 @@ function OwnerPanel() {
                           <span className="text-[11px] font-bold text-ink-soft truncate flex-1">{o.nombre}</span>
                           <span className="text-[10px] text-ink-mute tnum shrink-0">{o.realizadas}/{meta}</span>
                         </div>
-                        <Bar value={o.realizadas} max={meta || 1} color={p >= 100 ? "#10b981" : p >= 60 ? "#3b82f6" : "#f59e0b"} height={7} />
+                        <Bar value={o.realizadas} max={meta || 1} color={p >= 100 ? "#047857" : "#1F327C"} height={8} />
                       </div>
                     );
                   })}
@@ -3259,7 +3291,7 @@ function OwnerPanel() {
                   {k.porArea.map(a => (
                     <div key={a.area_responsable} className="flex items-center gap-2.5">
                       <Badge tone={AREA_THEME[a.area_responsable]?.tone || "gray"}>{a.area_responsable}</Badge>
-                      <div className="flex-1"><Bar value={parseInt(a.cantidad)} max={Math.max(...k.porArea.map(x => parseInt(x.cantidad)))} color="#8b5cf6" height={7} /></div>
+                      <div className="flex-1"><Bar value={parseInt(a.cantidad)} max={Math.max(...k.porArea.map(x => parseInt(x.cantidad)))} color="#1F327C" height={8} /></div>
                       <span className="text-[11px] font-black text-ink tnum w-4 text-right">{a.cantidad}</span>
                     </div>
                   ))}
@@ -3277,7 +3309,7 @@ function OwnerPanel() {
                 ? <Empty icon="activity" title="Sin actividad" sub="Las rondas aparecerán acá al guardarse." />
                 : feed.map((a, i) => (
                   <div key={i} className={cx("flex items-center gap-2.5 py-2.5", i < feed.length - 1 && "border-b border-slate-100")}>
-                    <span className="text-[10px] text-ink-faint font-mono w-9 shrink-0 tnum">{a.hora}</span>
+                    <span className="text-[10px] text-ink-faint w-[74px] shrink-0 tnum whitespace-nowrap">{a.hora}</span>
                     <Dot tone={a.tipo === "Presencial" ? "good" : "warn"} />
                     <div className="flex-1 min-w-0">
                       <p className="text-[11px] font-bold text-ink truncate">
@@ -3313,7 +3345,7 @@ function PhoneFrame({ children, wide = false }) {
   // estado — el marco de teléfono es solo para la preview de escritorio en el navegador.
   if (isNativeApp) {
     return (
-      <div className="min-h-screen flex flex-col" style={{ background:"#eaf2fd" }}>
+      <div className="min-h-screen flex flex-col" style={{ background:"#F4F6FA" }}>
         <ApiConfigBar />
         <div className="flex-1 overflow-hidden flex flex-col">{children}</div>
       </div>
@@ -3322,7 +3354,7 @@ function PhoneFrame({ children, wide = false }) {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 pt-3"
-      style={{ background:"radial-gradient(120% 80% at 50% 0%, #f0f7ff 0%, #dbe9fa 45%, #cddef5 100%)" }}>
+      style={{ background:"#E9ECF3" }}>
       <ApiConfigBar />
       <div className={cx("device-wrap", wide && "device-wrap--wide")}>
         <div className={cx("device-shell", wide && "device-shell--wide")}>

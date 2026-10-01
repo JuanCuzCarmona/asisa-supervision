@@ -1,47 +1,183 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-07-27T20:45:00Z",
+  "generatedAt": "2026-10-01T00:40:00Z",
   "title": "Design System: ASI · Argentina Seguridad Integral",
   "extensions": {
     "colorMeta": {
-      "guardia-azul-600": { "role": "primary", "displayName": "Azul Guardia", "canonical": "#2563eb", "tonalRamp": ["#1e40af", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe", "#eff6ff"] },
-      "cielo-aqua-500": { "role": "secondary", "displayName": "Cielo Aqua", "canonical": "#0ea5e9", "tonalRamp": ["#0ea5e9", "#38bdf8", "#7dd3fc", "#bae6fd", "#e0f2fe", "#f0f9ff"] },
-      "ink": { "role": "neutral", "displayName": "Tinta", "canonical": "#0f172a", "tonalRamp": ["#0f172a", "#334155", "#5b6b82", "#64748b"] },
-      "bien": { "role": "success", "displayName": "Verde Bien", "canonical": "#10b981" },
-      "regular": { "role": "warning", "displayName": "Ámbar Regular", "canonical": "#f59e0b" },
-      "mal": { "role": "error", "displayName": "Rojo Mal", "canonical": "#f43f5e" },
-      "plum": { "role": "tertiary", "displayName": "Violeta Institucional", "canonical": "#8b5cf6" },
-      "tang": { "role": "tertiary", "displayName": "Naranja Alerta Suave", "canonical": "#f97316" },
-      "plum-claro": { "role": "tertiary", "displayName": "Violeta Claro", "canonical": "#c4b5fd" },
-      "regular-claro": { "role": "warning", "displayName": "Ámbar Claro", "canonical": "#fcd34d" },
-      "mal-tint": { "role": "error", "displayName": "Rosa Alerta", "canonical": "#fff1f2" },
-      "bien-tint": { "role": "success", "displayName": "Verde Menta", "canonical": "#ecfdf5" },
-      "tang-tint": { "role": "tertiary", "displayName": "Durazno Suave", "canonical": "#fff7ed" },
-      "page-bg-profundo": { "role": "neutral", "displayName": "Celeste Profundo", "canonical": "#cddef5" },
-      "azul-riel": { "role": "neutral", "displayName": "Azul Riel", "canonical": "#bfd4ee" }
+      "marino": {
+        "role": "primary",
+        "displayName": "Marino",
+        "canonical": "#16256E",
+        "tonalRamp": [
+          "#0A1233",
+          "#16256E",
+          "#1F327C",
+          "#2152A1",
+          "#2D4175",
+          "#4A5578",
+          "#6B7494",
+          "#8A93B0"
+        ]
+      },
+      "marino-accion": {
+        "role": "primary",
+        "displayName": "Marino Acción",
+        "canonical": "#1F327C"
+      },
+      "azul-enlace": {
+        "role": "secondary",
+        "displayName": "Azul Enlace",
+        "canonical": "#2152A1"
+      },
+      "fondo": {
+        "role": "neutral",
+        "displayName": "Fondo",
+        "canonical": "#F4F6FA",
+        "tonalRamp": [
+          "#B9C2DA",
+          "#CCD3E3",
+          "#D5DAE6",
+          "#E2E6EF",
+          "#E6EAF2",
+          "#E6EAF5",
+          "#EEF1F6",
+          "#EEF1F8",
+          "#F4F6FA",
+          "#F7F8FC",
+          "#FFFFFF"
+        ]
+      },
+      "bien": {
+        "role": "semantic",
+        "displayName": "Bueno",
+        "canonical": "#047857",
+        "tonalRamp": [
+          "#065F46",
+          "#047857",
+          "#10B981",
+          "#D1FAE5",
+          "#ECFDF5"
+        ]
+      },
+      "regular": {
+        "role": "semantic",
+        "displayName": "Regular",
+        "canonical": "#B45309",
+        "tonalRamp": [
+          "#92400E",
+          "#B45309",
+          "#FEF3C7"
+        ]
+      },
+      "mal": {
+        "role": "semantic",
+        "displayName": "Malo",
+        "canonical": "#BE123C",
+        "tonalRamp": [
+          "#9F1239",
+          "#BE123C",
+          "#F43F5E",
+          "#FFE4E6",
+          "#FFF1F2"
+        ]
+      },
+      "noche": {
+        "role": "neutral",
+        "displayName": "Noche",
+        "canonical": "#0A1233",
+        "tonalRamp": [
+          "#0A1233",
+          "#121C45",
+          "#26336A",
+          "#33407A",
+          "#7F8BB5",
+          "#A9BBFF",
+          "#AEB8DA",
+          "#C1CBF3",
+          "#F2F5FF"
+        ]
+      },
+      "foto-placeholder": {
+        "role": "neutral",
+        "displayName": "Placeholder de foto",
+        "canonical": "#2A3350"
+      }
     },
     "typographyMeta": {
-      "headline": { "displayName": "Headline", "purpose": "Título de marca o de pantalla principal (ej. login)." },
-      "title": { "displayName": "Title", "purpose": "Encabezado de sección de contenido (componente SH)." },
-      "metric": { "displayName": "Metric", "purpose": "Cifras grandes de lectura rápida: reloj, KPIs, porcentajes. Rol propio del producto, fuera de la jerarquía Material estándar." },
-      "body": { "displayName": "Body", "purpose": "Texto de inputs, contenido de tarjetas, cuerpo general." },
-      "meta": { "displayName": "Meta", "purpose": "Título de fila de lista (vigilador, objetivo, ticket) y sub-encabezado dentro de una tarjeta ya densa." },
-      "small": { "displayName": "Small", "purpose": "Texto descriptivo de segundo nivel dentro de una tarjeta — un escalón bajo Body para contenido de apoyo." },
-      "caption": { "displayName": "Caption", "purpose": "El paso de texto secundario más reutilizado: chips de estado, hints de formulario, estado de sincronización." },
-      "label": { "displayName": "Label", "purpose": "Overline/etiqueta de campo, siempre mayúscula." },
-      "micro": { "displayName": "Micro", "purpose": "La etiqueta más pequeña de la pantalla — badges compactos, IDs monoespaciados, timestamps en filas densas." }
+      "metric": {
+        "family": "Barlow"
+      },
+      "clock": {
+        "family": "Barlow"
+      },
+      "display": {
+        "family": "Barlow"
+      },
+      "headline": {
+        "family": "Barlow"
+      },
+      "title": {
+        "family": "Barlow"
+      },
+      "title-sm": {
+        "family": "Barlow"
+      },
+      "button": {
+        "family": "Barlow"
+      },
+      "body-lg": {
+        "family": "Barlow"
+      },
+      "body": {
+        "family": "Barlow"
+      },
+      "meta": {
+        "family": "Barlow"
+      },
+      "small": {
+        "family": "Barlow"
+      },
+      "label": {
+        "family": "Barlow Semi Condensed",
+        "transform": "uppercase"
+      },
+      "watermark": {
+        "family": "Barlow"
+      }
     },
     "shadows": [
-      { "name": "clay", "value": "8px 8px 18px rgba(37,99,235,.10), -6px -6px 14px rgba(255,255,255,.95), inset -1px -1px 2px rgba(191,219,254,.30), inset 1px 1px 2px rgba(255,255,255,.90)", "purpose": "Tarjeta/contenedor estándar en reposo." },
-      { "name": "clay-sm", "value": "5px 5px 12px rgba(37,99,235,.09), -4px -4px 10px rgba(255,255,255,.92)", "purpose": "Superficie secundaria/compacta." },
-      { "name": "clay-inset", "value": "inset 5px 5px 11px rgba(37,99,235,.11), inset -5px -5px 11px rgba(255,255,255,.95)", "purpose": "Campos hundidos (inputs, contenido de solo lectura)." },
-      { "name": "clay-btn-rest", "value": "6px 6px 14px rgba(37,99,235,.13), -4px -4px 11px rgba(255,255,255,.92)", "purpose": "Botón sin presionar." },
-      { "name": "clay-btn-active", "value": "inset 4px 4px 10px rgba(15,23,42,.16), inset -3px -3px 8px rgba(255,255,255,.35)", "purpose": "Botón presionado — sombra invertida hacia adentro." }
+      {
+        "name": "segmented-active",
+        "value": "0 1px 3px rgba(22,37,110,.14)",
+        "purpose": "Segmento activo del control segmentado — única sombra de superficie."
+      },
+      {
+        "name": "sheet-overlay",
+        "value": "rgba(12,20,52,.38)",
+        "purpose": "Velo detrás de hojas inferiores, sin blur."
+      }
     ],
     "motion": [
-      { "name": "clay-press", "value": "transform .18s cubic-bezier(.34,1.4,.64,1), box-shadow .18s ease", "purpose": "Transición estándar de botones/superficies apretables." },
-      { "name": "ease-slide-up", "value": "cubic-bezier(.22,1,.36,1)", "purpose": "Entrada de contenido nuevo (clase .a-up)." },
-      { "name": "ease-pop", "value": "cubic-bezier(.34,1.56,.64,1)", "purpose": "Entrada llamativa con rebote leve (clase .a-pop), uso puntual." }
+      {
+        "name": "sheet-up",
+        "value": "transform .32s cubic-bezier(.2,.8,.2,1)",
+        "purpose": "Entrada de hojas inferiores."
+      },
+      {
+        "name": "fade",
+        "value": "opacity .2s ease-out",
+        "purpose": "Overlays."
+      },
+      {
+        "name": "state",
+        "value": "background-color .15s ease, color .15s ease",
+        "purpose": "Cambios de estado de filas y botones."
+      },
+      {
+        "name": "press",
+        "value": "transform .1s ease → scale(.97)",
+        "purpose": "Feedback táctil de botones Likert y primarios."
+      }
     ]
   },
   "components": [
@@ -49,70 +185,94 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Acción principal de la pantalla — gradiente azul institucional, se hunde al presionar.",
-      "html": "<button class=\"ds-btn-primary\">Ingresar</button>",
-      "css": ".ds-btn-primary { background: linear-gradient(to bottom right, #2563eb, #1e40af); color: #ffffff; font-weight: 700; font-size: 14px; padding: 14px 20px; border-radius: 18px; border: none; box-shadow: 6px 6px 14px rgba(37,99,235,.13), -4px -4px 11px rgba(255,255,255,.92); transition: transform .18s cubic-bezier(.34,1.4,.64,1), box-shadow .18s ease; } .ds-btn-primary:active { transform: translateY(2px) scale(.982); box-shadow: inset 4px 4px 10px rgba(15,23,42,.16), inset -3px -3px 8px rgba(255,255,255,.35); } .ds-btn-primary:focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }"
+      "description": "Acción principal única de la pantalla, fija abajo en el celular.",
+      "html": "<button class=\"ds-btn-primary\">Iniciar ronda presencial</button>",
+      "css": ".ds-btn-primary { font-family: 'Barlow', system-ui, sans-serif; background: #1F327C; color: #FFFFFF; font-size: 18px; font-weight: 600; height: 58px; width: 100%; border: 0; border-radius: 14px; } .ds-btn-primary:active { transform: scale(.97); } .ds-btn-primary:disabled { background: #D5DAE6; color: #4A5578; } .ds-btn-primary:focus-visible { outline: 3px solid #2152A1; outline-offset: 2px; }"
     },
     {
-      "name": "Ghost Button",
+      "name": "Secondary Button",
       "kind": "button",
-      "refersTo": "button-ghost",
-      "description": "Acción terciaria de bajo peso visual — única variante sin sombra clay.",
-      "html": "<button class=\"ds-btn-ghost\">Cancelar</button>",
-      "css": ".ds-btn-ghost { background: transparent; color: #5b6b82; font-weight: 700; font-size: 14px; padding: 14px 20px; border-radius: 18px; border: none; box-shadow: none; transition: color .18s ease; } .ds-btn-ghost:focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }"
+      "refersTo": "button-secondary",
+      "description": "Acción alternativa — blanco con borde fino.",
+      "html": "<button class=\"ds-btn-secondary\">Ingresar con huella</button>",
+      "css": ".ds-btn-secondary { font-family: 'Barlow', system-ui, sans-serif; background: #FFFFFF; color: #16256E; border: 1px solid #CCD3E3; font-size: 17px; font-weight: 600; height: 56px; border-radius: 14px; }"
     },
     {
-      "name": "Card",
+      "name": "Grouped List",
       "kind": "card",
-      "refersTo": "card",
-      "description": "Contenedor claymorphism estándar — superficie blanca flotando sobre el fondo celeste.",
-      "html": "<div class=\"ds-card\">Contenido</div>",
-      "css": ".ds-card { background: #ffffff; border-radius: 22px; padding: 20px; box-shadow: 8px 8px 18px rgba(37,99,235,.10), -6px -6px 14px rgba(255,255,255,.95), inset -1px -1px 2px rgba(191,219,254,.30), inset 1px 1px 2px rgba(255,255,255,.90); }"
+      "refersTo": "grouped-list",
+      "description": "Lista agrupada estilo iOS: tarjeta blanca, borde 1px, filas separadas por líneas.",
+      "html": "<div class=\"ds-group\"><button class=\"ds-row\">Barrio Privado La Alameda<span>Multipuesto · Pilar</span></button></div>",
+      "css": ".ds-group { background: #FFFFFF; border: 1px solid #E2E6EF; border-radius: 14px; overflow: hidden; } .ds-row { font-family: 'Barlow', system-ui, sans-serif; display: flex; flex-direction: column; width: 100%; min-height: 76px; padding: 12px 16px; border: 0; border-top: 1px solid #E2E6EF; background: #FFFFFF; color: #16256E; font-size: 17px; font-weight: 600; text-align: left; } .ds-row span { font-size: 14px; font-weight: 400; color: #6B7494; } .ds-row[aria-pressed=true] { background: #EEF1F8; }"
     },
     {
       "name": "Text Input",
       "kind": "input",
       "refersTo": "input",
-      "description": "Campo de texto hundido (clay-inset) con etiqueta overline arriba.",
-      "html": "<label class=\"ds-field\"><span class=\"ds-label\">Usuario</span><div class=\"ds-input\"><input type=\"text\" placeholder=\"tu.usuario\" /></div></label>",
-      "css": ".ds-field { display: block; } .ds-label { display: block; margin-bottom: 6px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.13em; color: #64748b; } .ds-input { background: #eef5fd; border-radius: 18px; padding: 12px 14px; box-shadow: inset 5px 5px 11px rgba(37,99,235,.11), inset -5px -5px 11px rgba(255,255,255,.95); } .ds-input:focus-within { outline: 3px solid #2563eb; outline-offset: 2px; } .ds-input input { background: transparent; border: none; outline: none; font-size: 15px; font-weight: 600; color: #0f172a; width: 100%; }"
+      "description": "Campo blanco con borde fino, 56px, texto 17px.",
+      "html": "<input class=\"ds-input\" placeholder=\"Número de legajo\">",
+      "css": ".ds-input { font-family: 'Barlow', system-ui, sans-serif; height: 56px; padding: 0 14px; background: #FFFFFF; border: 1px solid #E2E6EF; border-radius: 12px; font-size: 17px; color: #16256E; } .ds-input::placeholder { color: #8A93B0; } .ds-input:focus-visible { outline: 3px solid #2152A1; outline-offset: 2px; }"
     },
     {
       "name": "Status Badge",
-      "kind": "chip",
+      "kind": "badge",
       "refersTo": "badge",
-      "description": "Chip de estado semántico (bien/regular/mal/área) — nunca decorativo.",
-      "html": "<span class=\"ds-badge ds-badge-bien\">Completo</span>",
-      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 4px; border-radius: 999px; padding: 4px 10px; font-size: 11px; font-weight: 700; white-space: nowrap; } .ds-badge-bien { background: #d1fae5; color: #065f46; }"
+      "description": "Chip de estado: tono soft + texto ink del mismo tono.",
+      "html": "<span class=\"ds-badge ds-badge--mal\">Malo</span>",
+      "css": ".ds-badge { font-family: 'Barlow', system-ui, sans-serif; display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 13px; font-size: 14px; font-weight: 600; } .ds-badge--mal { background: #FFE4E6; color: #9F1239; } .ds-badge--regular { background: #FEF3C7; color: #92400E; } .ds-badge--bien { background: #D1FAE5; color: #065F46; } .ds-badge--neutro { background: #EEF1F8; color: #16256E; }"
+    },
+    {
+      "name": "Likert Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Bueno/Regular/Malo: 52px, palabra completa, sólido semántico al seleccionar.",
+      "html": "<button class=\"ds-lik\" aria-pressed=\"true\" data-v=\"M\">Malo</button>",
+      "css": ".ds-lik { font-family: 'Barlow', system-ui, sans-serif; height: 52px; border: 1px solid #D5DAE6; border-radius: 12px; background: #FFFFFF; color: #16256E; font-size: 16px; font-weight: 600; } .ds-lik[aria-pressed=true][data-v=B] { background: #047857; border-color: #047857; color: #FFFFFF; } .ds-lik[aria-pressed=true][data-v=R] { background: #B45309; border-color: #B45309; color: #FFFFFF; } .ds-lik[aria-pressed=true][data-v=M] { background: #BE123C; border-color: #BE123C; color: #FFFFFF; }"
     }
   ],
   "narrative": {
-    "northStar": "La Consola del Puesto de Guardia",
-    "overview": "ASI se siente como el instrumento de una garita: calmo, ordenado, en el que confiás bajo presión sin que te grite encima. No es una landing que busca entusiasmar — es una herramienta que un supervisor abre en movimiento, con una mano, en luz variable, y en la que un admin confía para auditar después. La superficie claymorphism (blancos acolchados, sombras dobles suaves) transmite solidez sin frialdad: nada de vidrio esmerilado ni gradientes de startup, nada de rojo-alarma permanente. El color se raciona — el azul institucional domina, y los tonos semánticos (verde/ámbar/rojo del Likert B/R/M) aparecen solo cuando codifican un estado real, nunca como decoración.\n\nExplícitamente rechazado: la estética de SaaS corporativo genérico (gradientes morado-azul, ilustraciones de stock, el look Notion/Linear que usa todo el mundo). ASI no compite por parecer una startup — compite por parecer un instrumento de trabajo confiable.",
+    "northStar": "Apple institucional",
+    "overview": "ASI se ve como una app seria de una empresa seria: claridad y calma de iOS, sobriedad de una institución de seguridad, y el azul marino de su propio logo. Superficies blancas planas sobre fondo gris azulado, separadas por líneas de 1px; un solo color de marca; Barlow como tipografía hermana del logotipo; todo tocable ≥44px y acciones del supervisor de 56–58px fijas abajo.\n\nRechazado: claymorphism y sombras acolchadas, gradientes, estética gamer/táctica, SaaS genérico, emojis como íconos.",
     "keyCharacteristics": [
-      "Superficies claymorphism blancas sobre fondo celeste — nunca fondo blanco puro ni gris neutro.",
-      "Un solo acento dominante (azul institucional); los demás colores son semánticos, no decorativos.",
-      "Tipografía Inter en negro (900) para toda jerarquía — no hay pesos livianos en la interfaz.",
-      "Botones que se \"hunden\" físicamente al tocarlos — la sombra se invierte, no solo cambia de color."
+      "Listas agrupadas estilo iOS con líneas de 1px, sin sombras.",
+      "Un solo color de marca (marino del logo) en tres tonos: texto, acción, enlace.",
+      "Barlow 400–600; jerarquía por tamaño.",
+      "Botón primario único, fijo abajo, 58px."
     ],
     "rules": [
-      { "name": "La Regla del Semáforo Honesto", "body": "Verde, ámbar y rojo existen únicamente para codificar el resultado Bien/Regular/Mal de un ítem de checklist o el estado de un ticket. Nunca se usan como color decorativo de marca ni en elementos sin estado real que representar.", "section": "colors" },
-      { "name": "La Regla de Racionamiento del Acento", "body": "El azul primario aparece en como mucho una acción por pantalla más elementos de marca fijos. Si dos elementos compiten por el mismo azul, uno de los dos está mal jerarquizado.", "section": "colors" },
-      { "name": "La Regla del Negro Sostenido", "body": "Casi nada de peso 400/500 en la interfaz: incluso el texto secundario es 600+. La jerarquía se lee por tamaño y color de tinta, no por adelgazar el trazo — eso mantiene la app legible con sol directo o guantes puestos.", "section": "typography" },
-      { "name": "La Regla de los Nueve Escalones", "body": "El ramp tipográfico completo es 9px → 10px → 11px → 12px → 13px → 15px → 21px → 25px → 34px — nueve pasos, todos en Inter, todos 700+. Un tamaño literal fuera de este ramp es drift, no una excepción legítima.", "section": "typography" },
-      { "name": "La Regla del Hundimiento Físico", "body": "Ningún elemento interactivo cambia de estado solo con color u opacidad — el par sombra-exterior/sombra-interior más una traslación de 1–2px es lo que comunica \"esto es tocable y esto ya lo toqué\".", "section": "elevation" }
+      {
+        "name": "La Regla del Semáforo Honesto",
+        "body": "Verde, ámbar y rojo solo codifican Bueno/Regular/Malo, estado de ticket, geocerco o conexión, siempre acompañados de palabra o ícono.",
+        "section": "colors"
+      },
+      {
+        "name": "La Regla del Marino Único",
+        "body": "No hay otros colores de marca: las áreas y categorías se muestran como texto o chip neutro.",
+        "section": "colors"
+      },
+      {
+        "name": "La Regla del Mínimo de Campo",
+        "body": "Ningún texto de lectura del supervisor baja de 14px; lo que se lee caminando es 16px o más.",
+        "section": "typography"
+      },
+      {
+        "name": "La Regla de la Línea, no la Sombra",
+        "body": "La separación se hace con líneas de 1px o cambio de superficie, nunca con sombras decorativas ni blur.",
+        "section": "elevation"
+      }
     ],
     "dos": [
-      "Do usar la sombra doble Clay en cualquier superficie de reposo nueva — es la firma visual del sistema, no un detalle opcional.",
-      "Do reservar bien/regular/mal (verde/ámbar/rojo) exclusivamente para estado real — nunca para jerarquía visual o decoración.",
-      "Do mantener el texto en 600+ de peso siempre — la legibilidad en exteriores con luz variable depende de esto.",
-      "Do hacer que cada elemento tocable \"se hunda\" (sombra invertida + traslación) al presionarse."
+      "Do usar listas agrupadas y líneas de 1px.",
+      "Do un solo botón primario por pantalla; el deshabilitado dice qué falta.",
+      "Do usar el logo real de ASI.",
+      "Do tabular-nums y formato de fecha argentino."
     ],
     "donts": [
-      "Don't introducir gradientes morado-azul de SaaS genérico ni la estética Notion/Linear — es la anti-referencia explícita del producto.",
-      "Don't usar rojo/ámbar/verde fuera de su rol semántico.",
-      "Don't dibujar el bezel de teléfono falso en el build nativo Android — el dispositivo real ya tiene su propia barra de estado.",
-      "Don't usar backdrop-filter: blur() de forma libre — es costoso en WebViews Android de gama media; usar más opacidad de fondo en su lugar."
+      "Don't volver a claymorphism, gradientes o botones que se hunden.",
+      "Don't agregar colores de marca.",
+      "Don't usar Inter/Roboto como fuente principal.",
+      "Don't usar backdrop-filter blur.",
+      "Don't dibujar el bezel falso en el build nativo."
     ]
   }
 }
