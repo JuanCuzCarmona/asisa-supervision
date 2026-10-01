@@ -107,3 +107,9 @@ Code comments, log messages, and API response fields are in Spanish (Argentina) 
 - Wired in `android/app/build.gradle` (Capacitor, by hand) and `mobile/plugins/withFirmaAsi.js` (native, injected at prebuild). Both debug and release use it when present and fall back to the local debug key otherwise. Before this, the Capacitor APK was signed with each machine's own `~/.android/debug.keystore`, which is why installing a teammate's build over another one failed with "No se instaló la app / ya hay una versión anterior" (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`).
 - `versionCode` is automatic in both apps (minutes since 2026-01-01), so every build is a valid update of the previous one.
 - **Losing this key means installed apps can never be updated again** (and it will be the Play Store upload key). Keep a backup outside this Mac.
+
+### Web demo (Cloudflare Pages)
+
+- `bash scripts/build-web.sh && wrangler pages deploy web-dist --project-name asi-supervision --branch main` publishes the demo-mode webapp to https://asi-supervision.pages.dev (Cloudflare account already logged in via `wrangler`). `web-dist/` is generated and gitignored; `asi_prototype.html` stays the single source.
+- On a real phone (`(max-width:600px) and (pointer:coarse)`) `PhoneFrame` drops the fake bezel and fills the screen with `env(safe-area-inset-*)`; the server bar only shows with `?servidor`. For desktop previews: `?celular` forces phone mode and `?simular-iphone` fakes the 59px Dynamic Island / 34px home-indicator insets.
+- The login's "Ingresar con Face ID / huella" is a **demo-only** simulation (disabled once an API is connected): a `.isla-fid` pill grows from the Dynamic Island position (fixed, top 11px), scans, shows a green check and logs in as the last demo user (`localStorage.asi_ultimo_demo`).
