@@ -1,5 +1,6 @@
 #!/bin/bash
-# Arma web-dist/ para publicar la webapp (modo demo) en Vercel u otro hosting estático.
+# Arma web-dist/ para publicar la webapp (modo demo) en Cloudflare Pages:
+#   bash scripts/build-web.sh && wrangler pages deploy web-dist --project-name asi-supervision --branch main
 # asi_prototype.html sigue siendo la fuente única; esto solo copia y agrega íconos/manifest.
 set -e
 cd "$(dirname "$0")/.."
@@ -30,15 +31,13 @@ json.dump({"name":"ASI · Supervisión","short_name":"ASI","start_url":"/","disp
            {"src":"icon-maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]},
   open('web-dist/manifest.webmanifest','w'),ensure_ascii=False,indent=2)
 EOF
-cat > web-dist/vercel.json <<'EOF'
-{
-  "cleanUrls": true,
-  "headers": [
-    { "source": "/(.*)", "headers": [
-      { "key": "X-Content-Type-Options", "value": "nosniff" },
-      { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
-    ] }
-  ]
-}
-EOF
+# Encabezados para Cloudflare Pages
+cat > web-dist/_headers <<'HDR'
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+/index.html
+  Cache-Control: no-cache
+HDR
 echo "web-dist listo"

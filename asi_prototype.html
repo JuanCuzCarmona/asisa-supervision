@@ -122,6 +122,21 @@
     .a-pop   { animation: popIn .3s ease-out both }
     .a-spin  { animation: spin .9s linear infinite; display:inline-block }
     .a-pulse { animation: breathe 1.8s ease-in-out infinite }
+    /* ── Isla de Face ID (demo): crece desde la isla dinámica real, escanea, confirma y se cierra ── */
+    .isla-fid { position: fixed; left: 50%; transform: translateX(-50%); z-index: 80; background: #000;
+      width: 126px; height: 37px; border-radius: 19px; display: flex; align-items: center; justify-content: center;
+      overflow: hidden; transition: width .42s cubic-bezier(.3,1.35,.5,1), height .42s cubic-bezier(.3,1.35,.5,1),
+      border-radius .42s cubic-bezier(.3,1.35,.5,1), opacity .25s ease; }
+    .isla-fid.abierta { width: 176px; height: 176px; border-radius: 46px; }
+    .isla-fid.cerrando { opacity: 0; }
+    .isla-fid .glifo { opacity: 0; transform: scale(.7); transition: opacity .25s ease .12s, transform .35s cubic-bezier(.3,1.35,.5,1) .12s; }
+    .isla-fid.abierta .glifo { opacity: 1; transform: scale(1); }
+    .isla-fid .esquinas { animation: fidEscaneo 1s ease-in-out infinite; transform-origin: 50% 50%; }
+    .isla-fid .rasgos { animation: fidRasgos 1s ease-in-out infinite; }
+    @keyframes fidEscaneo { 0%,100% { transform: scale(1); } 50% { transform: scale(.9); } }
+    @keyframes fidRasgos { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
+    .isla-fid .tilde path { stroke-dasharray: 40; stroke-dashoffset: 40; animation: fidTilde .38s ease-out forwards; }
+    @keyframes fidTilde { to { stroke-dashoffset: 0; } }
     .skeleton {
       background: linear-gradient(90deg, #EEF1F6 25%, #F7F8FC 50%, #EEF1F6 75%);
       background-size: 840px 100%;
@@ -499,6 +514,7 @@ const ICON_PATHS = {
   info:        "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z|M12 16v-4|M12 8h.01",
   chevron:     "M6 9l6 6 6-6",
   "chevron-r": "M9 18l6-6-6-6",
+  "face-id":  "M3 7V5a2 2 0 0 1 2-2h2|M17 3h2a2 2 0 0 1 2 2v2|M21 17v2a2 2 0 0 1-2 2h-2|M7 21H5a2 2 0 0 1-2-2v-2|M8 14s1.5 2 4 2 4-2 4-2|M9 9v1|M15 9v1|M12 9v3l-1 1",
   fingerprint: "M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4|M14 13.12c0 2.38 0 6.38-1 8.88|M17.29 21.02c.12-.6.43-2.3.5-3.02|M2 12a10 10 0 0 1 18-6|M2 16h.01|M21.8 16c.2-2 .131-5.354 0-6|M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2|M8.65 22c.21-.66.45-1.32.57-2|M9 6.8a6 6 0 0 1 9 5.2v2",
   "arrow-r":   "M5 12h14|M12 5l7 7-7 7",
   "arrow-l":   "M19 12H5|M12 19l-7-7 7-7",
@@ -1394,6 +1410,28 @@ function LoginScreen() {
   const [load, setLoad]   = useState(false);
   const [err,  setErr]    = useState(null);
   const [demo, setDemo]   = useState(false);
+  // Ingreso biométrico DEMOSTRATIVO: simula Face ID / huella y entra con el último
+  // usuario demo. Solo en modo demo — con servidor real no puede saltear la contraseña.
+  const [bio, setBio]     = useState(null); // null | "leyendo" | "ok"
+  const esIOS = typeof navigator !== "undefined" &&
+    (/iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
+  const bioNombre = esIOS ? "Face ID" : "huella";
+  const bioDisponible = apiStatus !== "connected";
+  const ingresarBio = () => {
+    if (bio) return;
+    setErr(null); setBio("abre");
+    // abre → escanea → confirma → se cierra → entra (tiempos parecidos al Face ID real)
+    setTimeout(() => setBio("leyendo"), 30);
+    setTimeout(() => { setBio("ok"); if (navigator.vibrate) navigator.vibrate(25); }, 1450);
+    setTimeout(() => setBio("cierra"), 2150);
+    setTimeout(() => {
+      setBio(null);
+      let k = "supervisor";
+      try { k = localStorage.getItem("asi_ultimo_demo") || "supervisor"; } catch {}
+      const c = DEMO_CRED[k] || DEMO_CRED.supervisor;
+      setCurrentUser({ id: 0, nombre: c.nombre, rol: c.rol });
+    }, 2550);
+  };
 
   const entrar = async () => {
     setErr(null);
@@ -1414,7 +1452,10 @@ function LoginScreen() {
     // Modo demo: valida contra las credenciales locales
     await new Promise(r => setTimeout(r, 480));
     const match = Object.values(DEMO_CRED).find(c => c.username === user.trim().toLowerCase() && c.password === pass);
-    if (match) setCurrentUser({ id: 0, nombre: match.nombre, rol: match.rol });
+    if (match) {
+      try { localStorage.setItem("asi_ultimo_demo", Object.keys(DEMO_CRED).find(k => DEMO_CRED[k] === match)); } catch {}
+      setCurrentUser({ id: 0, nombre: match.nombre, rol: match.rol });
+    }
     else setErr("Usuario o contraseña incorrectos.");
     setLoad(false);
   };
@@ -1487,8 +1528,9 @@ function LoginScreen() {
             <span className="h-px bg-line flex-1" />
           </div>
 
-          <Btn full size="lg" variant="white" icon="fingerprint" disabled title="Disponible en la app nativa">
-            Ingresar con huella
+          <Btn full size="lg" variant="white" icon={esIOS ? "face-id" : "fingerprint"} disabled={!bioDisponible}
+            title={bioDisponible ? `Demostración de ingreso con ${bioNombre}` : "Disponible en la app nativa"} onClick={ingresarBio}>
+            Ingresar con {bioNombre}
           </Btn>
         </div>
 
@@ -1501,6 +1543,32 @@ function LoginScreen() {
           </div>
         </div>
       </div>
+
+      {bio && (
+        <div role="status" aria-live="polite" aria-label={bio === "ok" ? "Identidad verificada" : `Verificando con ${bioNombre}`}
+          className={cx("isla-fid", (bio === "leyendo" || bio === "ok") && "abierta", bio === "cierra" && "cerrando")}
+          style={{ top: esCelularWeb ? 11 : 10, // la isla dinámica del iPhone está a 11px del borde
+                   position: esCelularWeb ? "fixed" : "absolute" }}>
+          <div className="glifo">
+            {bio === "ok" || bio === "cierra" ? (
+              <svg className="tilde" width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+                <circle cx="32" cy="32" r="29" stroke="#30D158" strokeWidth="3" />
+                <path d="M20 33l8 8 16-17" stroke="#30D158" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            ) : (
+              <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <g className="esquinas">
+                  <path d="M6 20V12a6 6 0 0 1 6-6h8" /><path d="M44 6h8a6 6 0 0 1 6 6v8" />
+                  <path d="M58 44v8a6 6 0 0 1-6 6h-8" /><path d="M20 58h-8a6 6 0 0 1-6-6v-8" />
+                </g>
+                <g className="rasgos">
+                  <path d="M22 24v5" /><path d="M42 24v5" /><path d="M32 24v12l-3 2" /><path d="M23 44c5 4 13 4 18 0" />
+                </g>
+              </svg>
+            )}
+          </div>
+        </div>
+      )}
 
       <Sheet open={demo} onClose={() => setDemo(false)} title="Accesos de prueba" sub="Solo disponibles en modo demostración.">
         <div className="bg-white border border-line rounded-[14px] overflow-hidden">
