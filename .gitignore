@@ -17,4 +17,12 @@ ANALISIS_VALUACION.md
 
 # Generado por scripts/build-web.sh
 web-dist/
+whitelabel-dist/
 .vercel
+
+# Planillas y bases traídas de la oficina de ASI: datos personales (DNI,
+# domicilios, sanciones). Nunca al repo — ver IMPORTACION_DATOS.md
+datos_asi/
+importacion_asi*.sql
+*.bak
+*.dump

@@ -70,7 +70,7 @@ export interface Coords { lat: number; lng: number; accuracy: number | null }
 
 export interface Respuesta { valoracion: Valoracion; observacion?: Observacion | null }
 
-export interface Foto { uri: string; lat: number | null; lng: number | null; tomadaEn: string }
+export interface Foto { uri: string; lat: number | null; lng: number | null; tomadaEn: string; itemId: number | null }
 
 /** Firma de un vigilador: imagen PNG (data URL) o negativa registrada. */
 export interface Firma { dataUrl?: string | null; nego?: boolean; hora?: string }
@@ -100,5 +100,9 @@ export interface Ticket {
   item?: string | null;
   vigilador?: string | null;
   fecha: string;
+  fechaIso?: string;
+  codigoActa?: string | null;
+  tipoRonda?: "presencial" | "remota";
+  enGeocerca?: boolean;
   resolucion?: string | null;
 }

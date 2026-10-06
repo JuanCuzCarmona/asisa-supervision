@@ -4,11 +4,9 @@ import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { Boton, EMBLEMA, Grupo, Hoja, Icono, Logo, Separador, T, Fila, useMargenInferior } from "../components/ui";
-import { DEMO_CRED, useSession } from "../state/session";
+import { Boton, EMBLEMA, Grupo, Icono, Logo, Separador, T, useMargenInferior } from "../components/ui";
+import { useSession } from "../state/session";
 import { color, font } from "../theme";
-
-const ROL_DEMO: Record<string, string> = { supervisor: "Supervisor", admin: "Administración", dueno: "Dirección" };
 
 export default function Login() {
   const ins = useSafeAreaInsets();
@@ -17,13 +15,12 @@ export default function Login() {
   // Pantallas bajas (celulares chicos de gama baja): menos aire arriba para que
   // el formulario y el botón Ingresar entren sin desplazar.
   const compacto = height - ins.top - abajo < 700;
-  const { login, apiUrl } = useSession();
+  const { login } = useSession();
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
   const [ver, setVer] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [demo, setDemo] = useState(false);
   const passRef = useRef<TextInput>(null);
 
   const entrar = async () => {
@@ -63,8 +60,7 @@ export default function Login() {
           <Grupo>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 12, minHeight: 58, paddingLeft: 16, paddingRight: 8 }}>
               <Icono n="user" c={color.tintaMuda} size={20} w={1.8} />
-              <T v="meta" numberOfLines={1} style={{ minWidth: 92, fontSize: 16 }}>Usuario</T>
-              <TextInput value={user} onChangeText={setUser} placeholder="nombre.apellido" placeholderTextColor={color.placeholder}
+              <TextInput accessibilityLabel="Usuario" value={user} onChangeText={setUser} placeholder="usuario" placeholderTextColor={color.placeholder}
                 autoCapitalize="none" autoCorrect={false} autoComplete="username" returnKeyType="next"
                 onSubmitEditing={() => passRef.current?.focus()}
                 style={{ flex: 1, height: 56, fontFamily: font.regular, fontSize: 17, color: color.marino }} />
@@ -72,8 +68,7 @@ export default function Login() {
             <Separador inset={48} />
             <View style={{ flexDirection: "row", alignItems: "center", gap: 12, minHeight: 58, paddingLeft: 16, paddingRight: 4 }}>
               <Icono n="lock" c={color.tintaMuda} size={20} w={1.8} />
-              <T v="meta" numberOfLines={1} style={{ minWidth: 92, fontSize: 16 }}>Contraseña</T>
-              <TextInput ref={passRef} value={pass} onChangeText={setPass} placeholder="Requerida" placeholderTextColor={color.placeholder}
+              <TextInput ref={passRef} accessibilityLabel="Contraseña" value={pass} onChangeText={setPass} placeholder="contraseña" placeholderTextColor={color.placeholder}
                 secureTextEntry={!ver} autoComplete="current-password" returnKeyType="go" onSubmitEditing={entrar}
                 style={{ flex: 1, height: 56, fontFamily: font.regular, fontSize: 17, color: color.marino }} />
               <Pressable onPress={() => setVer(v => !v)} accessibilityLabel={ver ? "Ocultar contraseña" : "Mostrar contraseña"}
@@ -95,44 +90,16 @@ export default function Login() {
           </View>
           <Boton titulo={cargando ? "Verificando…" : "Ingresar"} onPress={entrar} cargando={cargando} style={{ marginTop: 6 }} />
 
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginVertical: 16 }}>
-            <View style={{ flex: 1, height: 1, backgroundColor: color.linea }} />
-            <T v="small" c={color.tintaMuda}>o</T>
-            <View style={{ flex: 1, height: 1, backgroundColor: color.linea }} />
-          </View>
-          <Boton variante="secundario" icono="fingerprint" titulo="Ingresar con huella" deshabilitado />
-          <T v="small" c={color.tintaMuda} style={{ textAlign: "center", marginTop: 8 }}>Disponible después del primer ingreso con contraseña.</T>
         </Animated.View>
 
         <View style={{ marginTop: "auto", paddingTop: 28, alignItems: "center" }}>
-          <View style={{ flexDirection: "row", gap: 18 }}>
-            {!apiUrl && <Boton variante="texto" titulo="Accesos de prueba" onPress={() => setDemo(true)} />}
-            <Boton variante="texto" titulo="Servidor" onPress={() => router.push("/servidor")} />
-          </View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
             <Icono n="shield" c={color.tintaMuda} size={14} />
-            <T v="small" c={color.tintaMuda} style={{ fontSize: 13 }}>{apiUrl ? "Conexión cifrada · ASI v3.0" : "Modo demostración · ASI v3.0"}</T>
+            <T v="small" c={color.tintaMuda} style={{ fontSize: 13 }}>Conexión cifrada · ASI v3.0</T>
           </View>
         </View>
       </ScrollView>
 
-      <Hoja visible={demo} onCerrar={() => setDemo(false)} titulo="Accesos de prueba" subtitulo="Solo disponibles en modo demostración.">
-        <Grupo>
-          {Object.entries(DEMO_CRED).map(([k, c], i) => (
-            <View key={k}>
-              {i > 0 && <Separador inset={0} />}
-              <Fila onPress={() => { setUser(k); setPass(c.password); setError(null); setDemo(false); }}>
-                <View style={{ flex: 1 }}>
-                  <T v="bodyLg">{ROL_DEMO[k]}</T>
-                  <T v="small" c={color.tintaMuda}>{c.usuario.nombre} · {k}</T>
-                </View>
-                <Icono n="chevron-r" c={color.placeholder} size={18} />
-              </Fila>
-            </View>
-          ))}
-        </Grupo>
-        <Boton variante="tintado" titulo="Cerrar" alto={52} onPress={() => setDemo(false)} style={{ marginTop: 14 }} />
-      </Hoja>
     </KeyboardAvoidingView>
   );
 }

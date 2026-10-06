@@ -8,7 +8,7 @@ import * as Location from "expo-location";
 import { Directory, File, Paths } from "expo-file-system";
 import { captureRef } from "react-native-view-shot";
 import Animated, { FadeIn, ZoomIn } from "react-native-reanimated";
-import { BarraAccion, BarraPaso, Boton, Etiqueta, Icono, T } from "../../components/ui";
+import { BarraAccion, BarraPaso, Boton, Etiqueta, Fila, Grupo, Hoja, Icono, Separador, T } from "../../components/ui";
 import { useRonda } from "../../state/ronda";
 import { useSession } from "../../state/session";
 import { color, font, radius } from "../../theme";
@@ -19,8 +19,9 @@ interface Sellando { uri: string; aspecto: number; lat: number | null; lng: numb
 
 export default function Evidencia() {
   const { usuario } = useSession();
-  const { rd, setRd } = useRonda();
+  const { rd, setRd, items } = useRonda();
   const [sellando, setSellando] = useState<Sellando | null>(null);
+  const [fotoElegida, setFotoElegida] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const marco = useRef<View>(null);
 
@@ -51,7 +52,7 @@ export default function Evidencia() {
       if (!dir.exists) dir.create();
       const destino = new File(dir, `foto-${Date.now()}.jpg`);
       new File(tmp).copy(destino);
-      setRd(p => ({ ...p, fotos: [...p.fotos, { uri: destino.uri, lat: sellando.lat, lng: sellando.lng, tomadaEn: sellando.fecha.toISOString() }] }));
+      setRd(p => ({ ...p, fotos: [...p.fotos, { uri: destino.uri, lat: sellando.lat, lng: sellando.lng, tomadaEn: sellando.fecha.toISOString(), itemId: null }] }));
     } catch {
       setError("No se pudo sellar la foto. Probá de nuevo.");
     } finally {
@@ -60,6 +61,10 @@ export default function Evidencia() {
   };
 
   const quitar = (uri: string) => setRd(p => ({ ...p, fotos: p.fotos.filter(f => f.uri !== uri) }));
+  const asignar = (itemId: number | null) => {
+    setRd(p => ({ ...p, fotos: p.fotos.map(f => f.uri === fotoElegida ? { ...f, itemId } : f) }));
+    setFotoElegida(null);
+  };
 
   const n = rd.fotos.length;
   const sello = sellando ? [
@@ -73,7 +78,7 @@ export default function Evidencia() {
       <BarraPaso atras="Checklist" paso={4} />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }}>
         <T v="display" style={{ marginTop: 12 }}>Evidencia</T>
-        <T v="body" c={color.tintaSuave} style={{ marginTop: 4 }}>Opcional. Cada foto se sella con fecha, hora, GPS y supervisor, y no se puede editar.</T>
+        <T v="body" c={color.tintaSuave} style={{ marginTop: 4 }}>Opcional. Cada foto se sella con fecha, hora, GPS y supervisor. Después podés vincularla a un punto del checklist.</T>
 
         <View style={{ flexDirection: "row", gap: 12, marginTop: 20 }}>
           <Pressable onPress={() => tomar(true)} disabled={n >= MAX_FOTOS} accessibilityRole="button" accessibilityLabel="Tomar foto"
@@ -123,6 +128,14 @@ export default function Evidencia() {
                     <Icono n="x" c="#fff" size={14} w={2.6} />
                   </View>
                 </Pressable>
+                <Pressable onPress={() => setFotoElegida(f.uri)} accessibilityRole="button" accessibilityLabel={`Asignar foto ${i + 1} a un punto del checklist`}
+                  style={{ position: "absolute", left: 0, right: 0, bottom: 0, minHeight: 52, paddingHorizontal: 10,
+                    backgroundColor: "rgba(10,18,51,0.88)", flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <T v="small" c="#fff" style={{ flex: 1, fontFamily: font.semibold }} numberOfLines={2}>
+                    {items.find(it => it.id === f.itemId)?.titulo_corto || "Asignar punto"}
+                  </T>
+                  <Icono n="chevron-r" c="#fff" size={16} />
+                </Pressable>
               </Animated.View>
             ))}
           </View>
@@ -131,6 +144,23 @@ export default function Evidencia() {
       <BarraAccion resumen={n === 0 ? "Sin fotos · podés continuar igual" : n === 1 ? "1 foto adjunta al acta" : `${n} fotos adjuntas al acta`}>
         <Boton titulo="Continuar a firmas" alto={58} deshabilitado={!!sellando} onPress={() => router.push("/supervisor/firmas")} />
       </BarraAccion>
+      <Hoja visible={!!fotoElegida} onCerrar={() => setFotoElegida(null)} titulo="Asignar evidencia"
+        subtitulo="Elegí el punto del checklist al que corresponde la foto.">
+        <ScrollView style={{ maxHeight: 380 }} nestedScrollEnabled showsVerticalScrollIndicator persistentScrollbar>
+          <Grupo>
+            <Fila onPress={() => asignar(null)}><T v="meta">Evidencia general de la ronda</T></Fila>
+            {items.map(it => (
+              <View key={it.id}>
+                <Separador inset={0} />
+                <Fila onPress={() => asignar(it.id)} style={{ minHeight: 58 }}>
+                  <T v="meta" style={{ flex: 1 }}>{it.titulo_corto}</T>
+                  <Icono n="chevron-r" c={color.placeholder} size={16} />
+                </Fila>
+              </View>
+            ))}
+          </Grupo>
+        </ScrollView>
+      </Hoja>
     </View>
   );
 }

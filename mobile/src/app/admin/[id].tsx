@@ -12,13 +12,13 @@ import { color, font, radius, valoracionTono } from "../../theme";
 export default function DetalleIncidencia() {
   const ins = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { tickets, resolver } = useTickets();
+  const { tickets, resolver, cargando } = useTickets();
   const t = tickets.find(x => x.id === decodeURIComponent(String(id)));
   const [texto, setTexto] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!t) return <View style={{ flex: 1, padding: 24, paddingTop: ins.top + 24 }}><T v="title">Incidencia no encontrada</T></View>;
+  if (!t) return <View style={{ flex: 1, padding: 24, paddingTop: ins.top + 24 }}><T v="title">{cargando ? "Cargando incidencia…" : "Incidencia no encontrada"}</T></View>;
   const ok = texto.trim().length >= 5;
 
   const cerrar = async () => {
@@ -52,8 +52,11 @@ export default function DetalleIncidencia() {
           {t.item ? <FilaDato k="Ítem" v={t.item} /> : null}
           {t.vigilador ? <FilaDato k="Vigilador" v={t.vigilador} /> : null}
           <FilaDato k="Supervisor" v={t.supervisor} />
+          {t.codigoActa ? <FilaDato k="Acta" v={t.codigoActa} /> : null}
           <FilaDato k="Registrado" v={t.fecha} ultima />
         </Grupo>
+        {t.codigoActa && <Boton variante="contorno" titulo="Ver acta y evidencias"
+          onPress={() => router.push(`/acta/${encodeURIComponent(t.codigoActa!)}`)} style={{ marginTop: 14 }} />}
 
         {t.estado === "Activa" ? (
           <View style={{ marginTop: 22 }}>

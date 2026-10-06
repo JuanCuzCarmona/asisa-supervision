@@ -19,7 +19,6 @@ function Navegacion() {
   if (!fuentes || !listo) return null;
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.fondo }, animation: "slide_from_right" }}>
-      <Stack.Screen name="servidor" options={{ presentation: "modal", animation: "slide_from_bottom" }} />
       <Stack.Screen name="supervisor/acta" options={{ gestureEnabled: false, animation: "fade" }} />
     </Stack>
   );

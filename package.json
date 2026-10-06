@@ -5,9 +5,17 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "build:whitelabel": "node scripts/build-whitelabel.mjs",
+    "verify:whitelabel": "npm run build:whitelabel && node scripts/verify-whitelabel.mjs",
+    "preview:whitelabel": "python3 -m http.server 8765 --directory whitelabel-dist",
     "cap:sync-web": "cp asi_prototype.html www/index.html",
     "cap:sync": "npm run cap:sync-web && npx cap sync android",
-    "cap:open": "npx cap open android"
+    "cap:open": "npx cap open android",
+    "db:esquema": "psql \"${DATABASE_URL:-asi}\" -v ON_ERROR_STOP=1 -f schema.sql",
+    "db:demo": "psql \"${DATABASE_URL:-asi}\" -v ON_ERROR_STOP=1 -f seed_demo.sql",
+    "usuario:crear": "node scripts/crear_usuario.js",
+    "importar": "node scripts/importar_crudo.js",
+    "db:aplicar": "node scripts/aplicar_sql.js"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.2",
@@ -22,6 +30,7 @@
     "pg": "^8.11.5"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.4.2"
+    "@capacitor/cli": "^8.4.2",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   }
 }

@@ -1,16 +1,22 @@
 /* Acta generada: confirmación + documento con el sello institucional. */
+import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { Redirect, router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown, ZoomIn } from "react-native-reanimated";
 import { BarraAccion, Boton, Chip, FilaDato, Grupo, Icono, Logo, T } from "../../components/ui";
 import { fechaCorta, hora } from "../../domain/formato";
+import { compartirPdfActa } from "../../domain/pdfActa";
 import { useRonda } from "../../state/ronda";
-import { color, font, radius, valoracionTono } from "../../theme";
+import { useSession } from "../../state/session";
+import { color, font, valoracionTono } from "../../theme";
 
 export default function Acta() {
   const ins = useSafeAreaInsets();
-  const { resultado, reiniciar } = useRonda();
+  const { resultado, reiniciar, items } = useRonda();
+  const { usuario } = useSession();
+  const [exportando, setExportando] = useState(false);
+  const [errorPdf, setErrorPdf] = useState<string | null>(null);
   if (!resultado) return <Redirect href="/supervisor" />;
   const { ronda: rd } = resultado;
 
@@ -20,11 +26,16 @@ export default function Acta() {
 
   const ENC = {
     enviada: { titulo: "Acta generada", sub: "Guardada y enviada a la central.", fondo: color.bien, icono: "check" },
-    demo: { titulo: "Acta generada", sub: "Guardada en modo demostración.", fondo: color.bien, icono: "check" },
     encolada: { titulo: "Acta guardada en el celular", sub: "Sin señal: se envía sola cuando vuelva la conexión.", fondo: color.accion, icono: "wifi-off" },
   }[resultado.estado];
 
   const nueva = () => { reiniciar(); router.replace("/supervisor"); };
+  const exportar = async () => {
+    setErrorPdf(null); setExportando(true);
+    try { await compartirPdfActa(resultado, items, usuario?.nombre || "Supervisor"); }
+    catch (e: any) { setErrorPdf(e?.message || "No se pudo crear el PDF."); }
+    finally { setExportando(false); }
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: color.fondo }}>
@@ -100,8 +111,10 @@ export default function Acta() {
             </View>
           </Grupo>
         </Animated.View>
+        {errorPdf && <T v="meta" c={color.malInk} style={{ marginTop: 12 }}>{errorPdf}</T>}
       </ScrollView>
       <BarraAccion>
+        <Boton variante="contorno" titulo="Exportar acta en PDF" alto={54} cargando={exportando} onPress={exportar} />
         <Boton titulo="Nueva ronda" alto={58} onPress={nueva} />
       </BarraAccion>
     </View>

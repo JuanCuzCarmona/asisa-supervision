@@ -9,10 +9,12 @@ import { Avatar, BarraAccion, BarraProgreso, Boton, EMBLEMA, Etiqueta, Fila, Gru
 import { SUBTIPO_LABEL } from "../../domain/checklist";
 import { fechaLarga, iniciales } from "../../domain/formato";
 import { distanciaMetros, formatoDistancia } from "../../domain/geo";
+import { MOTIVOS_REMOTOS, validarJustificacion } from "../../domain/justificacion";
 import { useRonda } from "../../state/ronda";
 import { useSession } from "../../state/session";
 import { color, font, radius } from "../../theme";
 import type { Coords, Objetivo } from "../../types";
+import { apiFetch } from "../../api";
 
 type EstadoGps = "buscando" | "dentro" | "fuera" | "error";
 
@@ -67,6 +69,15 @@ export default function InicioRonda() {
   const [busca, setBusca] = useState("");
   const [sel, setSel] = useState<Objetivo | null>(rd.objetivo);
   const [just, setJust] = useState("");
+  const [motivo, setMotivo] = useState("");
+  const [rutaHoy, setRutaHoy] = useState<{ id: number; objetivo_id: number; orden: number; nota: string | null; ronda_id: number | null; objetivo_nombre: string; tipo: string; subtipo: string; direccion: string | null }[]>([]);
+
+  useEffect(() => {
+    if (!s.token || !s.online) return;
+    apiFetch<{ ok: boolean; visitas: typeof rutaHoy }>(s.apiUrl, "/api/mi-ruta", { token: s.token })
+      .then(d => { if (d.ok && Array.isArray(d.visitas)) setRutaHoy(d.visitas); })
+      .catch(() => {});
+  }, [s.token, s.online, s.apiUrl]);
 
   // GPS real del dispositivo, alta precisión, siguiendo la posición mientras está la pantalla.
   useEffect(() => {
@@ -84,6 +95,7 @@ export default function InicioRonda() {
 
   const distancia = coords && sel?.lat != null && sel?.lng != null ? distanciaMetros(coords.lat, coords.lng, sel.lat, sel.lng) : null;
   const gps: EstadoGps = gpsError ? "error" : !coords || !sel ? "buscando" : distancia! <= sel.radio_geocerca_m ? "dentro" : "fuera";
+  const errorJustificacion = validarJustificacion(motivo, just);
 
   const grupos = useMemo(() => {
     const q = busca.trim().toLowerCase();
@@ -103,7 +115,7 @@ export default function InicioRonda() {
     const asignados = s.catalogos.vigiladores.filter(v => v.objetivo_asignado === sel.nombre && v.estado === "activo");
     setRd(p => ({
       ...(cambiaObjetivo ? { ...p, respuestas: {}, fotos: [], firmas: {} } : p),
-      objetivo: sel, tipo, justificacion: tipo === "remota" ? just.trim() : "",
+      objetivo: sel, tipo, justificacion: tipo === "remota" ? `${motivo}: ${just.trim()}` : "",
       coords, distanciaM: distancia != null ? Math.round(distancia) : null,
       horaInicio: new Date().toISOString(),
       vigiladores: cambiaObjetivo || !p.vigiladores.length ? asignados : p.vigiladores,
@@ -142,6 +154,14 @@ export default function InicioRonda() {
         </Pressable>
       </View>
 
+      {sel && (
+        <View accessibilityLiveRegion="polite" style={{ marginHorizontal: 20, marginBottom: 8, paddingHorizontal: 14, minHeight: 48,
+          borderRadius: radius.control, backgroundColor: GPS.soft, flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <Icono n={GPS.icono} c={GPS.ink} size={20} />
+          <T v="meta" c={GPS.ink} style={{ flex: 1, fontFamily: font.semibold }} numberOfLines={2}>{sel.nombre}: {GPS.txt}</T>
+        </View>
+      )}
+
       <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: 6 }}>
           <T v="label" c={color.tintaSuave}>Paso 1 de 5</T>
@@ -175,6 +195,75 @@ export default function InicioRonda() {
           </View>
         </Grupo>
 
+        {rutaHoy.length > 0 && (
+          <View style={{ marginTop: 18 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8, paddingHorizontal: 4 }}>
+              <Etiqueta>Tu ruta de hoy</Etiqueta>
+              <T v="small" c={color.tintaSuave} style={{ fontFamily: font.semibold }}>
+                {rutaHoy.filter(v => v.ronda_id != null).length} de {rutaHoy.length} hechas
+              </T>
+            </View>
+            <Grupo>
+              {rutaHoy.map((v, i) => {
+                const hecha = v.ronda_id != null;
+                const objAsoc = s.catalogos.objetivos.find(o => o.id === v.objetivo_id);
+                const activo = sel?.id === v.objetivo_id;
+                return (
+                  <View key={v.id}>
+                    {i > 0 && <Separador inset={0} />}
+                    <Fila
+                      seleccionada={activo}
+                      onPress={() => {
+                        if (objAsoc) setSel(objAsoc);
+                      }}
+                      style={{ minHeight: 64 }}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${v.orden}. ${v.objetivo_nombre}, ${hecha ? "Realizada" : "Pendiente"}`}
+                    >
+                      <View
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: 14,
+                          backgroundColor: hecha ? color.bienSoft : color.seleccion,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        {hecha ? (
+                          <Icono n="check" c={color.bienInk} size={15} w={3} />
+                        ) : (
+                          <T v="meta" c={color.marino} style={{ fontFamily: font.semibold }}>
+                            {v.orden}
+                          </T>
+                        )}
+                      </View>
+                      <View style={{ flex: 1, gap: 2 }}>
+                        <T v="bodyLg" numberOfLines={1}>{v.objetivo_nombre}</T>
+                        <T v="small" c={color.tintaMuda} numberOfLines={1}>
+                          {SUBTIPO_LABEL[v.subtipo] || v.tipo}{v.direccion ? ` · ${v.direccion}` : ""}{v.nota ? ` · ${v.nota}` : ""}
+                        </T>
+                      </View>
+                      <View
+                        style={{
+                          paddingHorizontal: 8,
+                          paddingVertical: 4,
+                          borderRadius: radius.chip,
+                          backgroundColor: hecha ? color.bienSoft : color.regularSoft,
+                        }}
+                      >
+                        <T v="small" c={hecha ? color.bienInk : color.regularInk} style={{ fontFamily: font.semibold }}>
+                          {hecha ? "Realizada" : "Pendiente"}
+                        </T>
+                      </View>
+                    </Fila>
+                  </View>
+                );
+              })}
+            </Grupo>
+          </View>
+        )}
+
         <View style={{ marginTop: 16, height: 52, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, backgroundColor: color.superficie, borderWidth: 1, borderColor: color.linea, borderRadius: radius.control }}>
           <Icono n="search" c={color.tintaMuda} size={20} w={1.9} />
           <TextInput value={busca} onChangeText={setBusca} placeholder="Buscar objetivo o dirección" placeholderTextColor={color.placeholder}
@@ -187,7 +276,7 @@ export default function InicioRonda() {
             <Grupo>
               {lista.map((o, i) => (
                 <FilaObjetivo key={o.id} o={o} primera={i === 0} activo={sel?.id === o.id}
-                  hechas={(o.visitas_mes ?? 0) + (s.visitasDemo[o.id] || 0)} onElegir={setSel} />
+                  hechas={o.visitas_mes ?? 0} onElegir={setSel} />
               ))}
             </Grupo>
           </View>
@@ -197,12 +286,22 @@ export default function InicioRonda() {
           <Animated.View entering={FadeIn} style={{ marginTop: 22 }}>
             <Etiqueta>Supervisión remota</Etiqueta>
             <T v="meta" c={color.tintaSuave} style={{ marginBottom: 8, paddingHorizontal: 4 }}>
-              No estás dentro del geocerco. Explicá el motivo (mínimo 10 caracteres); queda registrado en el acta.
+              No estás dentro del geocerco. Elegí un motivo y explicá qué pasó; queda registrado en el acta.
             </T>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
+              {MOTIVOS_REMOTOS.map(opcion => (
+                <Pressable key={opcion} onPress={() => setMotivo(opcion)} accessibilityRole="radio" accessibilityState={{ checked: motivo === opcion }}
+                  style={{ minHeight: 44, paddingHorizontal: 12, borderRadius: 22, borderWidth: 1, borderColor: motivo === opcion ? color.accion : color.lineaFuerte,
+                    backgroundColor: motivo === opcion ? color.accion : color.superficie, justifyContent: "center" }}>
+                  <T v="meta" c={motivo === opcion ? "#fff" : color.marino}>{opcion}</T>
+                </Pressable>
+              ))}
+            </View>
             <TextInput value={just} onChangeText={setJust} multiline placeholder="Ej.: control telefónico por corte de ruta"
               placeholderTextColor={color.placeholder}
               style={{ minHeight: 100, padding: 14, textAlignVertical: "top", backgroundColor: color.superficie, borderWidth: 1, borderColor: color.linea,
                 borderRadius: radius.control, fontFamily: font.regular, fontSize: 17, color: color.marino }} />
+            {errorJustificacion && <T v="small" c={color.regularInk} style={{ marginTop: 8 }}>{errorJustificacion}</T>}
           </Animated.View>
         )}
       </ScrollView>
@@ -211,8 +310,8 @@ export default function InicioRonda() {
         {!sel
           ? <Boton titulo="Elegí un objetivo" alto={58} deshabilitado />
           : gps === "fuera" || gps === "error"
-          ? <Boton variante="contorno" titulo={just.trim().length >= 10 ? "Iniciar supervisión remota" : "Escribí la justificación"}
-              deshabilitado={!sel || just.trim().length < 10} alto={58} onPress={() => arrancar("remota")} />
+          ? <Boton variante="contorno" titulo={errorJustificacion ? "Completá el motivo" : "Iniciar supervisión remota"}
+              deshabilitado={!!errorJustificacion} alto={58} onPress={() => arrancar("remota")} />
           : <Boton titulo={gps === "dentro" ? "Iniciar ronda presencial" : sel ? "Validando ubicación…" : "Elegí un objetivo"}
               deshabilitado={gps !== "dentro"} alto={58} onPress={() => arrancar("presencial")} />}
       </BarraAccion>

@@ -3,16 +3,15 @@ import React, { createContext, useCallback, useContext, useMemo, useState } from
 import { apiFetch } from "../api";
 import { incidenciasDeRonda, payloadRonda } from "../domain/acta";
 import { resolverChecklist } from "../domain/checklist";
-import { fechaCorta, hora } from "../domain/formato";
 import * as outbox from "./outbox";
 import { useSession } from "./session";
-import type { Ronda, Ticket, Valoracion } from "../types";
+import type { Ronda, Valoracion } from "../types";
 
 export interface TicketActa { codigo: string; texto: string; area: string; valoracion: Valoracion }
 
 export interface ActaResultado {
   codigo: string;
-  estado: "enviada" | "encolada" | "demo";
+  estado: "enviada" | "encolada";
   fecha: string;
   tickets: TicketActa[];
   ronda: Ronda;
@@ -54,7 +53,7 @@ export function RondaProvider({ children }: { children: React.ReactNode }) {
       texto: i.descripcion, area: i.area_responsable, valoracion: i.valoracion,
     }));
     const codigoLocal = `ACTA-${mes}${String(ahora.getDate()).padStart(2, "0")}-L${String(Date.now()).slice(-5)}`;
-    const fotos = rd.fotos.map(f => ({ uri: f.uri, lat: f.lat, lng: f.lng }));
+    const fotos = rd.fotos.map(f => ({ uri: f.uri, lat: f.lat, lng: f.lng, itemId: f.itemId, tomadaEn: f.tomadaEn }));
     const objetivo = rd.objetivo?.nombre || "Objetivo";
 
     let res: ActaResultado;
@@ -62,7 +61,7 @@ export function RondaProvider({ children }: { children: React.ReactNode }) {
       await outbox.encolar(objetivo, payloadRonda(rd, checklist, observaciones, true), fotos);
       await s.refrescarPendientes();
       res = { codigo: codigoLocal, estado: "encolada", fecha: ahora.toISOString(), tickets: locales, ronda: rd };
-    } else if (s.apiUrl) {
+    } else {
       const body = { ...payloadRonda(rd, checklist, observaciones, false), evidencias: await outbox.evidenciasBase64(fotos) };
       try {
         const d = await apiFetch<any>(s.apiUrl, "/api/rondas", { method: "POST", token: s.token, body, timeoutMs: 60000 });
@@ -76,15 +75,6 @@ export function RondaProvider({ children }: { children: React.ReactNode }) {
         await s.refrescarPendientes();
         res = { codigo: codigoLocal, estado: "encolada", fecha: ahora.toISOString(), tickets: locales, ronda: rd };
       }
-    } else {
-      const stamp = `${fechaCorta(ahora)} · ${hora(ahora)}`;
-      const tickets: Ticket[] = incs.map((i, n) => ({
-        id: locales[n].codigo, objetivo, supervisor: s.usuario?.nombre || "Supervisor", valoracion: i.valoracion,
-        area: i.area_responsable, estado: "Activa", descripcion: i.descripcion, item: i.item_titulo,
-        vigilador: rd.vigiladores.find(v => v.id === i.vigilador_id)?.nombre, fecha: stamp,
-      }));
-      if (rd.objetivo) s.registrarActaDemo(rd.objetivo.id, tickets);
-      res = { codigo: codigoLocal, estado: "demo", fecha: ahora.toISOString(), tickets: locales, ronda: rd };
     }
     setResultado(res);
     return res;

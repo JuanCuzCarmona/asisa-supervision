@@ -270,7 +270,6 @@ Hoy el sistema guarda: legajo, nombre, DNI, puesto, credencial y vencimiento, si
 - ¿Cuántos supervisores van a usar la app? Nombre y legajo de cada uno.
 - ¿Cada supervisor tiene objetivos asignados, o cualquiera puede supervisar cualquier objetivo?
 - ¿Quiénes acceden al panel administrativo? ¿Y al dashboard de gerencia?
-- **OneDrive / SSO corporativo:** el PRD lo menciona. ¿Está confirmado? ¿Qué cuentas usan hoy?
 
 ---
 

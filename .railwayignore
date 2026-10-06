@@ -1,0 +1,21 @@
+# Railway solo necesita la API (server.js + package*.json). Se excluye todo lo
+# demás para que la subida sea chica y no viajen datos ni binarios.
+android/
+mobile/
+releases/
+www/
+web-dist/
+assets/
+certs/
+datos_asi/
+importacion_asi*.sql
+node_modules/
+.env
+*.apk
+*.jks
+*.keystore
+*.md
+*.html
+*.gs
+.claude/
+.impeccable/

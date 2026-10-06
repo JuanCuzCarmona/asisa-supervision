@@ -33,7 +33,7 @@ El diferenciador confirmado es la **evidencia a prueba de manipulación**: geoce
 
 - Backend Express + PostgreSQL con JWT (8h), bcrypt, rate limiting y RBAC por rol (`supervisor`, `admin`, `dueno`).
 - El checklist es 100% configurable desde la base de datos (`checklist_items.tipos_objetivo` + overrides por objetivo en `objetivo_checklist`), no hardcodeado — un cambio de checklist es un cambio de datos, no de código.
-- Todo panel debe seguir funcionando en modo demo (datos `SEED_*` locales) sin backend conectado — degradación elegante es un requisito explícito, no opcional.
+- No hay modo demo: todo sale del servidor de ASI. Sin señal, el supervisor sigue trabajando con los catálogos de la última sesión y las actas quedan en la cola del celular hasta que vuelve la conexión — ese es el único respaldo local, y es obligatorio.
 - Sin suite de tests automatizados todavía.
 - Prototipo — sin base de usuarios real en producción todavía (usuarios semilla de prueba: `supervisor`/`admin`/`dueno`).
 

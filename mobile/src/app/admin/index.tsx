@@ -1,6 +1,6 @@
 /* Administración — incidencias (PRD panel admin). */
 import { useMemo, useState } from "react";
-import { FlatList, Image, Pressable, RefreshControl, ScrollView, View } from "react-native";
+import { FlatList, Image, Pressable, RefreshControl, ScrollView, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Avatar, Chip, EMBLEMA, Icono, T, useMargenInferior } from "../../components/ui";
@@ -10,14 +10,21 @@ import { useTickets } from "../../state/tickets";
 import { color, font, radius, valoracionTono } from "../../theme";
 
 type Filtro = "activo" | "cerrado" | "todas";
+type Periodo = "todos" | "hoy" | "semana" | "mes";
 
 export default function Admin() {
   const ins = useSafeAreaInsets();
   const abajo = useMargenInferior();
   const s = useSession();
-  const { tickets, cargando, recargar } = useTickets();
+  const { tickets, cargando, error, recargar } = useTickets();
   const [filtro, setFiltro] = useState<Filtro>("activo");
   const [area, setArea] = useState("todas");
+  const [busca, setBusca] = useState("");
+  const [periodo, setPeriodo] = useState<Periodo>("todos");
+  const [objetivo, setObjetivo] = useState("todos");
+  const [supervisor, setSupervisor] = useState("todos");
+  const [prioridad, setPrioridad] = useState<"todas" | "criticas" | "antiguas">("todas");
+  const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
   const porEstado = (t: (typeof tickets)[number]) => filtro === "todas" || (filtro === "activo" ? t.estado === "Activa" : t.estado === "Cerrada");
   const areas = useMemo(() => {
@@ -25,8 +32,25 @@ export default function Admin() {
     for (const t of tickets) if (porEstado(t)) c[t.area] = (c[t.area] || 0) + 1;
     return Object.entries(c);
   }, [tickets, filtro]);
-  const lista = tickets.filter(t => porEstado(t) && (area === "todas" || t.area === area));
+  const objetivos = [...new Set(tickets.map(t => t.objetivo))].sort();
+  const supervisores = [...new Set(tickets.map(t => t.supervisor))].sort();
+  const ahora = Date.now();
+  const inicioHoy = new Date().setHours(0, 0, 0, 0);
+  const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
+  const antigua = (t: (typeof tickets)[number]) => t.estado === "Activa" && !!t.fechaIso && ahora - new Date(t.fechaIso).getTime() >= 48 * 3600000;
+  const lista = tickets.filter(t => {
+    if (!porEstado(t) || (area !== "todas" && t.area !== area) || (objetivo !== "todos" && t.objetivo !== objetivo)
+      || (supervisor !== "todos" && t.supervisor !== supervisor)) return false;
+    if (prioridad === "criticas" && !(t.estado === "Activa" && t.valoracion === "M")) return false;
+    if (prioridad === "antiguas" && !antigua(t)) return false;
+    const fecha = t.fechaIso ? new Date(t.fechaIso).getTime() : NaN;
+    if (periodo !== "todos" && Number.isFinite(fecha) && fecha < (periodo === "hoy" ? inicioHoy : periodo === "semana" ? ahora - 7 * 86400000 : inicioMes)) return false;
+    const q = busca.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    return !q || [t.id, t.objetivo, t.supervisor, t.descripcion, t.vigilador || "", t.item || ""]
+      .some(v => v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().includes(q));
+  });
   const criticas = tickets.filter(t => t.estado === "Activa" && t.valoracion === "M").length;
+  const antiguas = tickets.filter(antigua).length;
   const activas = tickets.filter(t => t.estado === "Activa").length;
   const cerradas = tickets.length - activas;
 
@@ -38,6 +62,10 @@ export default function Admin() {
           <T v="bodyLg">{s.usuario?.nombre}</T>
           <T v="small" c={color.tintaSuave}>Administración</T>
         </View>
+        <Pressable onPress={() => router.push("/clave")} accessibilityRole="button" accessibilityLabel="Cambiar contraseña"
+          style={{ width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center", backgroundColor: color.seleccion }}>
+          <Icono n="key" size={20} />
+        </Pressable>
         <Pressable onPress={async () => { await s.logout(); router.replace("/login"); }} accessibilityLabel="Cerrar sesión">
           <Avatar texto={iniciales(s.usuario?.nombre)} />
         </Pressable>
@@ -81,6 +109,56 @@ export default function Admin() {
                 );
               })}
             </ScrollView>
+            <View style={{ height: 50, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14,
+              backgroundColor: color.superficie, borderWidth: 1, borderColor: color.linea, borderRadius: radius.control, marginTop: 12 }}>
+              <Icono n="search" c={color.tintaMuda} size={20} />
+              <TextInput value={busca} onChangeText={setBusca} placeholder="Buscar ticket, objetivo o persona"
+                placeholderTextColor={color.placeholder} accessibilityLabel="Buscar incidencias"
+                style={{ flex: 1, height: 48, fontFamily: font.regular, fontSize: 16, color: color.marino }} />
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10, marginHorizontal: -20 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
+              {([["todas", "Todas"], ["criticas", `Críticas ${criticas}`], ["antiguas", `Más de 48 h ${antiguas}`]] as const).map(([k, l]) => (
+                <Pressable key={k} onPress={() => setPrioridad(k)} accessibilityRole="radio" accessibilityState={{ checked: prioridad === k }}
+                  style={{ minHeight: 40, paddingHorizontal: 12, borderRadius: 20, justifyContent: "center", backgroundColor: prioridad === k ? color.accion : color.superficie,
+                    borderWidth: 1, borderColor: prioridad === k ? color.accion : color.linea }}>
+                  <T v="meta" c={prioridad === k ? "#fff" : color.marino}>{l}</T>
+                </Pressable>
+              ))}
+            </ScrollView>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8, marginHorizontal: -20 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
+              {([["todos", "Cualquier fecha"], ["hoy", "Hoy"], ["semana", "7 días"], ["mes", "Este mes"]] as const).map(([k, l]) => (
+                <Pressable key={k} onPress={() => setPeriodo(k)} style={{ minHeight: 40, paddingHorizontal: 12, borderRadius: 20, justifyContent: "center",
+                  backgroundColor: periodo === k ? color.seleccion : color.superficie, borderWidth: 1, borderColor: periodo === k ? color.accion : color.linea }}>
+                  <T v="small" c={periodo === k ? color.accion : color.tintaSuave}>{l}</T>
+                </Pressable>
+              ))}
+            </ScrollView>
+            <Pressable onPress={() => setMostrarFiltros(v => !v)} accessibilityRole="button" accessibilityState={{ expanded: mostrarFiltros }}
+              style={{ minHeight: 44, alignSelf: "flex-start", justifyContent: "center", marginTop: 4 }}>
+              <T v="meta" c={color.enlace} style={{ fontFamily: font.semibold }}>{mostrarFiltros ? "Ocultar filtros" : "Filtrar por objetivo y supervisor"}</T>
+            </Pressable>
+            {mostrarFiltros && <>
+            <T v="small" c={color.tintaSuave} style={{ marginTop: 10 }}>Objetivo</T>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 5, marginHorizontal: -20 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
+              {["todos", ...objetivos].map(o => (
+                <Pressable key={o} onPress={() => setObjetivo(o)} style={{ minHeight: 38, paddingHorizontal: 12, borderRadius: 19, justifyContent: "center",
+                  backgroundColor: objetivo === o ? color.seleccion : color.superficie, borderWidth: 1, borderColor: objetivo === o ? color.accion : color.linea }}>
+                  <T v="small" c={objetivo === o ? color.accion : color.tintaSuave}>{o === "todos" ? "Todos" : o}</T>
+                </Pressable>
+              ))}
+            </ScrollView>
+            <T v="small" c={color.tintaSuave} style={{ marginTop: 10 }}>Supervisor</T>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 5, marginHorizontal: -20 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
+              {["todos", ...supervisores].map(nombre => (
+                <Pressable key={nombre} onPress={() => setSupervisor(nombre)} style={{ minHeight: 38, paddingHorizontal: 12, borderRadius: 19, justifyContent: "center",
+                  backgroundColor: supervisor === nombre ? color.seleccion : color.superficie, borderWidth: 1, borderColor: supervisor === nombre ? color.accion : color.linea }}>
+                  <T v="small" c={supervisor === nombre ? color.accion : color.tintaSuave}>{nombre === "todos" ? "Todos" : nombre}</T>
+                </Pressable>
+              ))}
+            </ScrollView>
+            </>}
+            {error && <T v="small" c={color.malInk} style={{ marginTop: 8 }}>{error}</T>}
+            <T v="small" c={color.tintaMuda} style={{ marginTop: 10 }}>{lista.length} incidencia{lista.length === 1 ? "" : "s"} en el resultado</T>
             <View style={{ height: 14 }} />
           </View>
         }
@@ -91,7 +169,7 @@ export default function Admin() {
               borderRadius: radius.card, padding: 16, marginTop: index ? 10 : 0, gap: 6 }]}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
               <T v="small" c={color.tintaSuave} style={{ fontVariant: ["tabular-nums"] }}>{t.id}</T>
-              <Chip texto={t.estado === "Cerrada" ? "Cerrada" : valoracionTono[t.valoracion].label} tono={t.estado === "Cerrada" ? "neutro" : t.valoracion === "M" ? "mal" : "regular"} />
+              <Chip texto={t.estado === "Cerrada" ? "Cerrada" : antigua(t) ? "Más de 48 h" : valoracionTono[t.valoracion].label} tono={t.estado === "Cerrada" ? "neutro" : t.valoracion === "M" || antigua(t) ? "mal" : "regular"} />
             </View>
             <T v="bodyLg">{t.objetivo}</T>
             <T v="body" c={color.tintaSuave} numberOfLines={2}>{t.descripcion}</T>

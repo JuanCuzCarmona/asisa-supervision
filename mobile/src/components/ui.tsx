@@ -59,6 +59,7 @@ const ICONOS: Record<string, string[]> = {
   info: ["M12 11v5", "M12 8h.01"],
   user: ["M4 21c0-4 4-6 8-6s8 2 8 6"],
   lock: ["M8 11V7a4 4 0 0 1 8 0v4"],
+  key: ["M21 2l-9.6 9.6", "M15.5 7.5l3 3L22 7l-3-3"],
   eye: ["M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"],
   "eye-off": ["M3 3l18 18", "M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6", "M9.9 9.9a3 3 0 0 0 4.2 4.2"],
   shield: ["M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z", "M9 12l2 2 4-4"],
@@ -81,6 +82,7 @@ export function Icono({ n, size = 22, c = color.marino, w = 2 }: { n: string; si
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={w} strokeLinecap="round" strokeLinejoin="round">
       {n === "user" && <Circle cx={12} cy={8} r={4} />}
       {n === "lock" && <Rect x={4} y={11} width={16} height={10} rx={2} />}
+      {n === "key" && <Circle cx={7.5} cy={15.5} r={5.5} />}
       {n === "eye" && <Circle cx={12} cy={12} r={3} />}
       {n === "info" && <Circle cx={12} cy={12} r={9} />}
       {n === "search" && <Circle cx={11} cy={11} r={7} />}

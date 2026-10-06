@@ -1,9 +1,10 @@
 /* Perfil del vigilador (PRD §9): datos del legajo, historial y sanciones. */
+import { useEffect, useState } from "react";
 import { Linking, ScrollView, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Avatar, Boton, Chip, Etiqueta, FilaDato, Grupo, Icono, T, useMargenInferior } from "../../../components/ui";
-import { SEED_HISTORIAL, SEED_SANCIONES } from "../../../data/seed";
+import { apiFetch } from "../../../api";
 import { diasHasta, fechaCorta, iniciales } from "../../../domain/formato";
 import { useSession } from "../../../state/session";
 import { color, font, radius } from "../../../theme";
@@ -12,10 +13,18 @@ export default function Perfil() {
   const ins = useSafeAreaInsets();
   const abajo = useMargenInferior();
   const { legajo } = useLocalSearchParams<{ legajo: string }>();
-  const { catalogos } = useSession();
+  const { catalogos, apiUrl, token } = useSession();
   const v = catalogos.vigiladores.find(x => String(x.legajo) === String(legajo));
-  const historial: any[] = (SEED_HISTORIAL as any)[String(legajo)] || [];
-  const sanciones: any[] = (SEED_SANCIONES as any)[String(legajo)] || [];
+  // Historial y sanciones vienen de GET /api/vigilador/:legajo; sin señal se ve el legajo sin ellos.
+  const [historial, setHistorial] = useState<any[]>([]);
+  const [sanciones, setSanciones] = useState<any[]>([]);
+  const [sinDatos, setSinDatos] = useState(false);
+  useEffect(() => {
+    if (!token || !legajo) return;
+    apiFetch<any>(apiUrl, `/api/vigilador/${encodeURIComponent(String(legajo))}`, { token })
+      .then(d => { setHistorial(d.historial || []); setSanciones(d.sanciones || []); setSinDatos(false); })
+      .catch(() => setSinDatos(true));
+  }, [apiUrl, token, legajo]);
 
   if (!v) return <View style={{ flex: 1, padding: 24, paddingTop: ins.top + 24 }}><T v="title">Legajo no encontrado</T></View>;
 
@@ -64,6 +73,7 @@ export default function Perfil() {
       ) : null}
 
       <Etiqueta style={{ marginTop: 24 }}>Historial</Etiqueta>
+      {sinDatos && <T v="meta" c={color.regularInk} style={{ paddingHorizontal: 4, marginBottom: 8 }}>Sin conexión: no se pudo traer el historial.</T>}
       {historial.length === 0 ? <T v="meta" c={color.tintaSuave} style={{ paddingHorizontal: 4 }}>Sin registros.</T> : (
         <Grupo>
           {historial.map((h, i) => (

@@ -1,5 +1,5 @@
 /* Paso 2 — Vigiladores inspeccionados (varios por ronda, cada uno firma). */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -13,16 +13,14 @@ import { color, font, radius } from "../../theme";
 export default function Vigiladores() {
   const { catalogos } = useSession();
   const { rd, setRd } = useRonda();
-  const [legajo, setLegajo] = useState("");
+  const [busca, setBusca] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const agregar = () => {
+  const agregar = (v: (typeof catalogos.vigiladores)[number]) => {
     setError(null);
-    const v = catalogos.vigiladores.find(x => String(x.legajo) === legajo.trim());
-    if (!v) { setError("No hay ningún vigilador con ese legajo."); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error); return; }
     if (rd.vigiladores.some(x => x.id === v.id)) { setError("Ese vigilador ya está en la ronda."); return; }
     setRd(p => ({ ...p, vigiladores: [...p.vigiladores, v] }));
-    setLegajo("");
+    setBusca("");
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
@@ -32,6 +30,15 @@ export default function Vigiladores() {
   });
 
   const n = rd.vigiladores.length;
+  const resultados = useMemo(() => {
+    const normalizar = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const q = normalizar(busca.trim());
+    if (!q) return [];
+    return catalogos.vigiladores
+      .filter(v => v.estado === "activo" && !rd.vigiladores.some(x => x.id === v.id)
+        && (String(v.legajo).includes(q) || normalizar(v.nombre).includes(q)))
+      .slice(0, 8);
+  }, [busca, catalogos.vigiladores, rd.vigiladores]);
 
   return (
     <View style={{ flex: 1, backgroundColor: color.fondo }}>
@@ -43,7 +50,7 @@ export default function Vigiladores() {
         <Etiqueta style={{ marginTop: 24 }}>En esta ronda</Etiqueta>
         {n === 0 ? (
           <View style={{ padding: 24, borderWidth: 1, borderStyle: "dashed", borderColor: color.lineaFuerte, borderRadius: radius.card, alignItems: "center" }}>
-            <T v="meta" c={color.tintaSuave} style={{ textAlign: "center" }}>No hay vigiladores asignados a este objetivo. Agregalos por legajo.</T>
+            <T v="meta" c={color.tintaSuave} style={{ textAlign: "center" }}>No hay vigiladores asignados a este objetivo. Buscalos por nombre o legajo.</T>
           </View>
         ) : (
           <Grupo>
@@ -80,12 +87,24 @@ export default function Vigiladores() {
         )}
         <T v="small" c={color.tintaSuave} style={{ marginTop: 10, paddingHorizontal: 4 }}>Tocá un vigilador para ver su legajo. Cada uno firma el acta.</T>
 
-        <Etiqueta style={{ marginTop: 24 }}>Agregar por legajo</Etiqueta>
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          <Campo icono="user" value={legajo} onChangeText={t => setLegajo(t.replace(/\D/g, ""))} keyboardType="number-pad"
-            placeholder="Número de legajo" returnKeyType="done" onSubmitEditing={agregar} style={{ flex: 1 }} />
-          <Boton variante="contorno" titulo="Agregar" onPress={agregar} deshabilitado={!legajo} style={{ width: 110 }} />
-        </View>
+        <Etiqueta style={{ marginTop: 24 }}>Agregar vigilador</Etiqueta>
+        <Campo icono="search" value={busca} onChangeText={setBusca} autoCorrect={false}
+          placeholder="Nombre, apellido o legajo" accessibilityLabel="Buscar vigilador por nombre, apellido o legajo" />
+        {busca.trim() !== "" && (
+          <Grupo style={{ marginTop: 8 }}>
+            {resultados.length ? resultados.map((v, i) => (
+              <View key={v.id}>
+                {i > 0 && <Separador inset={0} />}
+                <Pressable onPress={() => agregar(v)} accessibilityRole="button" accessibilityLabel={`Agregar a ${v.nombre}, legajo ${v.legajo}`}
+                  style={{ minHeight: 60, paddingHorizontal: 16, paddingVertical: 8, flexDirection: "row", alignItems: "center", gap: 12 }}>
+                  <Avatar texto={iniciales(v.nombre)} size={36} />
+                  <View style={{ flex: 1 }}><T v="meta">{v.nombre}</T><T v="small" c={color.tintaMuda}>Legajo {v.legajo}</T></View>
+                  <Icono n="plus" c={color.enlace} size={20} />
+                </Pressable>
+              </View>
+            )) : <T v="meta" c={color.tintaSuave} style={{ padding: 16 }}>No hay coincidencias disponibles.</T>}
+          </Grupo>
+        )}
         {error && <T v="meta" c={color.malInk} style={{ marginTop: 8, paddingHorizontal: 4 }}>{error}</T>}
       </ScrollView>
       <BarraAccion resumen={n === 0 ? "Agregá al menos un vigilador" : n === 1 ? "1 vigilador para inspeccionar" : `${n} vigiladores para inspeccionar`}>

@@ -1,11 +1,29 @@
 #!/bin/bash
-# Arma web-dist/ para publicar la webapp (modo demo) en Cloudflare Pages:
+# Arma web-dist/ para publicar la webapp en Cloudflare Pages:
 #   bash scripts/build-web.sh && wrangler pages deploy web-dist --project-name asi-supervision --branch main
 # asi_prototype.html sigue siendo la fuente única; esto solo copia y agrega íconos/manifest.
+#
+# La página ya apunta al servidor de producción (<meta name="asi-api-url">).
+# ASI_API_URL=https://otro-servidor bash scripts/build-web.sh la reemplaza en web-dist.
 set -e
 cd "$(dirname "$0")/.."
 rm -rf web-dist && mkdir -p web-dist
 cp asi_prototype.html web-dist/index.html
+if [ -n "${ASI_API_URL:-}" ]; then
+  case "$ASI_API_URL" in
+    https://*) ;;
+    *) echo "ASI_API_URL tiene que ser https:// (el celular bloquea HTTP sin cifrar)"; exit 1 ;;
+  esac
+  ASI_API_URL="$ASI_API_URL" python3 - <<'EOF2'
+import os, re
+p = 'web-dist/index.html'; s = open(p, encoding='utf-8').read()
+s, n = re.subn(r'<meta name="asi-api-url" content="[^"]*" />',
+               f'<meta name="asi-api-url" content="{os.environ["ASI_API_URL"]}" />', s)
+assert n == 1, "No se encontró <meta name=asi-api-url> en asi_prototype.html"
+open(p, 'w', encoding='utf-8').write(s)
+EOF2
+  echo "API fija: $ASI_API_URL"
+fi
 python3 - <<'EOF'
 from PIL import Image, ImageDraw, ImageFilter
 import json

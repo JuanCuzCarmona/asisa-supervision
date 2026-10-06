@@ -16,6 +16,7 @@ export default function Checklist() {
   const { rd, setRd, items } = useRonda();
   const [info, setInfo] = useState<Record<number, boolean>>({});
   const [hoja, setHoja] = useState<{ item: ItemChecklist; v: Valoracion } | null>(null);
+  const [finOpciones, setFinOpciones] = useState(false);
 
   const secciones = useMemo(() =>
     [...catalogos.secciones].sort((a, b) => a.orden - b.orden)
@@ -31,7 +32,7 @@ export default function Checklist() {
   const elegir = (item: ItemChecklist, v: Valoracion) => {
     Haptics.selectionAsync();
     setRd(p => ({ ...p, respuestas: { ...p.respuestas, [item.id]: { valoracion: v, observacion: v === "B" ? null : p.respuestas[item.id]?.observacion ?? null } } }));
-    if (v !== "B") setHoja({ item, v });
+    if (v !== "B") { setFinOpciones(false); setHoja({ item, v }); }
   };
 
   const observar = (o: Observacion) => {
@@ -101,7 +102,7 @@ export default function Checklist() {
                         </View>
                         {r && r.valoracion !== "B" && (
                           <Animated.View entering={FadeIn.duration(200)}>
-                            <Pressable onPress={() => setHoja({ item: it, v: r.valoracion })}
+                            <Pressable onPress={() => { setFinOpciones(false); setHoja({ item: it, v: r.valoracion }); }}
                               style={({ pressed }) => [{ marginTop: 10, minHeight: 52, paddingHorizontal: 12, paddingVertical: 8, borderRadius: radius.control, borderWidth: 1,
                                 borderColor: r.observacion ? color.linea : valoracionTono[r.valoracion].solido, flexDirection: "row", alignItems: "center", gap: 10 },
                                 pressed && { backgroundColor: color.seleccion }]}>
@@ -139,7 +140,10 @@ export default function Checklist() {
       <Hoja visible={!!hoja} onCerrar={() => setHoja(null)} titulo={hoja?.item.titulo_corto || ""}
         sobretitulo={hoja ? valoracionTono[hoja.v].label : ""} sobretituloColor={hoja ? valoracionTono[hoja.v].solido : undefined}
         subtitulo="Elegí la observación. Se genera un ticket al área que corresponda.">
-        <ScrollView style={{ maxHeight: 420 }}>
+        <ScrollView style={{ maxHeight: 360 }} nestedScrollEnabled showsVerticalScrollIndicator persistentScrollbar
+          scrollEventThrottle={100}
+          onScroll={e => { const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+            setFinOpciones(contentOffset.y + layoutMeasurement.height >= contentSize.height - 20); }}>
           <Grupo>
             {obsLista.map((o, i) => (
               <View key={`${o.area}-${o.texto}`}>
@@ -155,6 +159,11 @@ export default function Checklist() {
             ))}
           </Grupo>
         </ScrollView>
+        {obsLista.length > 5 && !finOpciones && (
+          <View style={{ paddingTop: 10, alignItems: "center", borderTopWidth: 1, borderTopColor: color.linea }}>
+            <T v="meta" c={color.enlace} style={{ fontFamily: font.semibold }}>↓ Deslizá para ver más opciones</T>
+          </View>
+        )}
       </Hoja>
     </View>
   );

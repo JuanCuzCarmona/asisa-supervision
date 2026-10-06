@@ -65,12 +65,12 @@ function TarjetaFirma({ v }: { v: Vigilador }) {
         <View style={{ marginTop: 14, gap: 10 }}>
           <PadFirma ref={pad} onCambio={setTrazo} />
           <View style={{ flexDirection: "row", gap: 10 }}>
-            <Boton variante="secundario" titulo="Se negó" alto={52} style={{ flex: 1 }} onPress={() => set({ nego: true, hora: new Date().toISOString() })} />
+            <Boton variante="secundario" titulo="Se negó" accessibilityLabel={`${v.nombre} se negó a firmar`} alto={52} style={{ flex: 1 }} onPress={() => set({ nego: true, hora: new Date().toISOString() })} />
             {trazo
               ? <Boton variante="tintado" titulo="Borrar" alto={52} style={{ flex: 1 }} onPress={() => pad.current?.limpiar()} />
               : null}
-            <Boton titulo="Confirmar firma" alto={52} style={{ flex: 1.4 }} deshabilitado={!trazo} onPress={confirmar} />
           </View>
+          <Boton titulo="Confirmar firma" alto={52} deshabilitado={!trazo} onPress={confirmar} />
         </View>
       )}
     </View>

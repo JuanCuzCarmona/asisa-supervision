@@ -11,7 +11,7 @@ export interface Pendiente {
   objetivo: string;
   creada: string;
   payload: any;
-  fotos: { uri: string; lat: number | null; lng: number | null }[];
+  fotos: { uri: string; lat: number | null; lng: number | null; itemId?: number | null; tomadaEn?: string }[];
   intentos: number;
   ultimoError: string | null;
 }
@@ -68,7 +68,7 @@ export async function evidenciasBase64(fotos: Pendiente["fotos"]) {
   for (const f of fotos) {
     try {
       const b64 = await new File(f.uri).base64();
-      out.push({ imagen_base64: `data:image/jpeg;base64,${b64}`, lat: f.lat, lng: f.lng });
+      out.push({ imagen_base64: `data:image/jpeg;base64,${b64}`, lat: f.lat, lng: f.lng, item_id: f.itemId ?? null, tomada_en: f.tomadaEn ?? null });
     } catch {
       // Una foto ilegible no puede bloquear el acta entera.
     }
@@ -95,4 +95,20 @@ export async function sincronizar(base: string, token: string | null) {
     }
   }
   return { enviadas, pendientes: (await listar()).length };
+}
+
+/* ── Copia local de datos de la última sesión (catálogos) ──
+   Misma base SQLite: si el supervisor abre la app sin señal, puede hacer la
+   ronda con los objetivos/vigiladores/checklist que ya tenía. */
+export async function guardarCache(clave: string, valor: unknown) {
+  const d = await db();
+  await d.execAsync("CREATE TABLE IF NOT EXISTS cache (clave TEXT PRIMARY KEY, valor TEXT NOT NULL)");
+  await d.runAsync("INSERT OR REPLACE INTO cache (clave, valor) VALUES (?, ?)", clave, JSON.stringify(valor));
+}
+
+export async function leerCache<T>(clave: string): Promise<T | null> {
+  const d = await db();
+  await d.execAsync("CREATE TABLE IF NOT EXISTS cache (clave TEXT PRIMARY KEY, valor TEXT NOT NULL)");
+  const fila = await d.getFirstAsync<{ valor: string }>("SELECT valor FROM cache WHERE clave = ?", clave);
+  return fila ? (JSON.parse(fila.valor) as T) : null;
 }
