@@ -85,9 +85,6 @@ export default function Login() {
             </View>
           )}
 
-          <View style={{ alignItems: "flex-end" }}>
-            <Boton variante="texto" titulo="¿Olvidaste tu contraseña?" onPress={() => setError("Pedí el blanqueo de tu contraseña a Administración.")} />
-          </View>
           <Boton titulo={cargando ? "Verificando…" : "Ingresar"} onPress={entrar} cargando={cargando} style={{ marginTop: 6 }} />
 
         </Animated.View>
